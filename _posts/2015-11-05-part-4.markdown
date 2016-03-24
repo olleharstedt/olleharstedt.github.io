@@ -22,13 +22,13 @@ But if we do it with string buffer instead of string in Java, it takes 0.03 sec!
 
 This would be typed as a string:
 
-{% highlight php %}
+{% highlight php startinline=true %}
 $a = 'asd';
 {% endhighlight %}
 
 But if you use $a with [] or .=, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
 
-{% highlight php %}
+{% highlight php startinline=true %}
 $a = 'asd';
 $a .= 'qwe';  // Promote type to string buffer
 {% endhighlight %}
@@ -39,7 +39,7 @@ My next step will be to implement simple classes and arrays (arrays have value s
 
 Examples:
 
-{% highlight php %}
+{% highlight php startinline=true %}
 // Typed as struct, because it is final and has no methods or private fields
 final class Point {
   public $x;
