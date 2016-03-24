@@ -9,13 +9,13 @@ Hi!
 
 In my last post I had managed to bootstrap the lexer and parser from Hack/HHVM. Since then I've been working on adapting a Hindler-Milner type-inference implementation to PHP. It now works for addition and strings, so
 
-{% highlight php startinline %}
+```php?start_inline=1
 function foo($a) {
   return $a + 10;
 }
 
 $b = foo('oy');
-{% endhighlight %}
+```
 
 will give you a type error: "expected number but got string" (I hope to setup a web page soon where one can try this out).
 

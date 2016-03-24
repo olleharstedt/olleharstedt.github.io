@@ -22,16 +22,17 @@ But if we do it with string buffer instead of string in Java, it takes 0.03 sec!
 
 This would be typed as a string:
 
-{% highlight php startinline %}
+```php?start_inline=1
 $a = 'asd';
 {% endhighlight %}
+```
 
 But if you use $a with [] or .=, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
 
-{% highlight php startinline %}
+```php?start_inline=1
 $a = 'asd';
 $a .= 'qwe';  // Promote type to string buffer
-{% endhighlight %}
+```
 
 This happens during the compilation phase, and is transparent to the programmer.
 
@@ -39,7 +40,7 @@ My next step will be to implement simple classes and arrays (arrays have value s
 
 Examples:
 
-{% highlight php startinline %}
+```php?start_inline=1
 // Typed as struct, because it is final and has no methods or private fields
 final class Point {
   public $x;
@@ -48,7 +49,7 @@ final class Point {
 
 // Typed as int[], but might get type-promoted to hash-table depending on how it's used
 $a = [1, 2, 3];
-{% endhighlight %}
+```
 
 
 OK, that's it! I still have no homepage ready where you can try the linter part of the compiler. Maybe it will happen after the benchmark is ready, don't know. And then we will know if the project is at all a good idea.
