@@ -6,11 +6,11 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: subsetphp development diary
+title: SubsetPHP Development Diary
 #email: your-email@domain.com
 description: > # this means to ignore newlines until "baseurl:"
   A type-inferring compiler for a safer and disciplined subset of PHP, based on
-  and inspired by HHVM Hack compiler
+  and inspired by HHVM Hack compiler.
 baseurl: "" # the subpath of your site, e.g. /blog
 #url: "http://yourdomain.com" # the base hostname & protocol for your site
 #twitter_username: jekyllrb
