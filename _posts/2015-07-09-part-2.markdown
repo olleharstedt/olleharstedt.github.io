@@ -1,0 +1,34 @@
+---
+layout: post
+title:  Part 2 - Get parser and lexer from Hack work
+date:   2016-03-18
+categories: subsetphp
+---
+
+(Just a mail I send to a friend after I got the parser/lexer to work from Hack.)
+
+Hi!
+
+This:
+
+```ml
+[(Ast.Stmt
+    (Ast.Expr
+       (<opaque>,
+        Ast.Binop ((Ast.Eq None), (<opaque>, (Ast.Lvar (<opaque>, "$a"))),
+          (<opaque>,
+           Ast.Binop (Ast.Plus, (<opaque>, (Ast.Int (<opaque>, "10"))),
+             (<opaque>, (Ast.Int (<opaque>, "25")))))))))]
+```
+
+is the syntax tree from hacklang for the following code:
+
+```php?start_inline=1
+$a = 10 + 25
+```
+
+Now we can add our own eval-functions for the nodes in the tree and make our own lint rules! Pretty cool, eh? I'm thinking about adding type-inference to this, and possible remove some of the quirks from PHP, making a safer subset language. We'll see.
+
+Sleep tight! (Or good morning!)
+
+Olle
