@@ -1,0 +1,79 @@
+---
+layout: post
+title:  Part 4 - Basic garbage collection
+date:   2016-03-18
+categories: subsetphp
+---
+
+Hi!
+
+This is my "monthly" update about my PHP-to-LLVM compiler, SubsetPHP.
+
+So what's new? Classes and structs. At least bits and pieces of dito.
+
+LLVM has support for structs. They look like this:
+
+```llvm
+%struct.mystruct = type {i32, i32, i8*}
+```
+
+This defines a struct type with two integers and a pointer to anything (think void * ). In LLVM, struct fields have no names - that's up to the compiler to know.
+
+Can we use this representation in PHP? Well, obviously for objects. I wanted to start as light-weight as possible, so I decided to just use classes without methods or inheritance. Example:
+
+```php?start_inline=1
+final class Point {
+  public $x
+  public $y
+}
+```
+
+![Thumb up]({{ site.url }}/assets/img/thumb-up-terminator.jpg)
+
+This could be compiled to
+
+```llvm
+%struct.point = type {i32, i32}
+```
+
+except there's a problem here. What type is $x, really? Float? Integer? Another point? In comes weak polymorphism to the rescue!
+
+Basically, the compiler guesses the type of $x and $y by their (first) usage. So in this code:
+
+```php?start_inline=1
+$point = new Point();
+$point->x = 10;
+$point->y = 23;
+```
+
+$x and $y will be numbers. This code:
+
+```php?start_inline=1
+$point = new Point();
+$point->x = "I'll be back";
+$point->y = 23;
+```
+
+would make `$x` a string, and `$y` a number.
+
+What happens if I want $x to be a number in one point, and string in another in the same program?
+
+![Horse]({{ site.url }}/assets/img/horse.jpg)
+
+Won't work! That's the difference between polymorphism and weak polymorphism. I decided to go with the simpler, less power-full weak polymorphism for now. That means that some idioms will not be possible to represent, like:
+
+```php?start_inline=1
+final class Tree {
+  public $value
+  public $left;
+  public $right;
+}
+```
+
+In a statically typed language, one would use generics to say what type $value is of, and make it possible to use Tree for any value type. A crucial feature! (Could it be solved with interfaces and gettype()? Possibly, using program-flow sensitive typing instead of up-casts, but more about that later.)
+
+Next I will start to work with arrays. To be able to run the nbody problem from benchmarkgames is still the target for version 0.1.
+
+Have a nice weekend!
+
+Olle
