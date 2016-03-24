@@ -26,7 +26,7 @@ This would be typed as a string:
 $a = 'asd';
 ```
 
-But if you use $a with [] or .=, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
+But if you use `$a` with `[]` or `.=`, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
 
 ```php?start_inline=1
 $a = 'asd';
@@ -40,13 +40,15 @@ My next step will be to implement simple classes and arrays (arrays have value s
 Examples:
 
 ```php?start_inline=1
-// Typed as struct, because it is final and has no methods or private fields
+// Typed as struct, because it is final and has 
+// no methods or private fields
 final class Point {
   public $x;
   public $y;
 }
 
-// Typed as int[], but might get type-promoted to hash-table depending on how it's used
+// Typed as int[], but might get type-promoted 
+// to hash-table depending on how it's used
 $a = [1, 2, 3];
 ```
 
