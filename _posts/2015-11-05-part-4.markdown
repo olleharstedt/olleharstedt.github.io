@@ -24,7 +24,6 @@ This would be typed as a string:
 
 ```php?start_inline=1
 $a = 'asd';
-{% endhighlight %}
 ```
 
 But if you use $a with [] or .=, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
