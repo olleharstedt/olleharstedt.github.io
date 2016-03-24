@@ -14,7 +14,6 @@ function foo($a) {
   return $a + 10;
 }
 
-<?php
 $b = foo('oy');
 ```
 
