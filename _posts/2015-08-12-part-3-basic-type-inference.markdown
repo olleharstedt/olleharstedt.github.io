@@ -11,14 +11,11 @@ In my last post I had managed to bootstrap the lexer and parser from Hack/HHVM. 
 
 {% highlight php startinline=true %}
 function foo($a) {
-
   return $a + 10;
-
 }
 
 $b = foo('oy');
 {% endhighlight %}
-
 
 will give you a type error: "expected number but got string" (I hope to setup a web page soon where one can try this out).
 
