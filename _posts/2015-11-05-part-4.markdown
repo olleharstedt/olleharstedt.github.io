@@ -1,0 +1,57 @@
+---
+layout: post
+title:  Part 4 - Basic garbage collection
+date:   2015-11-05
+categories: subsetphp
+---
+
+Hi!
+
+OK, so why did it take so long time since I wrote last time? Because garbage collection. It's a complicated matter. Also, runtime representations and the Zend engine.
+
+Anyway.
+
+I benchmarked 100'000 string concatenations on my machine, using a very naïve mark-and-sweep GC algorithm. This is the result:
+
+* subsetphp: 10 sec
+* java: 11 sec
+* php: 4 sec
+* hhvm: 2 sec
+
+But if we do it with string buffer instead of string in Java, it takes 0.03 sec! Unfortunately, it's impossible to implement string buffers in PHP (or is it?) because of lack of low-level control. That's why I'm thinking a lot about type promotion.
+
+This would be typed as a string:
+
+{% highlight php %}
+$a = 'asd';
+{% endhighlight %}
+
+But if you use $a with [] or .=, it will be type-promoted to a string buffer instead, which will greatly improve the performance of concatenations.
+
+{% highlight php %}
+$a = 'asd';
+$a .= 'qwe';  // Promote type to string buffer
+{% endhighlight %}
+
+This happens during the compilation phase, and is transparent to the programmer.
+
+My next step will be to implement simple classes and arrays (arrays have value semantics in PHP, which is an interesting challenge), sufficient enough for the n-body benchmark on Debian benchmarkgames.
+
+Examples:
+
+{% highlight php %}
+// Typed as struct, because it is final and has no methods or private fields
+final class Point {
+  public $x;
+  public $y;
+}
+
+// Typed as int[], but might get type-promoted to hash-table depending on how it's used
+$a = [1, 2, 3];
+{% endhighlight %}
+
+
+OK, that's it! I still have no homepage ready where you can try the linter part of the compiler. Maybe it will happen after the benchmark is ready, don't know. And then we will know if the project is at all a good idea.
+
+Kind regards
+Olle
