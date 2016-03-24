@@ -70,7 +70,7 @@ final class Tree {
 }
 ```
 
-In a statically typed language, one would use generics to say what type `$value` is of, and make it possible to use Tree for any value type. A crucial feature! (Could it be solved with interfaces and gettype()? Possibly, using program-flow sensitive typing instead of up-casts, but more about that later.)
+In a statically typed language, one would use generics to say what type `$value` is of, and make it possible to use Tree for any value type. A crucial feature! (Could it be solved with interfaces and `gettype()`? Possibly, using program-flow sensitive typing instead of up-casts, but more about that later.)
 
 Next I will start to work with arrays. To be able to run the nbody problem from benchmarkgames is still the target for version 0.1.
 
