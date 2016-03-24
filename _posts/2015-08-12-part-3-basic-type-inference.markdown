@@ -10,6 +10,7 @@ Hi!
 In my last post I had managed to bootstrap the lexer and parser from Hack/HHVM. Since then I've been working on adapting a Hindler-Milner type-inference implementation to PHP. It now works for addition and strings, so
 
 {% highlight php startinline=true %}
+<?php
 function foo($a) {
   return $a + 10;
 }
