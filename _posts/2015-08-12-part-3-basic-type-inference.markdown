@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Part 3
+title:  Part 3 - Basic type-inference
 date:   2015-08-12
 categories: subsetphp
 ---
