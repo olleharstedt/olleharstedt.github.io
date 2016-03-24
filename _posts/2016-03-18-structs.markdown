@@ -36,9 +36,9 @@ This could be compiled to
 %struct.point = type {i32, i32}
 ```
 
-except there's a problem here. What type is $x, really? Float? Integer? Another point? In comes weak polymorphism to the rescue!
+except there's a problem here. What type is `$x`, really? Float? Integer? Another point? In comes weak polymorphism to the rescue!
 
-Basically, the compiler guesses the type of $x and $y by their (first) usage. So in this code:
+Basically, the compiler guesses the type of `$x` and `$y` by their (first) usage. So in this code:
 
 ```php?start_inline=1
 $point = new Point();
@@ -46,7 +46,7 @@ $point->x = 10;
 $point->y = 23;
 ```
 
-$x and $y will be numbers. This code:
+`$x` and `$y` will be numbers. This code:
 
 ```php?start_inline=1
 $point = new Point();
@@ -56,7 +56,7 @@ $point->y = 23;
 
 would make `$x` a string, and `$y` a number.
 
-What happens if I want $x to be a number in one point, and string in another in the same program?
+What happens if I want `$x` to be a number in one point, and string in another in the same program?
 
 ![Horse]({{ site.url }}/assets/img/horse.jpg)
 
@@ -70,7 +70,7 @@ final class Tree {
 }
 ```
 
-In a statically typed language, one would use generics to say what type $value is of, and make it possible to use Tree for any value type. A crucial feature! (Could it be solved with interfaces and gettype()? Possibly, using program-flow sensitive typing instead of up-casts, but more about that later.)
+In a statically typed language, one would use generics to say what type `$value` is of, and make it possible to use Tree for any value type. A crucial feature! (Could it be solved with interfaces and gettype()? Possibly, using program-flow sensitive typing instead of up-casts, but more about that later.)
 
 Next I will start to work with arrays. To be able to run the nbody problem from benchmarkgames is still the target for version 0.1.
 
