@@ -4,4 +4,46 @@ title: Installation
 permalink: /installation/
 ---
 
-How to install.
+How to install on Ubuntu 14.04 LTS:
+-----------------------------------
+
+The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
+
+0. Install some basics:
+
+    apt-get install git make m4 unzip pkg-config
+
+1. Clone the git
+
+    git clone https://github.com/olleharstedt/subsetphp
+
+2. Install OCaml and friends:
+
+    apt-get install ocaml clang-3.6 llvm-3.6
+
+3. Install OPAM: 
+
+    wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin/
+    opam init
+    eval `opam config env`
+
+6. Upgrade OCaml to 4.02.2: 
+
+    opam switch 4.02.2
+    eval `opam config env`
+
+8. Install ocamlfind and other necessary OCaml packages:
+
+    opam install ocamlfind ppx_deriving
+
+9. Download the PHP source:
+
+    cd subsetphp/
+    rm -r php-src/
+    git clone https://github.com/php/php-src
+
+
+How to install on DragonFly BSD 4.4:
+------------------------------------
+
+1. Install OCaml
