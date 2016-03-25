@@ -11,7 +11,7 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 
 0. Install some basics:
 
-    apt-get install git make m4 unzip pkg-config
+    apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
 
 1. Clone the git
 
@@ -34,13 +34,29 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 
 8. Install ocamlfind and other necessary OCaml packages:
 
-    opam install ocamlfind ppx_deriving
+    opam install ocamlfind ppx_deriving.2.0
 
 9. Download the PHP source:
 
     cd subsetphp/
+
     rm -r php-src/
+
     git clone https://github.com/php/php-src
+
+10. Configure and build PHP (make sure both steps finish completely):
+
+    cd php-src/
+
+    ./buildconf
+
+    ./configure
+
+    make
+
+10. Run the make script. This will compile the compiler and then compile test.php into a binary "test".
+
+    make comp
 
 
 How to install on DragonFly BSD 4.4:
