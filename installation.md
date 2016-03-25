@@ -4,6 +4,11 @@ title: Installation
 permalink: /installation/
 ---
 
+Usage
+-----
+
+The program `llvm_test myfile.php` will type-check and compile "myfile.php".
+
 How to install on Ubuntu 14.04 LTS:
 -----------------------------------
 
@@ -24,12 +29,15 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 3. Install OPAM: 
 
     wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin/
+
     opam init
+
     eval `opam config env`
 
 6. Upgrade OCaml to 4.02.2: 
 
     opam switch 4.02.2
+
     eval `opam config env`
 
 8. Install ocamlfind and other necessary OCaml packages:
@@ -58,8 +66,9 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 
     make comp
 
+Please report any errors during installation as a github issue.
 
 How to install on DragonFly BSD 4.4:
 ------------------------------------
 
-1. Install OCaml
+TODO
