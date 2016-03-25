@@ -16,15 +16,15 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 
 0. Install some basics:
 
-  apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
+    apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
 
 1. Clone the git:
 
-  git clone https://github.com/olleharstedt/subsetphp
+    git clone https://github.com/olleharstedt/subsetphp
 
 2. Install OCaml and friends:
 
-  apt-get install ocaml clang-3.6 llvm-3.6
+    apt-get install ocaml clang-3.6 llvm-3.6
 
 3. Install OPAM: 
 
