@@ -17,58 +17,64 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 0. Install some basics:
 
 ```bash
-    apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
+apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
 ```
 
 1. Clone the git
 
 ```bash
-    git clone https://github.com/olleharstedt/subsetphp
+git clone https://github.com/olleharstedt/subsetphp
 ```
 
 2. Install OCaml and friends:
 
+```bash
     apt-get install ocaml clang-3.6 llvm-3.6
+```
 
 3. Install OPAM: 
 
-    wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin/
-
-    opam init
-
-    eval `opam config env`
+```bash
+wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin/
+opam init
+eval `opam config env`
+```
 
 6. Upgrade OCaml to 4.02.2: 
 
-    opam switch 4.02.2
-
-    eval `opam config env`
+```bash
+opam switch 4.02.2
+eval `opam config env`
+```
 
 8. Install ocamlfind and other necessary OCaml packages:
 
-    opam install ocamlfind ppx_deriving.2.0
+```bash
+opam install ocamlfind ppx_deriving.2.0
+```
 
 9. Download the PHP source:
 
-    cd subsetphp/
+```bash
+cd subsetphp/
+rm -r php-src/
+git clone https://github.com/php/php-src
+```
 
-    rm -r php-src/
+10. Configure and build PHP (make sure all steps finish completely):
 
-    git clone https://github.com/php/php-src
-
-10. Configure and build PHP (make sure both steps finish completely):
-
-    cd php-src/
-
-    ./buildconf
-
-    ./configure
-
-    make
+```bash
+cd php-src/
+./buildconf
+./configure
+make
+```
 
 10. Run the make script. This will compile the compiler and then compile test.php into a binary "test".
 
-    make comp
+```bash
+make comp
+```
 
 Please report any errors during installation as a github issue.
 
