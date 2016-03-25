@@ -17,7 +17,7 @@ The installation might take up 1 GB of space (mostly clang/LLVM, php-src).
 Install some basics:
 
 ```bash
-apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev
+apt-get install git make m4 unzip pkg-config autoconf re2c bison libxml2-dev ncurses-dev g++
 ```
 
 Clone the git:
@@ -29,7 +29,7 @@ git clone https://github.com/olleharstedt/subsetphp
 Install OCaml and friends:
 
 ```bash
-apt-get install ocaml clang-3.6 llvm-3.6
+apt-get install ocaml clang-3.6 llvm-3.6 llvm-3.6-dev
 ```
 
 Install OPAM: 
@@ -40,17 +40,17 @@ opam init
 eval `opam config env`
 ```
 
-Upgrade OCaml to 4.02.2: 
+Upgrade OCaml to 4.02.3: 
 
 ```bash
-opam switch 4.02.2
+opam switch 4.02.3
 eval `opam config env`
 ```
 
 Install ocamlfind and other necessary OCaml packages:
 
 ```bash
-opam install ocamlfind ppx_deriving.2.0
+opam install ocamlfind ppx_deriving llvm.3.6
 ```
 
 Download the PHP source:
