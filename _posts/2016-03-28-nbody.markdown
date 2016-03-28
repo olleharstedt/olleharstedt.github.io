@@ -1,0 +1,42 @@
+---
+layout: post
+title:  Part 6 - nbody benchmark
+date:   2016-03-18
+categories: subsetphp
+---
+
+Finally, I got the nbody benchmark from [Debian benchmark games](http://benchmarksgame.alioth.debian.org/u64q/nbody-description.html#nbody) to run correctly! The result:
+
+| Language | Time to complete |
+|----------|------------------|
+| PHP 7.0.0 | 186 sec |
+| subsetphp | 13 sec |
+| Java | 6 sec |
+
+This makes subsetphp around 14 times faster than PHP 7 on my local machine.
+
+![The Flash]({{ site.url }}/assets/img/TheFlash.jpg)
+
+Some caveats:
+
+* The compiler is just a prototype - added features might speed up or slow down the benchmark.
+* This is a number-crunching benchmark, PHP was not made for that purpose - so who cares?
+* Still cool!
+
+If anyone is interested you can view the PHP code [here](https://github.com/olleharstedt/subsetphp/blob/master/benchmarks/nbody.php).
+
+Some comments about the code:
+
+* Why no functions? Because I haven't added support to infer types like `array<object>`.
+* You might see the if-statement before some for-loops - the for-statement has a bug, will fix soon.
+* The code is copied from the Java version.
+
+This successful benchmark will mark version 0.1. Next version will include:
+
+* The [binary tree benchmark](http://benchmarksgame.alioth.debian.org/u64q/binarytrees-description.html#binarytrees), testing GC performance
+* Infer arrays passed as arguments to functions, possibly using static "duck-typing" (inspired by the OCaml [object system](https://realworldocaml.org/v1/en/html/objects.html)).
+* Other stuff
+
+Wish you a nice week!
+
+Olle
