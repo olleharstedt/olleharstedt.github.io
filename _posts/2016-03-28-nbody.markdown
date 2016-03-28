@@ -19,7 +19,7 @@ This makes subsetphp around 14 times faster than PHP 7 on my local machine.
 
 Some caveats:
 
-* The compiler is just a prototype - added features might speed up or slow down the benchmark.
+* The compiler is just a prototype - adding features might speed up or slow down the benchmark.
 * This is a number-crunching benchmark, PHP was not made for that purpose - so who cares?
 * Still cool!
 
