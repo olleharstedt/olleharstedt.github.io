@@ -34,7 +34,8 @@ Some comments about the code:
 This successful benchmark will mark version 0.1. Next version will include:
 
 * The [binary tree benchmark](http://benchmarksgame.alioth.debian.org/u64q/binarytrees-description.html#binarytrees), testing GC performance
-* Infer arrays passed as arguments to functions, possibly using static "duck-typing" (inspired by the OCaml [object system](https://realworldocaml.org/v1/en/html/objects.html)).
+* Infer arrays passed as arguments to functions, possibly using static "duck-typing" (inspired by the OCaml [object system](https://realworldocaml.org/v1/en/html/objects.html))
+* Escape analysis, enforcing allocation on stack where possible
 * Other stuff
 
 Wish you a nice week!
