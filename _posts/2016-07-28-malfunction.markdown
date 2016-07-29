@@ -11,9 +11,9 @@ Back from vacation, ready to take another go with SubsetPHP. After a couple of m
 
 This is the hello world-example from Malfunction:
 
-		(module
-			(_ (apply (global $Pervasives $print_string) "Hello, world!\n"))
-			(export))
+    (module
+        (_ (apply (global $Pervasives $print_string) "Hello, world!\n"))
+        (export))
 
 
 What's happening here is a small program calling function `print_string` from module `Pervasives` with argument `Hello world!\n`, wrapped in a nameless module. If this looks a lot like Lisp to you, it's because it's based on a syntax convention called S-expressions ([symbolic expressions](https://en.wikipedia.org/wiki/S-expression)).
