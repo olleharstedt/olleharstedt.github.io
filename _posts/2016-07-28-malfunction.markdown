@@ -1,3 +1,10 @@
+---
+layout: post
+title:  Part 7 - malfunction is in, LLVM is out
+date:   2016-03-18
+categories: subsetphp
+---
+
 Dear friends,
 
 Back from vacation, ready to take another go with SubsetPHP. After a couple of months break, I plan to take another approach: Replacing the LLVM backend with an OCaml intermediate representation (IR) called [Malfunction](https://github.com/stedolan/malfunction) (alpha project). The point would be to "hook" into the OCaml compiler and generate a syntax the compiler can compile, (not being the OCaml language it self of course).
