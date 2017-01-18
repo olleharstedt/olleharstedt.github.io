@@ -1,0 +1,27 @@
+---
+layout: post
+title:  Typestate-oriented programming in F\*
+date:   2016-03-18
+categories: fstar typestate
+---
+
+Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf).
+
+F\* is a new programming language with dependent types and incremental proving.
+
+
+    state File {
+      public final String filename;
+    }
+
+    state OpenFile extends File {
+      private CFilePtr filePtr;
+      public int read() { ... }
+      public void close() [OpenFile>>ClosedFile] { ... }
+    }
+
+    state ClosedFile extends File {
+      public void open() [ClosedFile>>OpenFile] { ... }
+    }
+
+The intuition behind this. When the file object changes state, it also changes its interface. That way, you can't accidentally read from a closed file.
