@@ -64,3 +64,7 @@ Problems:
 * How can we limit `read` to only accept an open channel?
 * How do we know that `read` isn't also closing the channel?
 * How can we make sure that the channel is closed before the program ends?
+
+Our first try will use refined types but no state. We will solve a couple of aforementioned problems but not all of them.
+
+To solve the other problems, we have to dig into F\*'s heap system.
