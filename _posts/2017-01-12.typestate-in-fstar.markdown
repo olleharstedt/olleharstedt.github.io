@@ -5,7 +5,7 @@ date:   2016-03-18
 categories: fstar typestate
 ---
 
-Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf).
+Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
 
 F\* is a new programming language with dependent types and incremental proving.
 
@@ -25,3 +25,42 @@ F\* is a new programming language with dependent types and incremental proving.
     }
 
 The intuition behind this. When the file object changes state, it also changes its interface. That way, you can't accidentally read from a closed file.
+
+And the imperative program:
+
+    int readFromFile(ClosedFile f) {
+      openHelper(f);
+      int x = computeBase() + f.read();
+      f.close();
+      return x;
+    }
+
+We can loosely immitate this code in OCaml:
+
+(I choose OCaml since F\* can be extracted to either F# or OCaml.)
+
+    let open_helper filename =
+        open_in filename
+
+    let read channel =
+        let line = input_line channel in
+        int_of_string line
+
+    let compute_base () =
+        12
+
+    let read_from_file filename =
+        let file = open_helper filename in
+        let x = compute_base () + read file in
+        close_in file;
+        x
+
+    let _ =
+        print_int (read_from_file "file.txt")  (* <--- Prints e.g. 13 *)
+
+Problems:
+
+* How do we know that `open_helper` returns an open channel?
+* How can we limit `read` to only accept an open channel?
+* How do we know that `read` isn't also closing the channel?
+* How can we make sure that the channel is closed before the program ends?
