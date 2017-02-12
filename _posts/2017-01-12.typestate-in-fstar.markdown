@@ -68,3 +68,49 @@ Problems:
 Our first try will use refined types but no state. We will solve a couple of aforementioned problems but not all of them.
 
 To solve the other problems, we have to dig into F\*'s heap system.
+
+    module Typestate2
+
+    open FStar.Heap
+    open FStar.ST
+
+    type state =
+      | Open
+      | Closed
+
+    type file = {name: string; state: ref state}
+
+    type isClosed file heap = (sel heap file.state) == Closed
+    type isOpen file heap = (sel heap file.state) == Open
+
+    val openHelper : file:file -> ST unit
+        (requires (isClosed file))
+        (ensures (fun heap s heap' ->
+            isOpen file heap'
+            ))
+    let openHelper file =
+        file.state := Open
+
+    let computeBase () =
+        12
+
+    val read : file:file -> ST int
+        (requires (isOpen file))
+        (ensures (fun heap s heap' -> isOpen file heap'))
+    let read file =
+        13
+
+    val readFromFile : file:file -> ST unit
+        (requires (isClosed file))
+        (ensures (fun heap s heap' -> isClosed file heap'))
+    let readFromFile file =
+        openHelper file;
+        let x = computeBase () + read file in
+        file.state := Closed
+
+    let nil =
+        let file1 = {
+            name = "file1";
+            state = alloc Closed;
+        } in
+        readFromFile file1
