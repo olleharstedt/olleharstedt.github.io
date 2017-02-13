@@ -5,10 +5,89 @@ date:   2016-03-18
 categories: fstar typestate
 ---
 
-Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
+The meaning of this blog post is to investigate the possibility of doing typestate-oriented programming in F\*.
 
-F\* is a new programming language with dependent types and incremental proving.
+## Introduction
 
+[F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. So what does that mean? 
+
+**Incremental proving**
+
+You don't _have_ to prove anything in F\* - its default is to assume ML-like effects and types, like in OCaml and F#. But you _can_ prove a lot of things. Some things are even proven _for_ you. Take a simple add function:
+
+    let add x y =
+        x + y
+
+
+The type of this function in OCaml or F# would be `int -> int -> int`, meaning a function that takes two integers and returns an integer. And that's more or less the end of a traditional functional type-system. But F\* lets you go further. Let's investigate that.
+
+The most basic type of `add` in F\* is
+
+    val add : int -> int -> int
+
+This is the same as in OCaml/F#. We can also name the arguments:
+
+    val add : x:int -> y:int -> result:int
+
+What happens if we let F\* infer the type automatically?
+
+    $ ./bin/fstar.exe add.fst --log_types --print_effect_args
+    [...]
+    let add : (x:int -> y:int -> Tot int)
+
+Almost the same, but with a `Tot` before the `int`. `Tot` means `Total`, meaning that `add` is a total function. From the tutorial:
+
+> any expression that is inferred to have type-and-effect `Tot t`, is guaranteed (provided the computer has enough resources) to evaluate to a `t`-typed result, without entering an infinite loop; reading or writing the program's state; throwing exceptions; performing input or output; or, having any other effect whatsoever. 
+
+So from the effect `Tot`, we know that `add` has no side-effects, that it will terminate and not throw any exception. That's a pretty good improvement from just `int` already!
+
+Let's take the next step:
+
+    val add : x:int -> y:int -> Tot (result:int{result == x + y})
+
+Here we add our self the `Tot` effect, and also add a refinment on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
+
+    $ ./bin/fstar.exe add.fst
+    Verified module: Add (168 milliseconds)
+    All verification conditions discharged successfully
+
+Oh joy! It's possible to scramble the function a bit without disturbing the proof:
+
+    val add : x:int -> y:int -> Tot (result:int{result == x + y})
+    let add x y =
+        x + y -x + x  (* Still checks out *)
+
+If the function contains an error, F\* will show an error message that points to the correct line in the program:
+
+
+    val add : x:int -> y:int -> Tot (result:int{result == x + y})
+    let add x y =
+        x + y - 1
+
+    $ ./bin/fstar.exe add.fst
+    ./add.fst(7,4-7,13): (Error) Subtyping check failed; expected type (result#13:int{(eq2 result@0 (op_Addition x y))}); got type int (see ./add.fst(3,44-3,59))
+
+In this way you can choose which part of your program you want to prove, and how much.
+
+**Refinement types**
+
+[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. More exact, it defines a predicate for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. The basic example is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
+
+**Effect types**
+
+> koka?, dijkstra monad, lattice
+
+**Semi-automatic proving**
+
+Z3
+
+**Pre- and post-conditions**
+
+> asd
+
+**Typestate-oriented programming**
+
+> Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
 
     state File {
       public final String filename;
@@ -65,7 +144,7 @@ Problems:
 * How do we know that `read` isn't also closing the channel?
 * How can we make sure that the channel is closed before the program ends?
 
-Our first try will use refined types but no state. We will solve a couple of aforementioned problems but not all of them.
+Our first try will use refinement types but no state. We will solve a couple of aforementioned problems but not all of them.
 
 To solve the other problems, we have to dig into F\*'s heap system.
 
@@ -114,3 +193,7 @@ To solve the other problems, we have to dig into F\*'s heap system.
             state = alloc Closed;
         } in
         readFromFile file1
+
+## Going further
+
+Tut, slides, IRC? slack? mailing list? reddit/r/fstar? roadmap? use-case? extract to ocaml/f#
