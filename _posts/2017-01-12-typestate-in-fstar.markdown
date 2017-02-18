@@ -2,7 +2,7 @@
 layout: post
 title:  Typestate-oriented programming in F\*
 date:   2017-01-12
-categories: subsetphp
+categories: fstar
 ---
 
 The meaning of this blog post is to investigate the possibility of doing typestate-oriented programming in F\*.
