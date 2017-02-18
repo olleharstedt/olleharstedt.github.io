@@ -18,3 +18,5 @@ github_username:  olleharstedt
 
 # Build settings
 markdown: kramdown
+
+highlighter: rouge-2.0.7

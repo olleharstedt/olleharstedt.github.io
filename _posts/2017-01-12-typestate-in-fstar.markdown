@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Typestate-oriented programming in F\*
+title:  Typestate-oriented programming in F
 date:   2017-01-12
 categories: fstar
 ---
@@ -11,23 +11,29 @@ The meaning of this blog post is to investigate the possibility of doing typesta
 
 [F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. So what does that mean? 
 
-**Incremental proving**
+### Incremental proving
 
 You don't _have_ to prove anything in F\* - its default is to assume ML-like effects and types, like in OCaml and F#. But you _can_ prove a lot of things. Some things are even proven _for_ you. Take a simple add function:
 
-    let add x y =
-        x + y
+```ocaml
+let add x y =
+    x + y
+```
 
 
 The type of this function in OCaml or F# would be `int -> int -> int`, meaning a function that takes two integers and returns an integer. And that's more or less the end of a traditional functional type-system. F\* lets you go further. Let's investigate that.
 
 The most basic type of `add` in F\* is
 
-    val add : int -> int -> int
+```ocaml
+val add : int -> int -> int
+```
 
 This is the same as in OCaml/F#. We can also name the arguments:
 
-    val add : x:int -> y:int -> result:int
+```ocaml
+val add : x:int -> y:int -> result:int
+```
 
 What happens if we let F\* infer the type automatically?
 
@@ -43,7 +49,9 @@ So from the effect `Tot`, we know that `add` has no side-effects, that it will t
 
 Let's take the next step:
 
-    val add : x:int -> y:int -> Tot (result:int{result == x + y})
+```ocaml
+val add : x:int -> y:int -> Tot (result:int{result == x + y})
+```
 
 Here we add the `Tot` effect, and also a _refinment_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
 
@@ -53,9 +61,11 @@ Here we add the `Tot` effect, and also a _refinment_ on the return value of the 
 
 Oh joy! It's possible to scramble the function a bit without disturbing the proof:
 
+```ocaml
     val add : x:int -> y:int -> Tot (result:int{result == x + y})
     let add x y =
         x + y -x + x  (* Still checks out *)
+```
 
 If the function contains an error, F\* will show an error message that points to the correct line in the program:
 
@@ -68,61 +78,67 @@ If the function contains an error, F\* will show an error message that points to
 
 In this way you can choose which part of your program you want to prove, and how much.
 
-**Refinement types**
+### Refinement types
 
 [Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. More exact, it defines a predicate for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
 
-**Effect types with pre- and post-conditions**
+### Effect types with pre- and post-conditions
 
 F\* has a system of effects using monads. The effect we are interested here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
 
-    ST unit
-        (requires (fun heap -> True))
-        (ensures (fun heap result heap' -> True))
+```ocaml
+ST unit
+    (requires (fun heap -> True))
+    (ensures (fun heap result heap' -> True))
+```
 
-> NB: `True` and `true` is in fact not the same thing in F\*, where the former is on type level, the latter on value level.
+{% include tip.html text="<code>True</code> and <code>true</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
 
 Let's inspect this in more details.
 
 `ST` is a short-hand for a specific version of the `STATE` monad. `unit` signifies that the function that uses this signature returns nothing, just like in OCaml, or like `void` in a couple of other languages. `requires` is the pre-condition of the effect. `ensures` is then of course the post-condition. As you can see, they both take a function as an argument. In those functions, you can use some ready made operations to control what's happening on the heap:
 
-    assume val sel : #a:Type -> heap -> ref a -> Tot a
-    assume val upd : #a:Type -> heap -> ref a -> a -> Tot heap
-    assume val contains : #a:Type -> heap -> ref a -> a -> Tot bool
+```ocaml
+assume val sel : #a:Type -> heap -> ref a -> Tot a
+assume val upd : #a:Type -> heap -> ref a -> a -> Tot heap
+assume val contains : #a:Type -> heap -> ref a -> a -> Tot bool
+```
 
 where `sel` means "select" and `upd` means "update".
 
 Let's make a simple example.
 
-    val onlyAddToTen : n:ref int -> ST int
-        (requires (fun heap -> (sel heap n) == 10))
-        (ensures (fun heap result heap' -> modifies_none heap heap'))
-    let onlyAddToTen x = 
-        !x + 10
+```ocaml
+val onlyAddToTen : n:ref int -> ST int
+    (requires (fun heap -> (sel heap n) == 10))
+    (ensures (fun heap result heap' -> modifies_none heap heap'))
+let onlyAddToTen x = 
+    !x + 10
 
-    let () = 
-        let a = 5 in
-        let b = 5 in
-        let x = alloc (a + b) in
-        onlyAddToTen x
+let () = 
+    let a = 5 in
+    let b = 5 in
+    let x = alloc (a + b) in
+    onlyAddToTen x
+```
 
 (Full code listing?)
 
 You might wonder what's the difference between this and, say, using assert or throwing an exception, but remember that this is done during compile time! _It's now possible to enforce client code of a module to execute functions in a certain order!_ And that's just one use-case of the state monad.
 
 
-**Semi-automatic proving**
+### Semi-automatic proving
 
 Z3, dispersing proves to Z3. What can be proven automatically, and what cannot? Can prove termination. div/state/ML don't have to terminate.
 
-**Pre- and post-conditions**
+### Pre- and post-conditions
 
 Intrinsic and extrinsic proving? Using the state.
 > asd
 
-**Typestate-oriented programming**
+## Typestate-oriented programming
 
-> Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
+Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
 
     state File {
       public final String filename;
