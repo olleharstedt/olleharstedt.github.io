@@ -62,9 +62,9 @@ Here we add the `Tot` effect, and also a _refinment_ on the return value of the 
 Oh joy! It's possible to scramble the function a bit without disturbing the proof:
 
 ```ocaml
-    val add : x:int -> y:int -> Tot (result:int{result == x + y})
-    let add x y =
-        x + y -x + x  (* Still checks out *)
+val add : x:int -> y:int -> Tot (result:int{result == x + y})
+let add x y =
+    x + y -x + x  (* Still checks out *)
 ```
 
 If the function contains an error, F\* will show an error message that points to the correct line in the program:
@@ -99,9 +99,9 @@ Let's inspect this in more details.
 `ST` is a short-hand for a specific version of the `STATE` monad. `unit` signifies that the function that uses this signature returns nothing, just like in OCaml, or like `void` in a couple of other languages. `requires` is the pre-condition of the effect. `ensures` is then of course the post-condition. As you can see, they both take a function as an argument. In those functions, you can use some ready made operations to control what's happening on the heap:
 
 ```ocaml
-assume val sel : #a:Type -> heap -> ref a -> Tot a
-assume val upd : #a:Type -> heap -> ref a -> a -> Tot heap
-assume val contains : #a:Type -> heap -> ref a -> a -> Tot bool
+val sel : #a:Type -> heap -> ref a -> Tot a
+val upd : #a:Type -> heap -> ref a -> a -> Tot heap
+val contains : #a:Type -> heap -> ref a -> a -> Tot bool
 ```
 
 where `sel` means "select" and `upd` means "update".
@@ -109,32 +109,34 @@ where `sel` means "select" and `upd` means "update".
 Let's make a simple example.
 
 ```ocaml
-val onlyAddToTen : n:ref int -> ST int
+val only_add_to_ten : n:ref int -> ST int
     (requires (fun heap -> (sel heap n) == 10))
     (ensures (fun heap result heap' -> modifies_none heap heap'))
-let onlyAddToTen x = 
+let only_add_to_ten x = 
     !x + 10
 
 let () = 
     let a = 5 in
     let b = 5 in
     let x = alloc (a + b) in
-    onlyAddToTen x
+    only_add_to_ten x
 ```
 
-(Full code listing?)
+Here we have a function that will only compile if its argument is a reference to an integer with value 10, ensured by the pre-condition `(sel heap n) == 10`. Its post-condition states that nothing in the heaps is modified, ensured by the built-in function `modifies_none`. The bang before the `x` in the function body means de-referencing, taking the value at `x`.
 
-You might wonder what's the difference between this and, say, using assert or throwing an exception, but remember that this is done during compile time! _It's now possible to enforce client code of a module to execute functions in a certain order!_ And that's just one use-case of the state monad.
+In the small test, we use variables `a` and `b` to calculate x. `alloc` is used to allocate memory for a reference on the heap. If `a` and `b` do not equal to 10, the F\* compiler will show this error message:
+
+    (Error) assertion failed (see ./onlyaddtoten.fst(7,27-7,45))
+
+
+You might wonder what's the difference between this and, say, using assert or throwing an exception, but remember that this is done during compile time! _It's now possible to enforce client code of a module to execute functions in a certain order._
 
 
 ### Semi-automatic proving
 
+Above, the F\* compiler could _prove_ that `only_add_to_ten` would only accept references to integer 10. If the function was used in any other way, the program would not compile. Still, we as programmers didn't have to provide F\* with any manual proofs or tactics - the system did it automatically. How? By using the SMT solver [link] Z3 [link].
+
 Z3, dispersing proves to Z3. What can be proven automatically, and what cannot? Can prove termination. div/state/ML don't have to terminate.
-
-### Pre- and post-conditions
-
-Intrinsic and extrinsic proving? Using the state.
-> asd
 
 ## Typestate-oriented programming
 
