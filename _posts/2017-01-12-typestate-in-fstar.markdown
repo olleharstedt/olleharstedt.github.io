@@ -9,7 +9,7 @@ The meaning of this blog post is to investigate the possibility of doing typesta
 
 ## Introduction
 
-[F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. So what does that mean? 
+[F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. Cool! But what does that mean?
 
 ### Incremental proving
 
