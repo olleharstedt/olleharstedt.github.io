@@ -7,7 +7,7 @@ categories: fstar
 
 The meaning of this blog post is to investigate the possibility of doing typestate-oriented programming in F\*.
 
-## Introduction
+## 1. Introduction
 
 [F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. Cool! But what does that mean?
 
@@ -140,11 +140,11 @@ You might wonder what's the difference between this and, say, using assert or th
 
 Above, the F\* compiler could _prove_ that `only_add_to_ten` would only accept references to integer 10. If the function was used in any other way, the program would not compile. Still, we as programmers didn't have to provide F\* with any manual proofs or tactics - the system did it automatically. How? By using the [SMT solver](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) [Z3](https://github.com/Z3Prover/z3). So how does F\* disperse the proofs to Z3, and how do you know what can and what cannot be proved automatically? That knowledge is way beyond me. I can only refer to the academic papers written by the F\* team. 
 
-For an interesting case of how F\* can prove termination, see the example with the fibonacci function in the tutorial.
+For an interesting case of how F\* can prove termination, see the example with the fibonacci function in the tutorial (chapter 5).
 
-## Typestate-oriented programming
+## 2. Typestate-oriented programming
 
-Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
+Typestate-oriented programming is a concepted outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
 
 ```java
 state File {
@@ -162,9 +162,9 @@ state ClosedFile extends File {
 }
 ```
 
-The intuition behind this. When the file object changes state, it also changes its interface. That way, you can't accidentally read from a closed file.
+Instead of classes, we declare states. A state is much like a class, but an object can change state; the state of the object is mirrored in the type-system. As you can see in the code above, it's not possible to open an alread opened file, and not possible to close a closed file - the methods do not exist in those states. This check thought to be done during compile time. With this technique, a whole new area of bugs are available for compile-time checking.
 
-And the imperative program:
+Here's a small use-case example, also from the paper:
 
 ```java
 int readFromFile(ClosedFile f) {
