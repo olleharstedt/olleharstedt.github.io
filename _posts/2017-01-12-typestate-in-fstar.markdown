@@ -175,85 +175,75 @@ int readFromFile(ClosedFile f) {
 }
 ```
 
-We can loosely immitate this code in OCaml:
-
-(I choose OCaml since F\* can be extracted to either F# or OCaml.)
-
-    let open_helper filename =
-        open_in filename
-
-    let read channel =
-        let line = input_line channel in
-        int_of_string line
-
-    let compute_base () =
-        12
-
-    let read_from_file filename =
-        let file = open_helper filename in
-        let x = compute_base () + read file in
-        close_in file;
-        x
-
-    let _ =
-        print_int (read_from_file "file.txt")  (* <--- Prints e.g. 13 *)
-
-Problems:
-
-* How do we know that `open_helper` returns an open channel?
-* How can we limit `read` to only accept an open channel?
-* How do we know that `read` isn't also closing the channel?
-* How can we make sure that the channel is closed before the program ends?
-
-Our first try will use refinement types but no state. We will solve a couple of aforementioned problems but not all of them.
-
 To solve the other problems, we have to dig into F\*'s heap system.
 
-    module Typestate2
+Our corresponding F\* function will look like this:
 
-    open FStar.Heap
-    open FStar.ST
+```ocaml
+val readFromFile : file:file -> ST int
+    (requires (isClosed file))
+    (ensures (fun heap result heap' -> isClosed file heap'))
+let readFromFile file =
+    openHelper file;
+    let x = computeBase () + read file in
+    file.state := Closed;
+    x
+```
 
-    type state =
-      | Open
-      | Closed
+As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function.
 
-    type file = {name: string; state: ref state}
 
-    type isClosed file heap = (sel heap file.state) == Closed
-    type isOpen file heap = (sel heap file.state) == Open
+```ocaml
+module Typestate
 
-    val openHelper : file:file -> ST unit
-        (requires (isClosed file))
-        (ensures (fun heap s heap' ->
-            isOpen file heap'
-            ))
-    let openHelper file =
-        file.state := Open
+open FStar.Heap
+open FStar.ST
 
-    let computeBase () =
-        12
+type state = 
+  | Open
+  | Closed
 
-    val read : file:file -> ST int
-        (requires (isOpen file))
-        (ensures (fun heap s heap' -> isOpen file heap'))
-    let read file =
-        13
+type file = {
+    name: string;
+    state: ref state
+}
 
-    val readFromFile : file:file -> ST unit
-        (requires (isClosed file))
-        (ensures (fun heap s heap' -> isClosed file heap'))
-    let readFromFile file =
-        openHelper file;
-        let x = computeBase () + read file in
-        file.state := Closed
+type isClosed file heap = (sel heap file.state) == Closed
+type isOpen file heap = (sel heap file.state) == Open
 
-    let nil =
-        let file1 = {
-            name = "file1";
-            state = alloc Closed;
-        } in
-        readFromFile file1
+val openHelper : file:file -> ST unit
+    (requires (isClosed file))
+    (ensures (fun heap _ heap' ->
+        isOpen file heap'
+        ))
+let openHelper file =
+    file.state := Open
+
+val read : file:file -> ST int
+    (requires (isOpen file))
+    (ensures (fun heap _ heap' -> isOpen file heap'))
+let read file =
+    13
+
+let computeBase () =
+    12
+
+val readFromFile : file:file -> ST unit
+    (requires (isClosed file))
+    (ensures (fun heap s heap' -> isClosed file heap'))
+let readFromFile file =
+    openHelper file;
+    let x = computeBase () + read file in
+    file.state := Closed
+
+let () =
+    let file1 = {
+        name = "file1";
+        state = alloc Closed;
+    } in
+
+    readFromFile file1
+```
 
 ## Going further
 
