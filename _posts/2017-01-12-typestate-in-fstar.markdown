@@ -84,7 +84,7 @@ In this way you can choose which part of your program you want to prove, and how
 
 ### Refinement types
 
-[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. More exact, it defines a predicate for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
+[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. More exact, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
 
 ### Effect types with pre- and post-conditions
 
@@ -144,7 +144,7 @@ For an interesting case of how F\* can prove termination, see the example with t
 
 ## 2. Typestate-oriented programming
 
-Typestate-oriented programming is a concepted outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
+Typestate-oriented programming is a concept outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
 
 ```java
 state File {
