@@ -53,6 +53,8 @@ Let's take the next step:
 val add : x:int -> y:int -> Tot (result:int{result == x + y})
 ```
 
+{% include tip.html text="<code>==</code> and <code>=</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
+
 Here we add the `Tot` effect, and also a _refinment_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
 
     $ ./bin/fstar.exe add.fst
@@ -77,6 +79,8 @@ If the function contains an error, F\* will show an error message that points to
     ./add.fst(7,4-7,13): (Error) Subtyping check failed; expected type (result#13:int{(eq2 result@0 (op_Addition x y))}); got type int (see ./add.fst(3,44-3,59))
 
 In this way you can choose which part of your program you want to prove, and how much.
+
+{% include exercise.html text="Can you write a function that is guaranteed to only return prime numbers? Tip: It's possible to use functions in the refinement clause, as long as they are total." %}
 
 ### Refinement types
 
@@ -122,7 +126,7 @@ let () =
     only_add_to_ten x
 ```
 
-Here we have a function that will only compile if its argument is a reference to an integer with value 10, ensured by the pre-condition `(sel heap n) == 10`. Its post-condition states that nothing in the heaps is modified, ensured by the built-in function `modifies_none`. The bang before the `x` in the function body means de-referencing, taking the value at `x`.
+Here we have a function that will only compile if its argument is a reference to an integer with value 10, ensured by the pre-condition `(sel heap n) == 10`. Its post-condition states that nothing in the heaps are modified, ensured by the built-in function `modifies_none`. The bang before the `x` in the function body means de-referencing, taking the value at `x`.
 
 In the small test, we use variables `a` and `b` to calculate x. `alloc` is used to allocate memory for a reference on the heap. If `a` and `b` do not equal to 10, the F\* compiler will show this error message:
 
@@ -134,38 +138,42 @@ You might wonder what's the difference between this and, say, using assert or th
 
 ### Semi-automatic proving
 
-Above, the F\* compiler could _prove_ that `only_add_to_ten` would only accept references to integer 10. If the function was used in any other way, the program would not compile. Still, we as programmers didn't have to provide F\* with any manual proofs or tactics - the system did it automatically. How? By using the SMT solver [link] Z3 [link].
+Above, the F\* compiler could _prove_ that `only_add_to_ten` would only accept references to integer 10. If the function was used in any other way, the program would not compile. Still, we as programmers didn't have to provide F\* with any manual proofs or tactics - the system did it automatically. How? By using the [SMT solver](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) [Z3](https://github.com/Z3Prover/z3). So how does F\* disperse the proofs to Z3, and how do you know what can and what cannot be proved automatically? That knowledge is way beyond me. I can only refer to the academic papers written by the F\* team. 
 
-Z3, dispersing proves to Z3. What can be proven automatically, and what cannot? Can prove termination. div/state/ML don't have to terminate.
+For an interesting case of how F\* can prove termination, see the example with the fibonacci function in the tutorial.
 
 ## Typestate-oriented programming
 
 Going to transfer examples from the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf) to F\*.
 
-    state File {
-      public final String filename;
-    }
+```java
+state File {
+  public final String filename;
+}
 
-    state OpenFile extends File {
-      private CFilePtr filePtr;
-      public int read() { ... }
-      public void close() [OpenFile>>ClosedFile] { ... }
-    }
+state OpenFile extends File {
+  private CFilePtr filePtr;
+  public int read() { ... }
+  public void close() [OpenFile>>ClosedFile] { ... }
+}
 
-    state ClosedFile extends File {
-      public void open() [ClosedFile>>OpenFile] { ... }
-    }
+state ClosedFile extends File {
+  public void open() [ClosedFile>>OpenFile] { ... }
+}
+```
 
 The intuition behind this. When the file object changes state, it also changes its interface. That way, you can't accidentally read from a closed file.
 
 And the imperative program:
 
-    int readFromFile(ClosedFile f) {
-      openHelper(f);
-      int x = computeBase() + f.read();
-      f.close();
-      return x;
-    }
+```java
+int readFromFile(ClosedFile f) {
+  openHelper(f);
+  int x = computeBase() + f.read();
+  f.close();
+  return x;
+}
+```
 
 We can loosely immitate this code in OCaml:
 
