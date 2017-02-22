@@ -9,9 +9,9 @@ The meaning of this blog post is to investigate the possibility of doing typesta
 
 ## 1. Introduction
 
-[F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. Cool! But what does that mean?
+[F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. Cool! So what does that mean?
 
-### Incremental proving
+### 1.1 Incremental proving
 
 You don't _have_ to prove anything in F\* - its default is to assume ML-like effects and types, like in OCaml and F#. But you _can_ prove a lot of things. Some things are even proven _for_ you. Take a simple add function:
 
@@ -82,11 +82,11 @@ In this way you can choose which part of your program you want to prove, and how
 
 {% include tip.html icon="pencil" text="Can you write a function that is guaranteed to only return prime numbers? Tip: It's possible to use functions in the refinement clause, as long as they are total." %}
 
-### Refinement types
+### 1.2 Refinement types
 
 [Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. To be more precise, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
 
-### Effect types with pre- and post-conditions
+### 1.3 Effect types with pre- and post-conditions
 
 F\* has a system of effects using monads. The effect we are interested in here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
 
@@ -136,7 +136,7 @@ In the small test, we use variables `a` and `b` to calculate x. `alloc` is used 
 You might wonder what's the difference between this and, say, using assert or throwing an exception, but remember that this is done during compile time! _It's now possible to enforce client code of a module to execute functions in a certain order._
 
 
-### Semi-automatic proving
+### 1.4 Semi-automatic proving
 
 Above, the F\* compiler could _prove_ that `only_add_to_ten` would only accept references to integer 10. If the function was used in any other way, the program would not compile. Still, we as programmers didn't have to provide F\* with any manual proofs or tactics - the system did it automatically. How? By using the [SMT solver](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) [Z3](https://github.com/Z3Prover/z3). So how does F\* disperse the proofs to Z3, and how do you know what can and what cannot be proved automatically? That knowledge is way beyond me. I can only refer to the academic papers written by the F\* team. 
 
@@ -144,7 +144,7 @@ For an interesting case of how F\* can prove termination, see the example with t
 
 ## 2. Typestate-oriented programming
 
-Typestate-oriented programming is a concept outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
+Typestate-oriented programming is a programming paradigm outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
 
 ```java
 state File {
@@ -183,7 +183,9 @@ int readFromFile(ClosedFile>>OpenFile f)
 
 signaling that `readFromFile` changes the state of `f` from closed to open.
 
-{% include tip.html icon="info-circle" text="Do we know if <code>computeBase</code> has a reference to file `f`?" %}
+{% include tip.html icon="question-circle" text="Do we know if <code>computeBase</code> has a reference to file <code>f</code>? How does that matter?" %}
+
+### 2.1 Using F\* to emulate typestate-oriented programming
 
 Our corresponding F\* function will look like this:
 
@@ -198,7 +200,9 @@ let readFromFile file =
     x
 ```
 
-As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function.
+As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function. The two different heap arguments in the post-condition, `heap` and `heap'`, corresponds to the heap before and after function execution.
+
+OK, so let's have a look at the complete code listing:
 
 
 ```ocaml
@@ -207,43 +211,56 @@ module Typestate
 open FStar.Heap
 open FStar.ST
 
+(* Enum-like data type for file state *)
 type state = 
   | Open
   | Closed
 
+(* Record type for file. In real life, it would also include a
+ * file handler. Note that state is a reference, meaning mutable
+ * variable, unlike name, which is immutable. *)
 type file = {
     name: string;
     state: ref state
 }
 
+(* Our two predicates to decide if a file is state opened or
+ * closed. *)
 type isClosed file heap = (sel heap file.state) == Closed
 type isOpen file heap = (sel heap file.state) == Open
 
+(* A function that opens a file. Again, in real life it
+ * would actually open a file handler. *)
 val openHelper : file:file -> ST unit
-    (requires (isClosed file))
-    (ensures (fun heap _ heap' ->
+    (requires (fun heap -> isClosed file heap))
+    (ensures (fun heap result heap' ->
         isOpen file heap'
         ))
 let openHelper file =
     file.state := Open
 
+(* This reads from a file. Also just a dummy function.
+ * What's interesting is the pre- and post-conditions. *)
 val read : file:file -> ST int
-    (requires (isOpen file))
-    (ensures (fun heap _ heap' -> isOpen file heap'))
+    (requires (fun heap -> isOpen file heap))
+    (ensures (fun heap result heap' -> isOpen file heap'))
 let read file =
     13
 
+val computeBase : unit -> Tot int
 let computeBase () =
     12
 
-val readFromFile : file:file -> ST unit
+val readFromFile : file:file -> ST int
     (requires (isClosed file))
     (ensures (fun heap s heap' -> isClosed file heap'))
 let readFromFile file =
     openHelper file;
     let x = computeBase () + read file in
-    file.state := Closed
+    file.state := Closed;
+    x
 
+(* Small test *)
 let () =
     let file1 = {
         name = "file1";
