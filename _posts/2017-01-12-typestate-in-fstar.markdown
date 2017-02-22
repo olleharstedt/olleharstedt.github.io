@@ -53,7 +53,7 @@ Let's take the next step:
 val add : x:int -> y:int -> Tot (result:int{result == x + y})
 ```
 
-{% include tip.html text="<code>==</code> and <code>=</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
+{% include tip.html icon="info-circle" text="<code>==</code> and <code>=</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
 
 Here we add the `Tot` effect, and also a _refinment_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
 
@@ -80,15 +80,15 @@ If the function contains an error, F\* will show an error message that points to
 
 In this way you can choose which part of your program you want to prove, and how much.
 
-{% include exercise.html text="Can you write a function that is guaranteed to only return prime numbers? Tip: It's possible to use functions in the refinement clause, as long as they are total." %}
+{% include tip.html icon="pencil" text="Can you write a function that is guaranteed to only return prime numbers? Tip: It's possible to use functions in the refinement clause, as long as they are total." %}
 
 ### Refinement types
 
-[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. More exact, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
+[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. To be more precise, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
 
 ### Effect types with pre- and post-conditions
 
-F\* has a system of effects using monads. The effect we are interested here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
+F\* has a system of effects using monads. The effect we are interested in here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
 
 ```ocaml
 ST unit
@@ -96,7 +96,7 @@ ST unit
     (ensures (fun heap result heap' -> True))
 ```
 
-{% include tip.html text="<code>True</code> and <code>true</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
+{% include tip.html icon="info-circle" text="<code>True</code> and <code>true</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
 
 Let's inspect this in more details.
 
@@ -162,7 +162,7 @@ state ClosedFile extends File {
 }
 ```
 
-Instead of classes, we declare states. A state is much like a class, but an object can change state; the state of the object is mirrored in the type-system. As you can see in the code above, it's not possible to open an alread opened file, and not possible to close a closed file - the methods do not exist in those states. This check thought to be done during compile time. With this technique, a whole new area of bugs are available for compile-time checking.
+Instead of classes, we declare states. A state is much like a class, but an object can change state during its lifetime; the state of the object is mirrored in the type-system. As you can see in the code above, it's not possible to open an already opened file, and not possible to close a closed file - the methods do not exist in those states. This check is thought to be done during compile-time. With this technique, a whole new area of bugs are available for compile-time checking.
 
 Here's a small use-case example, also from the paper:
 
@@ -175,13 +175,21 @@ int readFromFile(ClosedFile f) {
 }
 ```
 
-To solve the other problems, we have to dig into F\*'s heap system.
+In clear text, this function accepts a closed file, opens it, read a number from it, add the number to a dynamically computed base, close the file and returns the sum. The function is also guaranteed to leave file `f` closed at the end - if the file would be open, the signature would look like this:
+
+```java
+int readFromFile(ClosedFile>>OpenFile f)
+```
+
+signaling that `readFromFile` changes the state of `f` from closed to open.
+
+{% include tip.html icon="info-circle" text="Do we know if <code>computeBase</code> has a reference to file `f`?" %}
 
 Our corresponding F\* function will look like this:
 
 ```ocaml
 val readFromFile : file:file -> ST int
-    (requires (isClosed file))
+    (requires (fun heap -> isClosed file heap))
     (ensures (fun heap result heap' -> isClosed file heap'))
 let readFromFile file =
     openHelper file;
