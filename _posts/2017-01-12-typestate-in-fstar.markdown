@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Typestate-oriented programming in F
+title:  Typestate-oriented programming in F*
 date:   2017-01-12
 categories: fstar
 ---
