@@ -13,7 +13,7 @@ The meaning of this blog post is to investigate the possibility of doing typesta
 
 ### 1.1 Incremental proving
 
-You don't _have_ to prove anything in F\* - its default is to assume ML-like effects and types, like in OCaml and F#. But you _can_ prove a lot of things. Some things are even proven _for_ you. Take a simple add function:
+You don't _have_ to prove anything in F\* - its default is to assume ML-like effects and types, like in OCaml and F#. But you _can_ prove a lot of things. Some things are even proved _for_ you. Take a simple add function:
 
 ```ocaml
 let add x y =
@@ -53,9 +53,9 @@ Let's take the next step:
 val add : x:int -> y:int -> Tot (result:int{result == x + y})
 ```
 
-{% include tip.html icon="info-circle" text="<code>==</code> and <code>=</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
+{% include tip.html icon="info-circle" text="<code>==</code> and <code>=</code> are in fact not the same things in F*, where the former is on type level, the latter on value level." %}
 
-Here we add the `Tot` effect, and also a _refinment_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
+Here we add the `Tot` effect, and also a _refinement_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
 
     $ ./bin/fstar.exe add.fst
     Verified module: Add (168 milliseconds)
@@ -84,7 +84,7 @@ In this way you can choose which part of your program you want to prove, and how
 
 ### 1.2 Refinement types
 
-[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [turorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. To be more precise, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
+[Refinement types](https://en.wikipedia.org/wiki/Refinement_(computing)#Refinement_types) (also in the [tutorial](https://www.fstar-lang.org/tutorial/tutorial.html#sec-refinement-types)) is a way to say that a type is not only an integer or a string, but an integer withint a certain interval or a string of a certain length. To be more precise, it defines a [predicate](https://en.wikipedia.org/wiki/Predicate_(mathematical_logic)) for a type. We saw this in the return type above for the function `add`, using the notation `{}` after a type. A common example of refinement types is the definition of the natural numbers, `n:int{n >= 0}`, but any other properties are indeed possible, e.g. files that are open or closed, as we will see below.
 
 ### 1.3 Effect types with pre- and post-conditions
 
@@ -96,7 +96,7 @@ ST unit
     (ensures (fun heap result heap' -> True))
 ```
 
-{% include tip.html icon="info-circle" text="<code>True</code> and <code>true</code> are in fact not the same things in F\*, where the former is on type level, the latter on value level." %}
+{% include tip.html icon="info-circle" text="<code>True</code> and <code>true</code> are in fact not the same things in F*, where the former is on type level, the latter on value level." %}
 
 Let's inspect this in more details.
 
@@ -144,7 +144,7 @@ For an interesting case of how F\* can prove termination, see the example with t
 
 ## 2. Typestate-oriented programming
 
-Typestate-oriented programming is a programming paradigm outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intution behind the concept pretty well:
+Typestate-oriented programming is a programming paradigm outlined by Jonathan Aldrich et al in the paper [Typestate-oriented programming](http://www.cs.cmu.edu/~aldrich/papers/onward2009-state.pdf). The code snippet below describes the intuition behind the concept pretty well:
 
 ```java
 state File {
@@ -264,8 +264,22 @@ As you can see, this function takes a file and returns an integer. Further more,
 
 ## 3. Discussion
 
-The big question is how much overhead is required to ensure this kind of interface.
+The big question is how much typing overhead is required to ensure a typestate interface in F\*. The example I've used is small. It shows that it's definitely feasible, but how would it look like in a bigger project? Would function signatures be cluttered with pre- and post-conditions? Especially functions at top-level might suffer from this.
+
+Pros:
+
+* The F\* type-system is more versatile than typestate-oriented programming.
+* You don't need a PhD to do verified programming anymore.
+* You can choose how much to prove or not.
+
+Cons:
+
+* A language dedicated to typestate-oriented programming would have language features more easily available.
+* A Java-like language with typestate-oriented programming might be more attractive to the industry than an ML dialect, and more easy for people to pick up; a shorter cognitive distance.
+
 
 ## 4. Further reading
+
+Of course the F\* tutorial is a great starting point.
 
 Tut, slides, IRC? slack? mailing list? reddit/r/fstar? roadmap? use-case? extract to ocaml/f#
