@@ -5,6 +5,10 @@ date:   2017-01-12
 categories: fstar
 ---
 
+{:refdef: style="text-align: center;"}
+![The Flash]({{ site.url }}/assets/img/fstar.png)
+{: refdef}
+
 The meaning of this blog post is to investigate the possibility of doing typestate-oriented programming in F\*.
 
 ## 1. Short introduction to F\*
