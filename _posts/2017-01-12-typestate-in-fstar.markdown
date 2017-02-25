@@ -57,7 +57,14 @@ Let's take the next step:
 val add : x:int -> y:int -> Tot (result:int{result == x + y})
 ```
 
-{% include tip.html icon="info-circle" text="<code>==</code> and <code>=</code> are in fact not the same things in F*, where the former is on type level, the latter on value level." %}
+<div style='margin: 1em 3em;'>
+    <table>
+        <tr>
+            <td><span class='fa fa-icon fa-info-circle fa-2x'></span></td>
+            <td><code>==</code> and <code>=</code> are in fact not the same things in F*, where the former is on type level, the latter on value level<sup><a href='#note1'>1</a></sup>.</td>
+        </tr>
+    </table>
+</div>
 
 Here we add the `Tot` effect, and also a _refinement_ on the return value of the function: `{result == x + y}`. If this signature type-checks, we have successfully (and trivially) proven that `add` does indeed return the sum of `x` and `y`.
 
