@@ -185,9 +185,69 @@ signaling that `readFromFile` changes the state of `f` from closed to open.
 
 {% include tip.html icon="question-circle" text="Do we know if <code>computeBase</code> has a reference to file <code>f</code>? How does that matter?" %}
 
+The point of `readFromFile` is of course to show that `f.read()` would not compile if not `openHelper(f)` was called first. In other words, the interface of the state (class) `file` is preserved, even when it demands a certain order of function calls.
+
 ### 2.1 Using F\* to emulate typestate-oriented programming
 
-Our corresponding F\* function will look like this:
+Let's head over to F\* and use our new knowledge to mimic the behaviour of typestate-oriented programming. First, we need a simple enum to say if a file is open or closed:
+
+```ocaml
+type state = 
+  | Open
+  | Closed
+```
+
+We will save the state in a file record type:
+
+```ocaml
+type file = {
+    name: string;
+    state: ref state;
+}
+```
+
+Note that `state` is a reference, that is, a mutable field, while `name` is immutable. In the real world, our `file` type would also include a file handler, but we will skip that part since it's not relevant for our example.
+
+The next thing we need is a _predicate_, that is, a function on type level that returns `True` or `False`. We will use this predicate in our functions to say that a file has to be either opened or closed.
+
+```ocaml
+type isClosed file heap = (sel heap file.state) == Closed
+type isOpen file heap = (sel heap file.state) == Open
+```
+
+Now we can write our own `openHelper`, that will take a closed file and open it:
+
+```ocaml
+val openHelper : file:file -> ST unit
+    (requires (fun heap -> isClosed file heap))
+    (ensures (fun heap result heap' -> isOpen file heap'))
+let openHelper file =
+    file.state := Open
+```
+
+{% include tip.html icon="info-circle" text="The operator <code>:=</code> means updating a mutable variable with a new value." %}
+
+Based on earlier examples, the meaning of this function should be pretty clear.
+
+The `read` function takes an open file and guarantees to leave it open at the end. Again the body of the function is a dummy, that in real life actually would read from a file.
+
+```ocaml
+val read : file:file -> ST int
+    (requires (fun heap -> isOpen file heap))
+    (ensures (fun heap result heap' -> isOpen file heap'))
+let read file =
+    13
+```
+
+`computeBase` is a simple, total function:
+
+```ocaml
+val computeBase : unit -> Tot int
+let computeBase () =
+    12
+```
+
+We can now complete our version of `readFromFile`:
 
 ```ocaml
 val readFromFile : file:file -> ST int
@@ -200,7 +260,11 @@ let readFromFile file =
     x
 ```
 
-As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function. The two different heap arguments in the post-condition, `heap` and `heap'`, corresponds to the heap before and after function execution.
+As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function.
+
+## 3. Discussion
+
+The big question is how much overhead is required to ensure this kind of interface.
 
 OK, so let's have a look at the complete code listing:
 
@@ -270,6 +334,6 @@ let () =
     readFromFile file1
 ```
 
-## Going further
+## 4. Further reading
 
 Tut, slides, IRC? slack? mailing list? reddit/r/fstar? roadmap? use-case? extract to ocaml/f#
