@@ -92,7 +92,7 @@ In this way you can choose which part of your program you want to prove, and how
 
 ### 1.3 Effect types with pre- and post-conditions
 
-F\* has a system of effects using monads. The effect we are interested in here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
+F\* has a system of effects using [monads](https://en.wikipedia.org/wiki/Monad_(functional_programming)). The effect we are interested in here is the `STATE` effect, used for proving stateful computations that writes and reads to the heap. Proving is done by writing pre- and post-conditions:
 
 ```ocaml
 ST unit
@@ -100,7 +100,14 @@ ST unit
     (ensures (fun heap result heap' -> True))
 ```
 
-{% include tip.html icon="info-circle" text="<code>True</code> and <code>true</code> are in fact not the same things in F*, where the former is on type level, the latter on value level." %}
+<div style='margin: 1em 3em;'>
+    <table>
+        <tr>
+            <td><span class='fa fa-icon fa-info-circle fa-2x'></span></td>
+            <td><code>True</code> and <code>true</code> are in fact not the same things in F*, where the former is on type level, the latter on value level<sup><a href='#note1'>1</a></sup>.</td>
+        </tr>
+    </table>
+</div>
 
 Let's inspect this in more details.
 
@@ -266,6 +273,8 @@ let readFromFile file =
 
 As you can see, this function takes a file and returns an integer. Further more, we're using the `ST` effect. From that we know that it modifies the heap. Taking a look at the pre- and post-conditions, they require that the file is closed both before and after the function.
 
+[Full code listing](https://gist.github.com/olleharstedt/58c9ffaf1ae20f813f97494d28fbfbc5).
+
 ## 3. Discussion
 
 The big question is how much typing overhead is required to ensure a typestate interface in F\*. The example I've used is small. It shows that it's definitely feasible, but how would it look like in a bigger project? Would function signatures be cluttered with pre- and post-conditions? Especially functions at top-level might suffer from this. On the other hand, you can write predicates that increase readability and reusability.
@@ -288,4 +297,10 @@ The biggest pro of all is of course that F\* already exists, while the typestate
 
 ## 4. Further reading
 
-The [F\* tutorial](https://www.fstar-lang.org/tutorial/) is a great starting point if you want to learn more. The [F\* home page](https://www.fstar-lang.org/) has lots of links to papers about the system. You might want to google ["dependent types"](https://en.wikipedia.org/wiki/Dependent_type).
+The [F\* tutorial](https://www.fstar-lang.org/tutorial/) is a great starting point if you want to learn more. The [F\* home page](https://www.fstar-lang.org/) has lots of links to papers about the system. You might want to google ["dependent types"](https://en.wikipedia.org/wiki/Dependent_type) if you want a more theoretical understanding and want to find similar systems, like [Idris](https://en.wikipedia.org/wiki/Idris_(programming_language)), [Agda](https://en.wikipedia.org/wiki/Agda_(programming_language)) or [Coq](https://coq.inria.fr/).
+
+I've tried to find more information about typestate-oriented programming. They made a prototype language, dynamically typed, called [Plaid](http://www.cs.cmu.edu/~aldrich/plaid/). It seems not to be under development anymore.
+
+## 5. Notes
+
+<sup id='note1'>1. Not completely exact - fully dependent type-systems does not have a hierarchy of levels like value - type - kind; everything is a term. User SkeThuVe from #fstar IRC remarks: "== is propositional equality which always exists whereas = is decidable equality which might not be defined". The tutorial might be out of date in this regard, as of 2017-02-26.</sup>
