@@ -264,22 +264,24 @@ As you can see, this function takes a file and returns an integer. Further more,
 
 ## 3. Discussion
 
-The big question is how much typing overhead is required to ensure a typestate interface in F\*. The example I've used is small. It shows that it's definitely feasible, but how would it look like in a bigger project? Would function signatures be cluttered with pre- and post-conditions? Especially functions at top-level might suffer from this.
+The big question is how much typing overhead is required to ensure a typestate interface in F\*. The example I've used is small. It shows that it's definitely feasible, but how would it look like in a bigger project? Would function signatures be cluttered with pre- and post-conditions? Especially functions at top-level might suffer from this. On the other hand, you can write predicates that increase readability and reusability.
+
+Below I list some pros and cons about using F\* instead of a Java-like programming language with support for typestate.
 
 Pros:
 
-* The F\* type-system is more versatile than typestate-oriented programming.
-* You don't need a PhD to do verified programming anymore.
-* You can choose how much to prove or not.
+* The F\* type-system is more versatile than only typestate-oriented programming.
+* Even though it's a highly complex system, it's not nearly as hard to learn and use as e.g. Coq.
+* You can choose how much to prove or not, which decreases the burden of verification.
 
 Cons:
 
 * A language dedicated to typestate-oriented programming would have language features more easily available.
-* A Java-like language with typestate-oriented programming might be more attractive to the industry than an ML dialect, and more easy for people to pick up; a shorter cognitive distance.
+* A Java-like language with typestate-oriented programming might be more attractive to the industry than an ML dialect, and more easy for people to pick up; it would have a shorter cognitive distance.
+
+The biggest pro of all is of course that F\* already exists, while the typestate-oriented programming is merely a proposal.
 
 
 ## 4. Further reading
 
-Of course the F\* tutorial is a great starting point.
-
-Tut, slides, IRC? slack? mailing list? reddit/r/fstar? roadmap? use-case? extract to ocaml/f#
+The [F\* tutorial](https://www.fstar-lang.org/tutorial/) is a great starting point if you want to learn more. The [F\* home page](https://www.fstar-lang.org/) has lots of links to papers about the system. You might want to google ["dependent types"](https://en.wikipedia.org/wiki/Dependent_type).
