@@ -7,7 +7,7 @@ categories: fstar
 
 The meaning of this blog post is to investigate the possibility of doing typestate-oriented programming in F\*.
 
-## 1. Introduction
+## 1. Short introduction to F\*
 
 [F\*](https://www.fstar-lang.org/) (pronounced "f star") is a new functional programming language with refinement types, effect types and incremental proving. Cool! So what does that mean?
 
@@ -21,7 +21,7 @@ let add x y =
 ```
 
 
-The type of this function in OCaml or F# would be `int -> int -> int`, meaning a function that takes two integers and returns an integer. And that's more or less the end of a traditional functional type-system. F\* lets you go further. Let's investigate that.
+The type of this function in OCaml or F# would be `int -> int -> int`, meaning a function that takes two integers and returns an integer. And that's more or less the end of a traditional functional type-system (for this simple function). F\* lets you go further. Let's investigate that.
 
 The most basic type of `add` in F\* is
 
@@ -265,74 +265,6 @@ As you can see, this function takes a file and returns an integer. Further more,
 ## 3. Discussion
 
 The big question is how much overhead is required to ensure this kind of interface.
-
-OK, so let's have a look at the complete code listing:
-
-
-```ocaml
-module Typestate
-
-open FStar.Heap
-open FStar.ST
-
-(* Enum-like data type for file state *)
-type state = 
-  | Open
-  | Closed
-
-(* Record type for file. In real life, it would also include a
- * file handler. Note that state is a reference, meaning mutable
- * variable, unlike name, which is immutable. *)
-type file = {
-    name: string;
-    state: ref state
-}
-
-(* Our two predicates to decide if a file is state opened or
- * closed. *)
-type isClosed file heap = (sel heap file.state) == Closed
-type isOpen file heap = (sel heap file.state) == Open
-
-(* A function that opens a file. Again, in real life it
- * would actually open a file handler. *)
-val openHelper : file:file -> ST unit
-    (requires (fun heap -> isClosed file heap))
-    (ensures (fun heap result heap' ->
-        isOpen file heap'
-        ))
-let openHelper file =
-    file.state := Open
-
-(* This reads from a file. Also just a dummy function.
- * What's interesting is the pre- and post-conditions. *)
-val read : file:file -> ST int
-    (requires (fun heap -> isOpen file heap))
-    (ensures (fun heap result heap' -> isOpen file heap'))
-let read file =
-    13
-
-val computeBase : unit -> Tot int
-let computeBase () =
-    12
-
-val readFromFile : file:file -> ST int
-    (requires (isClosed file))
-    (ensures (fun heap s heap' -> isClosed file heap'))
-let readFromFile file =
-    openHelper file;
-    let x = computeBase () + read file in
-    file.state := Closed;
-    x
-
-(* Small test *)
-let () =
-    let file1 = {
-        name = "file1";
-        state = alloc Closed;
-    } in
-
-    readFromFile file1
-```
 
 ## 4. Further reading
 
