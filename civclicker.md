@@ -1,5 +1,7 @@
 ---
-layout: civclicker
+layout: default
 title: CivClicker
 permalink: /civclicker/
 ---
+
+Hello.
