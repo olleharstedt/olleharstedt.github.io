@@ -4,6 +4,8 @@ title: Installation
 permalink: /installation/
 ---
 
+This page describes how to install the compiler SubsetPHP.
+
 Usage
 -----
 
