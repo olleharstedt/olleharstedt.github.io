@@ -63,6 +63,10 @@ Lots and lots. Some big stuff:
 * Crop simulation
 * Icon overhaul
 
+## Release
+
+Too early to talk about, really, but within a year, I'd guess.
+
 ## Help wanted
 
 If you want to help, feel free to join in on the discussion at [github](https://github.com/olleharstedt/civ-clicker)!
