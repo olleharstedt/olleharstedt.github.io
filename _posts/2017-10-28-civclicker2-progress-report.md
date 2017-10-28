@@ -29,7 +29,7 @@ Equipment gives the player interesting choices to configure the population to me
 
 ## Weather
 
-I've added a weather simulation based on the [Climak](https://www.researchgate.net/publication/228543743_Climak_A_stochastic_model_for_weather_data_generation) stochastic model. The implementation is far from perfect, but hopefully even a basic version will add some depth. Now the player has to make sure to keep his/hers civilization warm and bright to fight off cold, decease and wild animals!
+I've added a weather simulation based on the [Climak](https://www.researchgate.net/publication/228543743_Climak_A_stochastic_model_for_weather_data_generation) stochastic model. The implementation is far from perfect, but hopefully even a basic version will add some depth. Now the player has to make sure to keep his/hers civilization warm and bright to fight off cold, disease and wild animals!
 
 Current weather and temperature can be seen in the top bar.
 
