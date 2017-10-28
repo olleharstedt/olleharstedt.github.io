@@ -53,7 +53,7 @@ A small but important change is the introduction of _culture points_, which lets
 
 ## Factorizations
 
-A bunch of factorizations are being made to the code, most notably a plugin system that communicates with events and message passing to decrease coupling, and more thorough object-oriented programming. The language used is now ES6, not ES5. Yes, that's right.
+A bunch of factorizations are being made to the code, most notably a plugin system that communicates with events and message passing to decrease coupling, and more thorough object-oriented design. The language used is now ES6, not ES5. Yes, that's right.
 
 ## TODO
 
