@@ -9,7 +9,7 @@ From academic course [Sociology 376 - Mathematical Models of Social Systems](htt
 
 ![Adapting]({{ site.url }}/assets/img/Selection_098.png)
 
-Standard
+TODO: Explain the constants.
 
 ![Adapting]({{ site.url }}/assets/img/Selection_096.png)
 
@@ -17,7 +17,7 @@ Blue are bunnies, red are wolfs (or foxes). They are quickly adapting to an equi
 
 ![Adapting]({{ site.url }}/assets/img/Selection_097.png)
 
-At `t = 3000`, increase carrying capacity (K) by 2.
+At `t = 3000`, increase carrying capacity (K) by 2. In CivClicker terms, this is the increase of terratory.
 
 ![Adapting]({{ site.url }}/assets/img/Selection_100.png)
 
@@ -25,4 +25,4 @@ At `t = 3000`, start hunting bunnies, but the bunny population recovers, while t
 
 ![Adapting]({{ site.url }}/assets/img/Selection_101.png)
 
-At `t = 3000`, start hunting foxes. The bunny population reaches the carrying capacity quickly.
+At `t = 3000`, start hunting foxes. The bunny population reaches the carrying capacity quickly when the predators are gone.
