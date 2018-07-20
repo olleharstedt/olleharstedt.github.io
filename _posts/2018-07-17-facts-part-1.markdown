@@ -1,0 +1,101 @@
+---
+layout: post
+title:  Let's talk about "Facts and Fallacies of Software Engineering" - Part 1
+date:   2018-07-17
+categories: facts
+---
+
+{:refdef: style="text-align: center;"}
+![Owl]({{ site.url }}/assets/img/owl-3.jpg)
+{: refdef}
+
+The book _Facts and Fallacies of Software Engineering_ by Robert Glass is an excellent piece of software literature. To promote it and create some discussion about its main points I decided to write a serie of blog posts. Each blog post corresponds loosely to a chapter in the book. Part 1 will deal with management and estimates.
+
+Each fact is something the author claims as true, citing sources, but which is not recognized as much as it should be, or controversial in some other sense. Each fact could be a talking point for discussion.
+
+Let's begin.
+
+### Fact 1
+
+> The most important factor in software work is not the tools and techniques used by the programmers, but rather the quality of the programmers themselves.
+
+What does this really mean? What is "the quality of a programmer"? Just how smart he/she is, or how many hours he/she can work each week?  Does "quality of programmer" depend on education, personality, or what? How would you increase the quality of your already hired programmers?
+
+One thing it _does_ mean is, when you face lower productivity than you expect, it won't necessarily help that much to switch tools, process or programming language. What matters is who you hired.
+
+### Fact 2
+
+> The best programmers are up to 28 times better than the worst programmeres, according "individual differences" research. Given that their pay is never commensurate, they are the biggest bargains in the software field.
+
+Most programmers, I assume, do not identify themselves as either the best or the worst programmer in the world. How much could this fact matter in an organization or company? Do you have a big span of competence in the company? Can programmers teach each other to be better? As a manager, how would you ensure to hire the best people? How much money is it worth spending on head-hunting? And reversed, as a skilled developer, how would you ensure to get paid your worth? If you doubt your productivty, how could you improve it, or your confidence, without increasing your stress load?
+
+### Fact 3
+
+> Adding people to a late project makes it later.
+
+Which kind of project? How do you distribute the work? Can it be split in independent parts? What about adding a programmer that already knows the ins and outs of the project?
+
+### Fact 4
+
+> The working environment has a profound impact on productivity and product quality.
+
+Open office or separate rooms, ergonomics, coffee machine, available lunch places, temperature, noise levels, schedule or flexible work hours. What's best for you? Does the management listen to your oppinions and complaints? Why or why not?
+
+### Fact 5
+
+> Hype is the plague on the house of software.
+
+Tools, processes and techniques does not increase productivity as much as they claim (see previous facts). But hype and language wars does not seem to go anywhere (at least not online). Are there no breakthroughs left for software engineering? How would you measure it (not just "feel" it)? Every week a new silver bullet appears. But we all know there are no silver bullets. Only experience and good judgment.
+
+### Fact 6
+
+> Learning a new tool or technique actually lowers programmer productivity and product quality initially.
+
+How long time does it take to learn a new tool or programming language? What are your expectations on this tool, for the organization? Does everybody need to learn it, or just some people? How much would that increase the "bus factor" of the organization?
+
+### Fact 7
+
+> Software developers talk a lot about tools. They evaluate quite a few, buy a fair number, and use 
+practically none.
+
+Not sure what Robert means with "tools", here. In web we use a plethora of tools. Is this fact still relevant today? What kind of tools do you use or talk about at your work?
+
+### Fact 8
+
+> One of the two most common causes of runaway projects is poor estimation.
+
+Who is responsible for estimation? Do you have a process for it, or just a hunch or inspierd guess? Is the estimation responsible for the project's budget? What stake holders are affected by a delay, and how much are they affected? How big delay is considered accepted? Running over schedule can cause considerable stress, so it's important to have sound attitudes towards estimations, as an organization.
+
+There are a number of tools and methods to increase the accuracy of estimation, like planning poker. Do you have any success (or horror) stories to share?
+
+### Fact 9
+
+> Most software estimates are performed at the beginning of the life cycle
+
+This is obviously true. But how early, exactly? Did any design or prototype happen before the estimation? Should estimation happen many times?
+
+### Fact 10
+
+> Most software estimates are made either by upper management or by marketing, not by the people who will build the software or their managers.
+
+I have no idea if this is true for you or not, but of course multiple people need to be involved in estimating any bigger project.
+
+### Fact 11
+
+> Software estimates are rarely adjusted as the project proceeds.
+
+### Fact 12
+
+> Since estimates are so faulty, there is little reason to be concerned when software projects do not meet estimated targets. But everyone is concerned anyway. 
+
+This is a hard one. How do we teach an entire business to deal with delayed projects? Who's supposed to pay for it? Should we just triple all our estimates and then be happy if a project is delivered on time?
+
+### Fact 13
+
+> There is a disconnect between management and their programmers. In one research study of a project that failed to meet its estimates and was seen by its management as a failure, the technical participants saw it as the most successful project they had ever worked on. 
+
+### Fact 14
+
+> ~~The answer to a feasibility study is almost always "yes."~~
+
+Skipped.
