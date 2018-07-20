@@ -19,9 +19,7 @@ Let's begin.
 
 > The most important factor in software work is not the tools and techniques used by the programmers, but rather the quality of the programmers themselves.
 
-What does this really mean? What is "the quality of a programmer"? Just how smart he/she is, or how many hours he/she can work each week?  Does "quality of programmer" depend on education, personality, or what? How would you increase the quality of your already hired programmers?
-
-One thing it _does_ mean is, when you face lower productivity than you expect, it won't necessarily help that much to switch tools, process or programming language. What matters is who you hired.
+What does this really mean? What is "the quality of a programmer"? How du you measure it? Just how smart he/she is, or how many hours he/she can work each week, or the emptiness of the backlog or amount of bugs?  Does "quality of programmer" depend on education, personality, or what? How would you increase the quality of your already hired programmers?
 
 ### Fact 2
 
@@ -39,7 +37,7 @@ Which kind of project? How do you distribute the work? Can it be split in indepe
 
 > The working environment has a profound impact on productivity and product quality.
 
-Open office or separate rooms, ergonomics, coffee machine, available lunch places, temperature, noise levels, schedule or flexible work hours. What's best for you? Does the management listen to your oppinions and complaints? Why or why not?
+Open office or separate rooms, ergonomics, coffee machine, available lunch places, temperature, noise levels, schedule or flexible work hours. What's best for you? Does the management listen to your oppinions and complaints? Why or why not? Did you ever have any conflicts with your colleague or boss about the work environment? How did it end?
 
 ### Fact 5
 
