@@ -27,7 +27,7 @@ One thing it _does_ mean is, when you face lower productivity than you expect, i
 
 > The best programmers are up to 28 times better than the worst programmeres, according "individual differences" research. Given that their pay is never commensurate, they are the biggest bargains in the software field.
 
-Most programmers, I assume, do not identify themselves as either the best or the worst programmer in the world. How much could this fact matter in an organization or company? Do you have a big span of competence in the company? Can programmers teach each other to be better? As a manager, how would you ensure to hire the best people? How much money is it worth spending on head-hunting? And reversed, as a skilled developer, how would you ensure to get paid your worth? If you doubt your productivty, how could you improve it, or your confidence, without increasing your stress load?
+How much could this fact matter in an organization or company? Do you have a big span of competence in the company? Can programmers teach each other to be better? As a manager, how would you ensure to hire the best people? How much money is it worth spending on head-hunting? And reversed, as a skilled developer, how would you ensure to get paid your worth? If you doubt your productivty, how could you improve it, or your confidence, without increasing your stress load?
 
 ### Fact 3
 
