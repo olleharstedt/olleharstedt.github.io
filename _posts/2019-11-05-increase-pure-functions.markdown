@@ -5,6 +5,10 @@ date:   2011-11-05
 categories: opinion
 ---
 
+{:refdef: style="text-align: center;"}
+![Purity]({{ site.url }}/assets/img/purity.jpg)
+{: refdef}
+
 This blog post argues from the premise that more pure functions will increase your code quality, _provided_ that such refactorization does not violate common sense coding habits like function LoC, no more than five arguments per function, etc.
 
 Pure functions can be written in different ways: as loose functions, in modules or in classes without state. It all depends on which programming language you use, but no matter which language, you have to make a choice about how to deal with side-effects. This is true for Python, Haskell, C, and all other languages out there.
