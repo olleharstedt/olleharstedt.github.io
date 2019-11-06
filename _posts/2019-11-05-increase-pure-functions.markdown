@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  How to increase the number of pure functions in your code-base
-date:   2011-11-05
+date:   2019-11-05
 categories: opinion
 ---
 
