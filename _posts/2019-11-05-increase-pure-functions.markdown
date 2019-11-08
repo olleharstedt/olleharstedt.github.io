@@ -42,10 +42,3 @@ Some things to think about:
 Do you have any thoughts or something to add?
 
 Thanks for reading!
-
----
-
-Some further reading:
-
-* https://sidburn.github.io/blog/2016/03/14/immutability-and-pure-functions
-* https://old.reddit.com/r/PHP/comments/dp5pcb/pure_methods_where_to_put_em/
