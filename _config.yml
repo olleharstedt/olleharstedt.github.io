@@ -19,3 +19,5 @@ github_username:  olleharstedt
 markdown: kramdown
 
 #highlighter: rouge
+
+encoding: utf-8
