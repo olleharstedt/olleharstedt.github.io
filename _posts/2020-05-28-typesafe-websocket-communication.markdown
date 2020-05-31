@@ -5,8 +5,8 @@ date:   2020-05-28
 categories: ocaml
 ---
 
-{:refdef: style="text-align: center;"}
-![Bertrand Russel]({{ site.url }}/assets/img/russel.jpg)
+{:refdef: style="text-align: center; height: 100px;"}
+![Bertrand Russel]({{ site.url }}/assets/img/russell3.jpg)
 {: refdef}
 {:refdef: style="text-align: center;"}
 *Bertrand Russel, the inventor of [type theory](https://plato.stanford.edu/entries/type-theory/)*
@@ -26,6 +26,30 @@ but in this post, I also assume it to be *strong* and *static*, that is, checked
 
 Why is type-safety good? Because it roots out several categories of errors.
 
+Is type-safe serialization possible? No. I'm assuming only one type definition is used for communication between server and client, and that server and client are using the same source-code.
+
+## OCaml
+
+OCaml is a language which puts high priority on type-safety. You can get a short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
+
+```ocaml
+let x = 10 in
+...
+```
+
+and functions like this:
+
+```ocaml
+let plus x y = x + y
+```
+
+and are applied like this:
+
+```ocaml
+let sum = plus 10 20 in
+...
+```
+
 ## Websockets
 
 You probably already know what websockets are, but just to recap (from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)), it's
@@ -36,6 +60,31 @@ Above all, it makes is possible for the server to send data to the browser witho
 
 All major browsers support websockets by now.
 
-## Sending data
+## Serialization
 
+send data as string or blob
 
+serialize object
+
+same definition on both client and server
+
+how can we be sure deserialization is correct?
+
+test vs type safe
+
+js class on both server and client, JSON.stringify -> no class, only object?
+
+typescript, Any type? Cast to class
+
+ppx\_deriving\_json a customized parser for each type
+
+protobuff?
+
+https://medium.com/@aems/one-mans-struggle-with-typescript-class-serialization-478d4bbb5826
+
+typed json: https://www.npmjs.com/package/typedjson
+
+```ocaml
+type websocket_message = One | Two of int | Three of string
+[@@deriving json]
+```
