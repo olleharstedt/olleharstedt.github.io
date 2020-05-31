@@ -27,7 +27,7 @@ What is type-safety? To quote [stackoverflow](https://stackoverflow.com/a/251573
   </tr>
 </table>
 
-but in this post, I also assume it to be *strong* and *static*, that is, checked during compile time without giving the programmer the possibility to mess things up by casting something to anything (like to `void*` in C).
+In this post, I also assume it to be *strong* and *static*, that is, checked during compile time without giving the programmer the possibility to mess things up by casting something to anything (like to `void*` in C).
 
 Why is type-safety good? Because it roots out several categories of errors.
 
@@ -57,6 +57,16 @@ let sum = plus 10 20 in
 
 Note that no explicit typing is necessary (but possible) since OCaml is fully [type-inferred](https://en.wikipedia.org/wiki/Type_inference).
 
+Enums<sup><a href="#note1">1</a></sup> can be defined like this:
+
+```ocaml
+type my_enum =
+  | One
+  | Two
+  | Three of string
+  | Four of int
+```
+
 ## Websockets
 
 You probably already know what websockets are, but just to recap (from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)), it's:
@@ -78,7 +88,7 @@ We want to be able to send any data between the server and the client. Websocket
 
 There are a number of extensions to OCaml that lets you serialize types automatically. In this article I use [ppx\_deriving\_json](https://ocsigen.org/js_of_ocaml/3.6.0/manual/ppx-deriving) from the [js\_of\_ocaml](https://ocsigen.org/js_of_ocaml/3.6.0/manual/overview) project.
 
-Consider the following algebraic datatype<sup><a href="#note1">1</a></sup> for messages:
+Consider the following datatype for messages:
 
 ```ocaml
 type message =
@@ -94,6 +104,48 @@ type message =
   | Chat of string
 [@@deriving json]
 ```
+
+and define functions that serialize and deserialize the type:
+
+```ocaml
+let to_json = [%to_json: message]
+let of_json = [%of_json: message]
+```
+
+<div style='margin: 1em 3em;'>
+  <table>
+  <tr>
+  <td style="border: none;"><span class='fa fa-icon fa-info-circle fa-2x'></span></td>
+  <td style="border: none;">There's some weird syntax going on here, with <code>[@@ ...]</code> and <code>[% ...]</code>. These are syntax extensions, where libraries hook into the OCaml abstract syntax-tree to do all sorts of magic tricks, like, in our case, generating code to convert types to strings and back.</td>
+  </tr>
+  </table>
+</div>
+
+OK, let's run an example!
+
+```ocaml
+let _ =
+  let my_message = Chat "Hey, what's up?" in
+  let json = to_json my_message in
+  print_endline json
+```
+
+This will output
+
+```bash
+$ <compile the thing and run it>
+[0,"Hey, what's up?"]
+```
+
+As you can see, all type information is lost. That's why we collect all possible communication inside the `message` type in our program, so that no misunderstanding can happen between the server and the client.
+
+## Server
+
+Alright, we need both a server and a client to get our chat web app to work.
+
+## Client
+
+todo
 
 serialize object
 
@@ -122,4 +174,4 @@ type websocket_message = One | Two of int | Three of string
 
 ## 5. Notes
 
-<sup id='note1'>If you don't know what algebraic datatypes are, just think of it as enums that can carry data.</sup>
+<sup id='note1'>1. They are really called algebraic datatypes, but if you don't know what that is, just think of it as enums that can carry data.</sup>
