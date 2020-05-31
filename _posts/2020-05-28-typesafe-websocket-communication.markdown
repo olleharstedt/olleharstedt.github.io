@@ -22,8 +22,8 @@ What is type-safety? To quote [stackoverflow](https://stackoverflow.com/a/251573
 
 <table class="border">
   <tr>
-  <td style="font-size: 50px;">”</td>
-  <td><p class="blockquote">a language where the only operations that one can execute on data are the ones that are condoned by the data's type. That is, if your data is of type X and X doesn't support operation y, then the language will not allow you to to execute y(X).</p></td>
+  <td style="font-size: 50px; border: none;">”</td>
+  <td style="border: none;"><p class="blockquote">a language where the only operations that one can execute on data are the ones that are condoned by the data's type. That is, if your data is of type X and X doesn't support operation y, then the language will not allow you to to execute y(X).</p></td>
   </tr>
 </table>
 
@@ -63,8 +63,8 @@ You probably already know what websockets are, but just to recap (from [Mozilla]
 
 <table class="border">
   <tr>
-  <td style="font-size: 50px;">”</td>
-  <td><p class="blockquote">a technology that makes it possible to open a two-way interactive communication session between the user's browser and a server</p></td>
+  <td style="font-size: 50px; border: none;">”</td>
+  <td style="border: none;"><p class="blockquote">a technology that makes it possible to open a two-way interactive communication session between the user's browser and a server</p></td>
   </tr>
 </table>
 
