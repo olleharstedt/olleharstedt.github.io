@@ -5,8 +5,8 @@ date:   2020-05-28
 categories: ocaml
 ---
 
-{:refdef: style="text-align: center; height: 100px;"}
-![Bertrand Russel]({{ site.url }}/assets/img/russell3.jpg)
+{:refdef: style="text-align: center;"}
+<img src="{{ site.url }}/assets/img/russell3.jpg" alt="Deal with it" height="600px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
 *Bertrand Russel, the inventor of [type theory](https://plato.stanford.edu/entries/type-theory/)*
@@ -26,11 +26,11 @@ but in this post, I also assume it to be *strong* and *static*, that is, checked
 
 Why is type-safety good? Because it roots out several categories of errors.
 
-Is type-safe serialization possible? No. I'm assuming only one type definition is used for communication between server and client, and that server and client are using the same source-code.
+Is type-safe serialization possible? No. I'm assuming only one type definition is used for communication between server and client, and that server and client are using the same source-code for serialize/deserialize.
 
 ## OCaml
 
-OCaml is a language which puts high priority on type-safety. You can get a short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
+[OCaml](https://en.wikipedia.org/wiki/OCaml) is a language which puts high priority on type-safety. You can get a short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
 
 ```ocaml
 let x = 10 in
@@ -50,9 +50,11 @@ let sum = plus 10 20 in
 ...
 ```
 
+Note that no explicit typing is necessary (but possible) since OCaml is fully [type-inferred](https://en.wikipedia.org/wiki/Type_inference).
+
 ## Websockets
 
-You probably already know what websockets are, but just to recap (from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)), it's
+You probably already know what websockets are, but just to recap (from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)), it's:
 
 > a technology that makes it possible to open a two-way interactive communication session between the user's browser and a server,
 
@@ -62,7 +64,26 @@ All major browsers support websockets by now.
 
 ## Serialization
 
-send data as string or blob
+We want to be able to send any data between the server and the client. Websockets can send both blobs and strings, but we'll use serialization to strings.
+
+There are a number of extensions to OCaml that lets you serialize types automatically. In this article I use [ppx\_deriving\_json](https://ocsigen.org/js_of_ocaml/3.6.0/manual/ppx-deriving) from the [js\_of\_ocaml](https://ocsigen.org/js_of_ocaml/3.6.0/manual/overview) project.
+
+Consider the following algebraic datatype<sup><a href="#note1">1</a></sup> for messages:
+
+```ocaml
+type message =
+  | Ping
+  | Chat of string
+```
+
+We can automatically generate the serialization functions by adding `[@@deriving json]`:
+
+```ocaml
+type message =
+  | Ping
+  | Chat of string
+[@@deriving json]
+```
 
 serialize object
 
@@ -88,3 +109,7 @@ typed json: https://www.npmjs.com/package/typedjson
 type websocket_message = One | Two of int | Three of string
 [@@deriving json]
 ```
+
+## 5. Notes
+
+<sup id='note1'>If you don't know what algebraic datatypes are, just think of it as enums that can carry data.</sup>
