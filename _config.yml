@@ -18,6 +18,7 @@ github_username:  olleharstedt
 # Build settings
 markdown: kramdown
 
-#highlighter: rouge
+highlighter: rouge
 
 encoding: utf-8
+

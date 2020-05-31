@@ -30,7 +30,7 @@ Is type-safe serialization possible? No. I'm assuming only one type definition i
 
 ## OCaml
 
-[OCaml](https://en.wikipedia.org/wiki/OCaml) is a language which puts high priority on type-safety. You can get a short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
+[OCaml](https://en.wikipedia.org/wiki/OCaml) is a language which puts high priority on type-safety. You can get a general short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
 
 ```ocaml
 let x = 10 in
@@ -70,11 +70,11 @@ There are a number of extensions to OCaml that lets you serialize types automati
 
 Consider the following algebraic datatype<sup><a href="#note1">1</a></sup> for messages:
 
-```ocaml
+<div class="language-ocaml highlighter-rouge">
 type message =
   | Ping
   | Chat of string
-```
+</div>
 
 We can automatically generate the serialization functions by adding `[@@deriving json]`:
 
