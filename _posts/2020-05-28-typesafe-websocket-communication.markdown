@@ -33,7 +33,7 @@ Why is type-safety good? Because it roots out several categories of errors.
 
 Is type-safe serialization possible? No. I'm assuming only one type definition is used for communication between server and client, and that server and client are using the same source-code for serialize/deserialize.
 
-## OCaml
+## OCaml - 1-minute crash course
 
 [OCaml](https://en.wikipedia.org/wiki/OCaml) is a language which puts high priority on type-safety. You can get a general short introduction [here](https://ocaml.org/learn/tutorials/). For the purpose of this blog article, let my just mention that variables are defined like this:
 
@@ -67,6 +67,16 @@ type my_enum =
   | Four of int
 ```
 
+and `switch` is called `match` and is used like this:
+
+```ocaml
+match enum_value with
+| One -> "you got one!"
+| Two -> "two"
+| Three s -> "the string " ^ s (* concatenation is done with operator ^ *)
+| Four i -> "the number " ^ (int_of_string i)
+```
+
 ## Websockets
 
 You probably already know what websockets are, but just to recap (from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)), it's:
@@ -79,6 +89,15 @@ You probably already know what websockets are, but just to recap (from [Mozilla]
 </table>
 
 Above all, it makes is possible for the server to send data to the browser without the browser needing to reload or poll the server. A typical use-case is a chat application.
+
+Websockets communicate with [frames](https://noio-ws.readthedocs.io/en/latest/overview_of_websockets.html), as you will see below. A frame is simply a 
+
+<table class="border">
+  <tr>
+  <td style="font-size: 50px; border: none;">”</td>
+  <td style="border: none;"><p class="blockquote">header + application data. The frame header contains information about the frame and the application data. The application data is any and all stuff you send in the frame "body".</p></td>
+  </tr>
+</table>
 
 All major browsers support websockets by now.
 
@@ -141,7 +160,61 @@ As you can see, all type information is lost. That's why we collect all possible
 
 ## Server
 
-Alright, we need both a server and a client to get our chat web app to work.
+Alright, we need both a server and a client to get our natively compiled type-safe chat web app to work. For the websocket server, there are a couple of libraries available for OCaml. The one I'm using here is pretty old, because I'm too lazy to setup TLS on my local machine, but the same principles apply to newer libs.
+
+Our library defines the following datatype (enum, if you will) for websocket frames:
+
+```ocaml
+type frame =
+  | PingFrame of string
+  | PongFrame of string
+  | TextFrame of string
+  | CloseFrame of int * string
+  | BinaryFrame
+  | UndefinedFrame of string
+```
+
+So these are the cases we must take care of in our server. Note that `BinaryFrame` does not carry any data, simply because this frame is not implemented by the library.
+
+The main `switch` to take care of an incoming frame will then look like this:
+
+```ocaml
+let rec handle_client (channel : Channel.channel) : unit Lwt.t =
+  let%lwt frame = channel#read_frame in 
+  match frame with
+    | PingFrame(msg) ->
+      print_endline (Printf.sprintf "ping(%s)" msg);
+      let%lwt _ = channel#write_pong_frame in
+      handle_client channel (** wait for close frame from client *)
+    | TextFrame text ->
+      let%lwt _ = channel#write_text_frame text in
+      handle_client channel (** wait for close frame from client *)
+    | PongFrame(msg) ->
+      print_endline "pong received";
+      return ()
+    | CloseFrame(status_code, body) ->
+      print_endline "close frame received";
+      channel#write_close_frame
+    | BinaryFrame ->
+      print_endline "not supported";
+      return ()
+    | UndefinedFrame(msg) ->
+      print_endline msg;
+      return ()
+```
+
+Let's unpack this.
+
+* `let%lwt` is a monadic bind for the asynchronous library. If you don't know what that means, just ignore it for now.
+* `channel` is the websocket channel _object_. Object methods are accessed with `#`. Yes, just accept it.
+
+**Asynchronous code in OCaml**
+
+A websocket server must be multitasking, accepting connections from multiple sources.
+
+Async, lwt
+
+I use lwt.
 
 ## Client
 
