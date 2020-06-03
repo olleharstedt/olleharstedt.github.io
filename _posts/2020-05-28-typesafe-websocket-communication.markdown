@@ -57,6 +57,8 @@ let sum = plus 10 20 in
 
 Note that no explicit typing is necessary (but possible) since OCaml is fully [type-inferred](https://en.wikipedia.org/wiki/Type_inference).
 
+Recrusive functions are defined with `let rec ...` instead of just `let`.
+
 Enums<sup><a href="#note1">1</a></sup> can be defined like this:
 
 ```ocaml
@@ -71,10 +73,10 @@ and `switch` is called `match` and is used like this:
 
 ```ocaml
 match enum_value with
-| One -> "you got one!"
-| Two -> "two"
-| Three s -> "the string " ^ s (* concatenation is done with operator ^ *)
-| Four i -> "the number " ^ (int_of_string i)
+  | One     -> "you got one!"
+  | Two     -> "two"
+  | Three s -> "the string " ^ s (* concatenation is done with operator ^ *)
+  | Four i  -> "the number " ^ (int_of_string i)
 ```
 
 ## Websockets
@@ -176,37 +178,35 @@ type frame =
 
 So these are the cases we must take care of in our server. Note that `BinaryFrame` does not carry any data, simply because this frame is not implemented by the library.
 
-The main `switch` to take care of an incoming frame will then look like this:
+The main function to take care of an incoming frame will then look like this:
 
 ```ocaml
-let rec handle_client (channel : Channel.channel) : unit Lwt.t =
+let rec handle_client channel =
   let%lwt frame = channel#read_frame in 
   match frame with
-    | PingFrame(msg) ->
-      print_endline (Printf.sprintf "ping(%s)" msg);
+    | PingFrame msg ->
       let%lwt _ = channel#write_pong_frame in
-      handle_client channel (** wait for close frame from client *)
+      handle_client channel
     | TextFrame text ->
-      let%lwt _ = channel#write_text_frame text in
-      handle_client channel (** wait for close frame from client *)
-    | PongFrame(msg) ->
-      print_endline "pong received";
+      let response = "You wrote this: " ^ text in
+      let%lwt _ = channel#write_text_frame response in
+      handle_client channel
+    | PongFrame msg ->
+      (* Do nothing *)
       return ()
-    | CloseFrame(status_code, body) ->
-      print_endline "close frame received";
+    | CloseFrame (status_code, body) ->
       channel#write_close_frame
     | BinaryFrame ->
-      print_endline "not supported";
-      return ()
-    | UndefinedFrame(msg) ->
-      print_endline msg;
-      return ()
+        raise (Failure "BinaryFrame not implemented")
+    | UndefinedFrame msg ->
+        raise (Failure ("Undefined frame: " ^ msg))
 ```
 
 Let's unpack this.
 
+* First line defines a new (recursive) function called `handle_client`, which takes exactly one argument: `channel`.
 * `let%lwt` is a monadic bind for the asynchronous library. If you don't know what that means, just ignore it for now.
-* `channel` is the websocket channel _object_. Object methods are accessed with `#`. Yes, just accept it.
+* `frame` is read from the channel and used in the `match` expression<sup><a href="#note2">2</a></sup>.
 
 **Asynchronous code in OCaml**
 
@@ -247,4 +247,6 @@ type websocket_message = One | Two of int | Three of string
 
 ## 5. Notes
 
-<sup id='note1'>1. They are really called algebraic datatypes, but if you don't know what that is, just think of it as enums that can carry data.</sup>
+<sup id="note1">1. They are really called algebraic datatypes, but if you don't know what that is, just think of it as enums that can carry data.</sup>
+
+<sup id="note2">2. Object methods are accessed with `#`. The dot operator is already used for records in OCaml.</sup>
