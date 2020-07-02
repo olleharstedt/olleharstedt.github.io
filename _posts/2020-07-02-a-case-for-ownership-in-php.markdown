@@ -11,6 +11,16 @@ categories: php
 
 Imagine you want to open a file. But you can't. Because it has already been opened. Do'h! Runtime error.
 
+```php
+function dosomething($file)
+{
+    $file->open();
+    $content = $file->read();
+    $file->close();
+    ...
+}
+```
+
 Static typing exists to move errors from runtime to compile time. It also serves to bridge the knowledge between what the developer knows about the program, and what the program knows about itself (encoded in its types).
 
 An example. You might declare a float value to hold a currency. For the program it's still a float, but for the developer it's a currency value. Same goes for strings and emails, strings and phone numbers, and so on. You can use value objects to add more information to the program, e.g. a class `Email` with only one property.
