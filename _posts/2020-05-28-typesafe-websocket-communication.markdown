@@ -202,9 +202,9 @@ let rec handle_client channel =
         raise (Failure ("Undefined frame: " ^ msg))
 ```
 
-Let's unpack this.
+Scary? Let's take it step by step:
 
-* First line defines a new (recursive) function called `handle_client`, which takes exactly one argument: `channel`.
+* First line defines a new (recursive) function called `handle_client`, which takes exactly one argument, an open websocket `channel`.
 * `let%lwt` is a monadic bind for the asynchronous library. If you don't know what that means, just ignore it for now.
 * `frame` is read from the channel and used in the `match` expression<sup><a href="#note2">2</a></sup>.
 
