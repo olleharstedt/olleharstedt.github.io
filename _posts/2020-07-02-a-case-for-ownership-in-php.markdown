@@ -6,10 +6,15 @@ categories: php
 ---
 
 {:refdef: style="text-align: center;"}
-<img src="{{ site.url }}/assets/img/scarydoor.jpg" alt="Scary door" height="300px"/>
+<img src="{{ site.url }}/assets/img/scarydoor.jpg" alt="Scary door" height="600px"/>
+{: refdef}
+{:refdef: style="text-align: center;"}
+*Types are scaryyyy*
 {: refdef}
 
-Imagine you want to open a file. But you can't. Because it has already been opened. Do'h! Runtime error.
+## Introduction
+
+Imagine the following function:
 
 ```php
 function dosomething($file)
