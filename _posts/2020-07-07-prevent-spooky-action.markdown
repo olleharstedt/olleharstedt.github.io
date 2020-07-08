@@ -20,7 +20,7 @@ $foo->prop = 'something';
 dosomething($foo);  // Function cannot set a prop
 ```
 
-This pattern is usable for dependency injection where the setup is more complicated than in an immutable object, but access should be limited for dependent classes (e.g., not closing a database connection).
+This pattern is usable for dependency injection where the setup is more complicated than in an immutable object, but access should be limited for dependent classes (e.g. not being able to close a database connection).
 
 Here's one way to check refcount (from <a href="https://stackoverflow.com/a/3764809/2138090">stackoverflow</a>):
 
