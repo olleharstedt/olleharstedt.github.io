@@ -160,7 +160,6 @@ Cons:
 * Depends on implementation of PHP (refcount); if they change to tracing GC, the code would fail, possibly silently
 * Can't get refcount in a sensible way without installing an extra extension
 * No explicit semantics - you have to "know" if you're getting a borrowed and not owned object
-* Potentially fragile - the programmer has to manually make sure not to accidentally give away the last reference (framework can make this solid, though)
 
 ## Further reading
 
