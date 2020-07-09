@@ -147,8 +147,6 @@ Obviously this is the same amount of boilerplate as a decorator - it _is_ a deco
 
 This pattern also works for factories, since it preserves refcount = 1 for the owner at function return.
 
-## Example
-
 ## Pros and cons
 
 Pros:
