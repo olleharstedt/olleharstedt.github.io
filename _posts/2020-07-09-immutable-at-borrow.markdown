@@ -6,7 +6,7 @@ categories: php
 ---
 
 {:refdef: style="text-align: center;"}
-<img src="{{ site.url }}/assets/img/access.jpg" alt="Access denied" height="300px"/>
+<img src="{{ site.url }}/assets/img/access.jpg" alt="Oversharing is not caring" height="300px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
 _Oversharing is not caring_
