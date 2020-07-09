@@ -8,6 +8,9 @@ categories: php
 {:refdef: style="text-align: center;"}
 <img src="{{ site.url }}/assets/img/access.jpg" alt="Access denied" height="300px"/>
 {: refdef}
+{:refdef: style="text-align: center;"}
+_Access denied_
+{: refdef}
 
 ## Introduction
 
@@ -29,11 +32,32 @@ Most people know about ownership from C++ and Rust, but there is also research a
 * Owner
 * Borrower
 
+<div style='margin: 1em 3em;'>
+<table>
+<tr>
+<td><span class='fa fa-icon fa-info-circle fa-2x'></span></td>
+<td>
 Other ownership systems also have "peer" as an access level; see further reading below.
+</td>
+</tr>
+</table>
+</div>
 
-It's not explicitly possible to move ownership in this implementation.
+It's not possible to explicitly move ownership in this implementation.
 
-## Code
+## Working example
+
+The following code will fail with a `NoOwnershipException` if `updateAllPosts()` closes the connection:
+
+```php
+$connection = new OwnershipConnection();
+$connection->open();
+$ps = new PostService($connection);
+$ps->updateAllPosts();
+$connection->close();
+```
+
+## Implementation
 
 Custom exception at access abuse:
 
@@ -54,15 +78,16 @@ trait OwnershipTrait
     private function failForBorrower()
     {
         ob_start();
-        debug_zval_dump($var);
+        debug_zval_dump($this);
         $dump = ob_get_clean();
 
         $matches = array();
         preg_match('/refcount\(([0-9]+)/', $dump, $matches);
 
+        // NB: -2 because debug_zval_dump creates a ref at use
         $count = $matches[1] - 2;
 
-        if ($count > 2) {
+        if ($count > 1) {
             throw new NoOwnershipException('No access');
         }
     }
@@ -122,11 +147,13 @@ Obviously this is the same amount of boilerplate as a decorator - it _is_ a deco
 
 This pattern also works for factories, since it preserves refcount = 1 for the owner at function return.
 
+## Example
+
 ## Pros and cons
 
 Pros:
 
-* Only way I personally know about to do some kind of ownership semantics in PHP
+* Automatic "sharing without oversharing"
 * More flexibly than decorators
 * Fails directly at access abuse
 
@@ -134,8 +161,8 @@ Cons:
 
 * Depends on implementation of PHP (refcount); if they change to tracing GC, the code would fail, possibly silently
 * Can't get refcount in a sensible way without installing an extra extension
-* Less flexibility for the client-code (both good or bad depending on what you're doing)
-* No explicit semantics - you have to "know" you're getting a borrowed and not owned object
+* No explicit semantics - you have to "know" if you're getting a borrowed and not owned object
+* Potentially fragile - the programmer has to manually make sure not to accidentally give away the last reference (framework can make this solid, though)
 
 ## Further reading
 
