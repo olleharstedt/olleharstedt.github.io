@@ -119,7 +119,7 @@ class PostService
 }
 ```
 
-The problem with the bug above is that the program does not fail at location. Instead, the program will fail at the next query that uses the same database connection, wherever that is, and the developer will have to hunt it down manually. With a `NoOwnershipException`, you get the error at the right place and time.
+The problem with the bug above is that the program does not fail at location. Instead, it will fail at the next query that uses the same database connection, wherever that is, and the developer will have to hunt it down manually. With a `NoOwnershipException`, you get the error at the right place and time.
 
 How the connection class could be defined:
 
