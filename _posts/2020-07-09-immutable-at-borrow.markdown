@@ -20,7 +20,7 @@ Ways to fix this:
 
 * Wrap the dependencies in access-limiting decorators (could lead to lots of boilerplate code)
 * _Only_ inject immutable classes (hard to do in practice, since most frameworks don't respect this)
-* Never share dependencies
+* Never share dependencies (also not practical)
 
 Another mitigating design pattern is outlined in this article, where PHP's refcount is used to track ownership and where ownership decides access level.
 
