@@ -19,9 +19,7 @@ Dependency injection - being explicit with dependencies - gives you a modular de
 Ways to fix this:
 
 * Wrap the dependencies in access-limiting decorators (could lead to lots of boilerplate code)
-* Clone the dependencies at injection (could be dangerous since deep cloning is hard, and also costly)
 * _Only_ inject immutable classes (hard to do in practice, since most frameworks don't respect this)
-* If you use Psalm in your pipeline, you can cast the injected object to a more limited interface (no runtime checks - if Psalm disappears, so does the access control)
 
 Another mitigating design pattern is outlined in this article, where PHP's refcount is used to track ownership and where ownership decides access level.
 
