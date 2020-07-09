@@ -9,7 +9,7 @@ categories: php
 <img src="{{ site.url }}/assets/img/access.jpg" alt="Access denied" height="300px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
-_Access denied_
+_Oversharing is not caring_
 {: refdef}
 
 ## Introduction
