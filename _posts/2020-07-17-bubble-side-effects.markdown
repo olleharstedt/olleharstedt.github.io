@@ -56,30 +56,100 @@ class AppInstaller
 
 class SideEffectRunner
 {
-    public function __construct()
+    private $fileIO;
+    private $databaseIO;
+    private $nginxIO;
+    public function __construct($fileIO, $databaseIO, $nginxIO)
     {
+        $this->fileIO = $fileIO;
+        $this->databaseIO = $databaseIO;
+        $this->nginxIO = $nginxIO;
     }
 
     /**
      * @param IOAction[] $actions
+     * @return array{$success: bool, $message: string}
      */
     public function run(array $actions)
     {
+        $done = [];
+        try {
+            foreach ($action => $action) {
+                $done[] = $action;
+            }
+        } catch (Exception $ex) {
+            $this->rollback($done);
+            return [false, $ex->getMessage()];
+        }
+
+        return [true, null];
+    }
+
+    /**
+     * @param IOAction[] $actions
+     * @return void
+     */
+    private function rollback(array $actions)
+    {
+        // NB: Don't catch exceptions here, because it would be fatal failure.
+        foreach ($actions as $action) {
+            $this->rollbackAction($action);
+        }
+    }
+
+    /**
+     * @param IOAction $action
+     * @return void
+     */
+    private function runAction(IOAction $action)
+    {
+        if ($action instanceof FileIOAction) {
+            $action->run($this->fileIO);
+        } elseif ($action instanceof DatabaseIOAction) {
+            $action->run($this->databaseIO);
+        } elseif ($action instanceof NginxIOAction) {
+            $action->run($this->nginxIO);
+        }
+    }
+
+    /**
+     * @param IOAction $action
+     * @return void
+     */
+    private function rollbackAction(IOAction $action)
+    {
+        if ($action instanceof FileIOAction) {
+            $action->rollback($this->fileIO);
+        } elseif ($action instanceof DatabaseIOAction) {
+            $action->rollback($this->databaseIO);
+        } elseif ($action instanceof NginxIOAction) {
+            $action->rollback($this->nginxIO);
+        }
     }
 }
 
 class InstallController
 {
-    public function actionInstall()
+    public function actionInstall($installationId)
     {
-        $data = new InstalltionData();
+        $data = new InstalltionData($installationId);
+        $data->fetch();
         $appInstaller = new AppInstaller(
             new SideEffectFactory(),
             $data
         );
         $effects = $AppInstaller->install();
-        $runner = SideEffectRunner();
-        $runner->run($effects);
+        $runner = new SideEffectRunner();
+        try {
+            list($success, $message) = $runner->run($effects);
+            if ($success) {
+                echo 'All good';
+            } else {
+                echo 'Failed and rolled back: ' . $message;
+            }
+        } catch (Exception $ex) {
+            echo 'Rollback failed, please repair manually: ' . $ex->getMessage();
+        }
     }
 }
 ```
