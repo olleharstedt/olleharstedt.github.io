@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Bubble up you side-effects to the top
+title:  Bubble up your side-effects to the top
 date:   2020-07-17
 categories: php
 ---
