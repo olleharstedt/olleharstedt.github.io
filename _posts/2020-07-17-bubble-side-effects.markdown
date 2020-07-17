@@ -10,23 +10,20 @@ class AppInstaller
 {
     /** @var SideEffectFactory */
     private $sef;
-    /** @var InstalltionData */
-    private $data;
 
     /**
      * @param SideEffectFactory $sef
-     * @param InstalltionData $data
      */
-    public function __construct(SideEffectFactory $sef, InstalltionData $data)
+    public function __construct(SideEffectFactory $sef)
     {
         $this->sef = $sef;
-        $this->data = $data;
     }
 
     /**
+     * @param InstallationData $data
      * @return IOAction[]
      */
-    public function install()
+    public function install(InstallationData $data)
     {
         /** @var IOAction[] */
         $sideEffects = [];
@@ -75,6 +72,7 @@ class SideEffectRunner
         $done = [];
         try {
             foreach ($action => $action) {
+                $this->runAction($action);
                 $done[] = $action;
             }
         } catch (Exception $ex) {
@@ -130,16 +128,21 @@ class SideEffectRunner
 
 class InstallController
 {
-    public function actionInstall($installationId)
+    public function actionInstall(int $installationId)
     {
-        $data = new InstalltionData($installationId);
-        $data->fetch();
+        $connection = new DatabaseConnection();
+        $fetcher = new InstallationDataFetcher($connection);
+        $data = $fetcher->fetch($installationData);
         $appInstaller = new AppInstaller(
-            new SideEffectFactory(),
-            $data
+            new SideEffectFactory()
         );
-        $effects = $AppInstaller->install();
-        $runner = new SideEffectRunner();
+        $effects = $appInstaller->install($data);
+        // TODO: Need all IO classes?
+        $runner = new SideEffectRunner(
+            new FileIO(),
+            $connection,
+            new NginxIO()
+        );
         try {
             list($success, $message) = $runner->run($effects);
             if ($success) {
