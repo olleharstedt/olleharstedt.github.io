@@ -39,28 +39,21 @@ class InstallController
     /**
      * Using pipe() to add action to queue.
      *
+     * pipe() accepts any number of Action, string (wraps in EchoIOAction) or
+     * lambda (wraps in FunctionAction).
+     *
      * @param int $installationId
-     * @return void
+     * @return Action[]
      */
-    public function actionInstall2(int $installationId)
+    public function actionUpdateInstallation(int $installationId)
     {
-        pipe(
-            new DatabaseIOAction('SELECT * FROM installations WHERE id = ' . $installationId),
-            function ($result) {
-                if (is_null($result)) {
-                    throw new Exception('Found no installation');
-                }
-                if ($result->is_good_installation) {
-                    pipe(new DatabaseIOAction( 'UPDATE installations SET is_good_installation = 0 WHERE id = ' . $result->id));
-                    pipe(function($result) {
-                        if ($result) {
-                            pipe(new EchoIOAction('Success'));
-                        } else {
-                            pipe(new EchoIOAction('Could not update installation'));
-                        }
-                    });
-                }
-            }
-        );
+        return [
+            new SelectOneAction('SELECT * FROM installations WHERE id = ' . $installationId),
+            new FilterNullAction(),
+            new FilterAction(function($result) { return $result->is_good_installation; }),
+            new UpdateTableAction('UPDATE installations SET is_good_installation = 0 WHERE id = ' . $result->id),
+            new FilterSuccessAction('Success', 'Could not update installation')
+        ];
+        // TODO: If-statement action?
     }
 }
