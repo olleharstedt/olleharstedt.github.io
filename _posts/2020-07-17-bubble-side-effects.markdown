@@ -1,9 +1,39 @@
 ---
 layout: post
-title:  Bubble up your side-effects to the top
+title:  Put all your side-effects in command objects, why not?
 date:   2020-07-17
 categories: php
 ---
+
+{:refdef: style="text-align: center;"}
+<img src="{{ site.url }}/assets/img/zoiberg.jpg" alt="Why not?" height="400px"/>
+{: refdef}
+{:refdef: style="text-align: center;"}
+_Zoidberg approves_
+{: refdef}
+
+## Introduction
+
+Experiment.
+
+Pros:
+
+* Pure methods
+* Only inject one dependency?
+
+Cons:
+
+* Non-idiomatic
+* Hard to compose methods that return side-effects?
+
+## Implementation
+
+A cronjob that install your favourite web application.
+
+What's different:
+
+* A class `SideEffectFactory` that makes side-effect commands
+* A class `SideEffectRunner` that runs those commands
 
 ```php
 class AppInstaller
@@ -29,23 +59,24 @@ class AppInstaller
         $sideEffects = [];
 
         if ($this->folderDoesNotExist()) {
-            $fileAction = $this->sef->makeFileIOAction();
-            $fileAction->command = 'unzip app.zip '  . $data->targetFolder;
-            $fileAction->rollback = 'rm -r '  . $data->targetFolder;
-            $sideEffects[] = $fileAction;
+            $sideEffects[] = $this->sef->makeFileIOAction(
+                'unzip app.zip '  . $data->targetFolder,
+                // Second argument for rollback.
+                'rm -r '  . $data->targetFolder
+            );
         }
 
         if ($this->databaseDoesNotExist()) {
-            $dbAction = $this->sef->makeDatabaseIOAction();
-            $dbAction->command = 'CREATE DATABASE ' . $data->databaseName;
-            $dbAction->rollback = 'DROP DATABASE ' . $data->databaseName;
-            $sideEffects[] = $dbAction;
+            $sideEffects[] = $this->sef->makeDatabaseIOAction(
+                'CREATE DATABASE ' . $data->databaseName,
+                'DROP DATABASE ' . $data->databaseName
+            );
         }
 
-        $nginxAction = $this->sef->makeNginxIOAction();
-        $nginxAction->command = 'add domain ' . $data->domain;
-        $nginxAction->rollback = 'remove domain ' . $data->domain;
-        $sideEffects[] = $nginxAction;
+        $sideEffects[] = $this->sef->makeNginxIOAction(
+            'add domain ' . $data->domain,
+            'remove domain ' . $data->domain
+        );
 
         return $sideEffects;
     }
