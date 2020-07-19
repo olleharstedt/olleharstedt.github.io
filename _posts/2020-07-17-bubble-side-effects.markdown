@@ -196,3 +196,5 @@ class InstallController
     }
 }
 ```
+
+TODO: Multiple database connections?
