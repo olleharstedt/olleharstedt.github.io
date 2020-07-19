@@ -36,6 +36,8 @@ What's different from a "normal" code-base?
 * A class `SideEffectFactory` that makes side-effect command objects
 * A class `SideEffectRunner` that runs those objects
 
+TODO: Fold result from command objects, so that command 2 can use result from command 1. Pipeline pattern.
+
 ```php
 class AppInstaller
 {
