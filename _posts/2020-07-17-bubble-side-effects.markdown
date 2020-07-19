@@ -166,7 +166,7 @@ class InstallController
     {
         $connection = new DatabaseConnection();
         $fetcher = new InstallationDataFetcher($connection);
-        $data = $fetcher->fetch($installationData);
+        $data = $fetcher->fetch($installationId);
         $appInstaller = new AppInstaller(
             new SideEffectFactory()
         );
