@@ -162,6 +162,10 @@ class SideEffectRunner
 
 class InstallController
 {
+    /**
+     * TODO: Even better, let controller action return command object list and let
+     * the framework execute them. That way, all controller actions are pure.
+     */
     public function actionInstall(int $installationId)
     {
         $connection = new DatabaseConnection();
