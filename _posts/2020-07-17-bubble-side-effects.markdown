@@ -27,7 +27,7 @@ Cons:
 
 ## Implementation
 
-A cronjob that install your favourite web application.
+A cronjob that installs your favourite web application.
 
 What's different:
 
