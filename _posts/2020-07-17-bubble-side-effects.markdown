@@ -14,17 +14,16 @@ _Zoidberg approves_
 
 ## Introduction
 
-Experiment.
+Proof-of-concept for a design pattern that might or might not be a good idea.
 
 Pros:
 
-* Pure methods
-* Only inject one dependency?
+* Pure methods, very easy to write unit-tests for
 
 Cons:
 
 * Non-idiomatic
-* Hard to compose methods that return side-effects?
+* Hard to compose methods that return side-effects
 
 ## Implementation
 
