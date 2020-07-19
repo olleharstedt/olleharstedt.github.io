@@ -25,6 +25,7 @@ class InstallController
                 $that->actions[] = new DatabaseIOAction(
                     'UPDATE installations SET is_good_installation = 0 WHERE id = ' . $result->id
                 );
+                // TODO: Can't add to actions in lambda.
                 $that->actions[] = function($result) {
                     if ($result) {
                         $this->actions[] = new EchoIOAction('Success');
@@ -48,12 +49,23 @@ class InstallController
     public function actionUpdateInstallation(int $installationId)
     {
         return [
-            new SelectOneAction('SELECT * FROM installations WHERE id = ' . $installationId),
+            new DatabaseIOAction('SELECT * FROM installations WHERE id = ' . $installationId),
             new FilterNullAction(),
-            new FilterAction(function($result) { return $result->is_good_installation; }),
-            new UpdateTableAction('UPDATE installations SET is_good_installation = 0 WHERE id = ' . $result->id),
+            new FilterAction(function($result) { return count($result === 1); }),
+            new FilterAction(function($result) { return $result[0]->is_good_installation; }),
+            new DatabaseIOAction('UPDATE installations SET is_good_installation = 0 WHERE id = ' . $result->id),
             new FilterSuccessAction('Success', 'Could not update installation')
         ];
         // TODO: If-statement action?
+        // TODO: How to unit-test? How to mock?
+    }
+}
+
+class InstallationTest
+{
+    public function testUpdate()
+    {
+        $contr = new InstallController();
+        $actions = $contr->actionUpdateInstallation(1);
     }
 }
