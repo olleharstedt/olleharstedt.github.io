@@ -86,6 +86,8 @@ class SideEffectRunner
     private $fileIO;
     private $databaseIO;
     private $nginxIO;
+
+    // TODO: SideEffectRunner needs ALL IO systems injected?
     public function __construct($fileIO, $databaseIO, $nginxIO)
     {
         $this->fileIO = $fileIO;
@@ -119,7 +121,7 @@ class SideEffectRunner
      */
     private function rollback(array $actions)
     {
-        // NB: Don't catch exceptions here, because it would be fatal failure.
+        // NB: Don't catch exceptions here, because it should be fatal failure.
         foreach ($actions as $action) {
             $this->rollbackAction($action);
         }
