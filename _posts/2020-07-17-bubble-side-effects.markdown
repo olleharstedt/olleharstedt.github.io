@@ -29,7 +29,7 @@ Cons:
 
 A cronjob that installs your favourite web application.
 
-What's different:
+What's different from a "normal" code-base?
 
 * A class `SideEffectFactory` that makes side-effect commands
 * A class `SideEffectRunner` that runs those commands
