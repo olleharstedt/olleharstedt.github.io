@@ -8,7 +8,7 @@ class Query
         $this->query = $query;
     }
 
-    public function __invoke()
+    public function __invoke($res)
     {
         echo 'called query ' . $this->query . PHP_EOL;
         $user = new stdClass();
@@ -25,10 +25,10 @@ class Output
         $this->message = $message;
     }
 
-    public function __invoke()
+    public function __invoke($res)
     {
         echo 'called output ' .  $this->message . PHP_EOL;
-        return [null, []];
+        return [$res, []];
     }
 }
 
@@ -46,7 +46,7 @@ class SideEffectFactory implements SideEffectFactoryInterface
     }
 }
 
-class SideEffectResultList implements SideEffectFactoryInterface
+class Mock implements SideEffectFactoryInterface
 {
     private $results;
     private $i = 0;
@@ -97,16 +97,16 @@ function run($result, array $actions)
     return $result;
 }
 
-//$actions = updateUser(1, new SideEffectFactory());
 $user = new stdClass();
 $user->is_admin = 1;
-$mock = new SideEffectResultList(
+$mock = new Mock(
     [
         $user,  // User query
         true,   // Update query
         ''      // Output
     ]
 );
-$actions = updateUser(1, $mock);
+//$actions = updateUser(1, $mock);
+$actions = updateUser(1, new SideEffectFactory());
 $result = run(null, $actions);
 var_dump($mock->args);
