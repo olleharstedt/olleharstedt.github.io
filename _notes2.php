@@ -61,7 +61,7 @@ class SideEffectResultList implements SideEffectFactoryInterface
             throw new Exception('No result at i ' . $this->i);
         }
         $this->args[] = $args;
-        return function () { return $this->results[$this->i++]; };
+        return function () { return [$this->results[$this->i++], []]; };
     }
 }
 
@@ -102,9 +102,9 @@ $user = new stdClass();
 $user->is_admin = 1;
 $mock = new SideEffectResultList(
     [
-        [$user, []],  // User query
-        [false, []],  // Update query
-        [null, []]    // Output
+        $user,  // User query
+        true,   // Update query
+        ''      // Output
     ]
 );
 $actions = updateUser(1, $mock);
