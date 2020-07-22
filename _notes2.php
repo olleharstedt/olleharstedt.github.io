@@ -59,7 +59,7 @@ class Mock implements SideEffectFactoryInterface
     public function __call($name, $args)
     {
         if (!array_key_exists($this->i, $this->results)) {
-            throw new Exception('No result at i ' . $this->i);
+            throw new Exception('No result at i = ' . $this->i);
         }
         $this->args[] = $args;
         return function () { return [$this->results[$this->i++], []]; };
@@ -101,13 +101,7 @@ function updateUser2(int $userId, SideEffectFactoryInterface $make)
                 )
             ];
         },
-        function ($result) use ($make) {
-            $msg = $result ? 'Success' : 'Could not update user';
-            return [
-                $result,
-                $make->output($msg)
-            ];
-        }
+        $make->output('Updated user')
     ];
 }
 
@@ -144,3 +138,5 @@ $actions = updateUser2(1, $mock);
 //$actions = updateUser2(1, new SideEffectFactory());
 $result = run(null, $actions);
 var_dump($mock->args);
+
+
