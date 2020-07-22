@@ -27,10 +27,10 @@ function foo()
     $pipeline = [
         bar(),
         function() { echo 1;},
-        (function(): Generator {
+        function() {
             yield new Action(99);
             yield function() {echo 88;};
-        })()
+        }
     ];
 
     yield from $pipeline;
@@ -56,7 +56,15 @@ foreach (foo() as $k => $i) {
         }
         echo $i->getReturn();
     } else {
-        $i();
-        echo PHP_EOL;
+        $s = $i();
+        if ($s instanceof Generator) {
+            foreach ($s as $k) {
+                $k();
+                echo PHP_EOL;
+            }
+            echo $s->getReturn();
+        } else {
+            echo PHP_EOL;
+        }
     }
 }
