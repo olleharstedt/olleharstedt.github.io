@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Pipeline-oriented programming with non-blocking IO
+title:  Pipeline-oriented programming with concurrency
 date:   2020-08-03
 categories: php
 ---
