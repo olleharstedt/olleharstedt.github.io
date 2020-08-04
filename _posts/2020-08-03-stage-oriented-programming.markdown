@@ -5,6 +5,13 @@ date:   2020-08-03
 categories: php
 ---
 
+{:refdef: style="text-align: center;"}
+<img src="{{ site.url }}/assets/img/pipes.jpg" alt="Pipes" height="400px"/>
+{: refdef}
+{:refdef: style="text-align: center;"}
+_One mock to rule them all_
+{: refdef}
+
 ## Introduction
 
 Read-compute-write pipeline, where each triple is a _stage_. Enforced on framework level; don't inject any object with side-effects. The side-effect factory produces promises that can be resolved concurrently when wanted.
