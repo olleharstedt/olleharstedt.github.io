@@ -33,7 +33,7 @@ A pipeline is an array of:
 Even in Haskell there's no framework that makes sure your business logic isn't polluted with side-effects.
 
 ```php
-public function actionIndex(int $userId = 1, IO $io): array
+public function revertAdmin(int $userId = 1, IO $io): array
 {
     return [
         $io->db->queryOne('SELECT * FROM users WHERE id = :id', [':id' => $userId]),
