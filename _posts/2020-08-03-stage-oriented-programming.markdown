@@ -6,7 +6,7 @@ categories: php
 ---
 
 {:refdef: style="text-align: center;"}
-<img src="{{ site.url }}/assets/img/pipes.jpg" alt="Pipes" height="400px"/>
+<img src="{{ site.url }}/assets/img/pipe.webp" alt="Pipes" height="400px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
 _One mock to rule them all_
@@ -23,3 +23,29 @@ Race-condition if IO 1 takes longer than IO 2 and IO 2 depends on 1 to be finish
 Redux-saga. Amphp.
 
 No mocking needed. Only mock the _result_ of the resolved side-effects.
+
+```php
+public function actionIndex(int $userId = 1, IO $io): array
+{
+    return [
+        $io->db->queryOne('SELECT * FROM users WHERE id = :id', [':id' => $userId]),
+        new FilterEmpty($io->stdout->printline('Found no such user')),
+        function applyRevert(array $user) {
+            yield $this->io->stdout->printline('Yay, found user!');
+            $becomeAdmin = $user['is_admin'] ? 0 : 1;
+            $affectedRows = yield
+                $this->io->db->query(
+                    sprintf(
+                        'UPDATE users SET is_admin = %d WHERE id = %d',
+                        $becomeAdmin,
+                        $user['id']
+                    )
+                ),
+            ];
+            return [$becomeAdmin, $affectedRows, $rmResult];
+        },
+        fn($user) => $adminRevert->applyRevert($user),
+        fn($becomeAdmin) => $adminRevert->showResult($becomeAdmin)
+    ];
+}
+```
