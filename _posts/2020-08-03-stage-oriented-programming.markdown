@@ -30,22 +30,22 @@ public function actionIndex(int $userId = 1, IO $io): array
     return [
         $io->db->queryOne('SELECT * FROM users WHERE id = :id', [':id' => $userId]),
         new FilterEmpty($io->stdout->printline('Found no such user')),
-        function applyRevert(array $user) {
-            yield $this->io->stdout->printline('Yay, found user!');
+        function (array $user) use ($io) {
+            yield $io->stdout->printline('Yay, found user!');
             $becomeAdmin = $user['is_admin'] ? 0 : 1;
-            $affectedRows = yield
-                $this->io->db->query(
-                    sprintf(
-                        'UPDATE users SET is_admin = %d WHERE id = %d',
-                        $becomeAdmin,
-                        $user['id']
-                    )
-                ),
-            ];
-            return [$becomeAdmin, $affectedRows, $rmResult];
+            $affectedRows = yield $io->db->query(
+                sprintf(
+                    'UPDATE users SET is_admin = %d WHERE id = %d',
+                    $becomeAdmin,
+                    $user['id']
+                )
+            );
+            if ($becomeAdmin === 1) {
+                yield $io->stdout->printline('User is now admin');
+            } else {
+                yield $io->stdout->printline('User is no longer admin');
+            }
         },
-        fn($user) => $adminRevert->applyRevert($user),
-        fn($becomeAdmin) => $adminRevert->showResult($becomeAdmin)
     ];
 }
 ```
