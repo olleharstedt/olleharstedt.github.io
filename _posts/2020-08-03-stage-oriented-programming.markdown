@@ -24,6 +24,14 @@ Redux-saga. Amphp.
 
 No mocking needed. Only mock the _result_ of the resolved side-effects.
 
+A pipeline is an array of:
+
+* Commands (promises)
+* Filters
+* Callables (processing and push write commands using yield)
+
+Even in Haskell there's no framework that makes sure your business logic isn't polluted with side-effects.
+
 ```php
 public function actionIndex(int $userId = 1, IO $io): array
 {
