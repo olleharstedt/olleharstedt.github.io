@@ -115,4 +115,6 @@ Now, how would we test `saveFile`? We don't want to test the logger or the http 
 * Logging is done correctly
 * Exceptions are thrown at failure
 
+For logging, we want it to be correct at both success and failure. We can now test this without any fixture by checking that the correct promises are yielded from the generator. Example:
+
 
