@@ -7,29 +7,32 @@ class Action
     {
         $this->n = $n;
     }
-    public function __invoke()
+    public function __invoke($arg)
     {
         echo $this->n;
     }
 }
 
-function bar(): Generator
+function bar($arg)
 {
     echo 'a';
-    yield function() { echo 2;};
+    yield function($arg) { echo $arg; return $arg + 1; };
+    yield function($arg) { echo $arg; return $arg + 1; };
+    yield function($arg) { echo $arg; return $arg + 1; };
     echo 'b';
     yield new Action(3);
     return 6;
 }
 
-function foo()
+function foo($arg)
 {
+    echo $arg;
     $pipeline = [
-        bar(),
-        function() { echo 1;},
-        function() {
+        bar($arg),
+        function($arg) { echo 1;},
+        function($arg) {
             yield new Action(99);
-            yield function() {echo 88;};
+            yield function($arg) {echo 88;};
         }
     ];
 
@@ -47,19 +50,20 @@ function foo()
     }
      */
 }
+$arg = 0;
 
-foreach (foo() as $k => $i) {
+foreach (foo($arg) as $k => $i) {
     if ($i instanceof Generator) {
         foreach ($i as $k) {
-            $k();
+            $arg = $k($arg);
             echo PHP_EOL;
         }
         echo $i->getReturn();
     } else {
-        $s = $i();
+        $s = $i($arg);
         if ($s instanceof Generator) {
             foreach ($s as $k) {
-                $k();
+                $k($arg);
                 echo PHP_EOL;
             }
             echo $s->getReturn();
