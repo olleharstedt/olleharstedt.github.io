@@ -72,21 +72,34 @@ public function saveFile($path, $file)
 Rewriting this in Amphp-style, we get:
 
 ```php
-public function saveFile($path, $file)
+/**
+ * @return Generator<WriteIO|HttpIO>
+ */
+public function saveFile(string $path, int $file): generator
 {
-    yield $this->logger->write('Saving file ' . $path);
-    $request = new Request('https://cloudfiles.fooservice.com/', 'POST');
+    yield $this->logger->debug('Saving file ' . $path);
+    $request = new Request('https://google.com', 'POST');
     $request->setBody($file);
     $response = yield $this->httpClient->request($request);
     if ($response->getStatus() === 200) {
-        yield $this->logger->write('Successfully saved file ' . $path);
+        yield $this->logger->debug('Successfully saved file ' . $path);
     } else {
         $msg = 'Failed to save file ' . $path;
-        yield $this->logger->write($msg);
+        yield $this->logger->debug($msg);
         throw new Exception($msg);
     }
 }
 ```
+
+<div style='margin: 1em 3em;'>
+<table>
+<tr>
+<td><span class='fa fa-icon fa-info-circle fa-2x'></span></td>
+<td>The code snippet above wraps Amphp libraries in lazy promises, but this change makes no different in style for the client code.</td>
+</tr>
+</table>
+</div>
+
 
 ## Purity
 
