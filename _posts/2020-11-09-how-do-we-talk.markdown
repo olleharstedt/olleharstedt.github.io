@@ -16,9 +16,11 @@ categories: programming
 
 What are "best practices" in software engineering? Basically a couple of rules of thumb we use to ensure some quality attributes we deem important, like testability, readability, maintainability. We've all read blog posts about it, we've read books, seen lectures, and we all talk about it. But _how_ do we talk about it? How do we talk about anything? And does it matter?
 
-In a team consensus matters. If you don't want to be completely authoritarian and simply decide what best practice means in your company (if you happen to have this authority), then you need to discuss it, write it down, and follow through in code reviews or enforce it with analysis tools. This is not always an easy process for developers with vast difference in experience, education, background. We all talk in different ways. We all assume different social rules. Teams span across generations, genders and cultures. I think it's worth a moment of our time to think about how we discuss technical matters together.
+In a team consensus matters. If you don't want to be completely authoritarian and simply decide what best practice means in your company (if you happen to have this authority), then you need to discuss it, write it down, and follow through in code reviews or enforce it with analysis tools. This is not always an easy process for developers with vast difference in experience, education, background. We all talk in different ways. We all assume different social rules. Teams span across generations, genders and cultures. I think it's worth a moment of our time to think about how we discuss technical topics together.
 
-## Discourse theory and language games
+## How do we argue?
+
+Which rules do we follow when we argue about best practices?
 
 Maybe we use different:
 
@@ -32,7 +34,9 @@ The idea of [language games](https://en.wikipedia.org/wiki/Language_game_(philos
 
 The man called "Uncle Bob", often used as authority.
 
-There's a pretty clear goal when we talk about best practices: to reach consensus on how to achieve quality attributes. It's easy enough to analyse a short function, but when you have a code-base spanning 20 years, +300 contributors, you need to use intution and heuristic. Or?
+How much do we care? Blunt vs polite. Politcal vs principled.
+
+There's a pretty clear goal when we talk about best practices: to reach consensus on how to achieve quality attributes. It's easy enough to analyse a short function, but when you have a code-base spanning 20 years, +300 contributors, arguments tend to get more abstract and use more intution.
 
 Aristotle's categories of argumentation:
 
@@ -56,14 +60,13 @@ Appeal to authority, external or internal. "Trust the framework, they know what'
 
 ## A dialogue
 
--- Since we use framework F, we should follow the idioms and design patterns present in that framework.
-
--- But F is really old. It's programmed in language P. I think we should apply design patterns that are more modern and has developed in language P since F was made.
-
--- But then we will have inconsistency in our code-base.
-
--- Yes, but it's better to have good and bad code, than only bad code. This is the only way to improve the code incrementally.
-
--- I'm not sure. Won't that increase the barrier to entry for new developers and make the code harder to maintain longterm?
+-- Since we use framework F, we should follow the idioms and design patterns present in that framework.<br/>
+-- But F is really old. It's programmed in language P. I think we should apply design patterns that are more modern and has developed in language P since F was made.<br/>
+-- But then we will have inconsistency in our code-base.<br/>
+-- Yes, but it's better to have good and bad code, than only bad code. This is the only way to improve the code incrementally.<br/>
+-- I'm not sure. Won't that increase the barrier to entry for new developers and make the code harder to read?<br/>
+-- It will be harder to read, but the modern parts will be eaiser to test and maintain. It's worth the trade-off, I think.<br/>
+-- What's wrong with the current way we test with F?<br/>
+-- The tests are too slow, which gives the developers a too long feedback loop when they program.<br/>
 
 Similar topics: Personality types.
