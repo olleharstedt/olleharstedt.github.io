@@ -28,7 +28,7 @@ Maybe we use different:
 
 [Discourse analysis](https://en.wikipedia.org/wiki/Discourse_analysis).
 
-The idea of [language games](https://en.wikipedia.org/wiki/Language_game_(philosophy)) was invented by the philosopher Wittgenstein.
+The idea of [language games](https://en.wikipedia.org/wiki/Language_game_(philosophy)) was invented by the philosopher Wittgenstein, basically saying/highlighting bla bla bla, rules in different contexts and sublanguages, it's not always clear to say if someone is following a rule or not, or what it means to follow a rule.
 
 The man called "Uncle Bob", often used as authority.
 
@@ -39,6 +39,8 @@ Aristotle's categories of argumentation:
 * Logos (logical appeal)
 * Ethos (appeal to authority)
 * Pathos (appeal to emotion)
+
+Pathos: Often emotional words like "dirty" or "clean", "messy", "beautiful", "elegant".
 
 How do we talk about "best practices"? Consensus and authority. Affect the behaviour of the team.
 
@@ -51,5 +53,17 @@ Pretty vague quality attributes like "readability", "maintainability", "testabil
 What is a language game? A point of view on language and human interaction. Status is one language game that matters a lot when talking about technology. Different words carry different status.
 
 Appeal to authority, external or internal. "Trust the framework, they know what's idiomatic." Or, "trust me, I have lots of experience, I know what's best."
+
+## A dialogue
+
+-- Since we use framework F, we should follow the idioms and design patterns present in that framework.
+
+-- But F is really old. It's programmed in language P. I think we should apply design patterns that are more modern and has developed in language P since F was made.
+
+-- But then we will have inconsistency in our code-base.
+
+-- Yes, but it's better to have good and bad code, than only bad code. This is the only way to improve the code incrementally.
+
+-- I'm not sure. Won't that increase the barrier to entry for new developers and make the code harder to maintain longterm?
 
 Similar topics: Personality types.
