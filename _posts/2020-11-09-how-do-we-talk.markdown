@@ -58,15 +58,20 @@ What is a language game? A point of view on language and human interaction. Stat
 
 Appeal to authority, external or internal. "Trust the framework, they know what's idiomatic." Or, "trust me, I have lots of experience, I know what's best."
 
-## A dialogue
+## A case study
 
--- Since we use framework F, we should follow the idioms and design patterns present in that framework.<br/>
--- But F is really old. It's programmed in language P. I think we should apply design patterns that are more modern and has developed in language P since F was made.<br/>
+Consider the following dialogue:
+
+-- Since we use framework *F*, we should follow the idioms and design patterns present in that framework.<br/>
+-- But *F* is really old. It's programmed in language *L*. I think we should apply design patterns that are more modern and has developed in language *L* since *F* was made.<br/>
 -- But then we will have inconsistency in our code-base.<br/>
 -- Yes, but it's better to have good and bad code, than only bad code. This is the only way to improve the code incrementally.<br/>
 -- I'm not sure. Won't that increase the barrier to entry for new developers and make the code harder to read?<br/>
 -- It will be harder to read, but the modern parts will be eaiser to test and maintain. It's worth the trade-off, I think.<br/>
--- What's wrong with the current way we test with F?<br/>
+-- What's wrong with the current way we test with *F*?<br/>
 -- The tests are too slow, which gives the developers a too long feedback loop when they program.<br/>
+-- But if we always apply the most modern idioms, we become victims to hype-driven development, and the design patterns will change from year to year. How can we reach stability or architectural integrity like this?<br/>
+
+Which rules and modes are present here? Lots of concerns and priorities. Hidden agendas? Experimental vs conservative.
 
 Similar topics: Personality types.
