@@ -32,7 +32,13 @@ The idea of [language games](https://en.wikipedia.org/wiki/Language_game_(philos
 
 The man called "Uncle Bob", often used as authority.
 
-There's a pretty clear goal when we talk about best practices: to reach consensus on how to reach quality attributes.
+There's a pretty clear goal when we talk about best practices: to reach consensus on how to achieve quality attributes. It's easy enough to analyse a short function, but when you have a code-base spanning 20 years, +300 contributors, you need to use intution and heuristic. Or?
+
+Aristotle's categories of argumentation:
+
+* Logos (logical appeal)
+* Ethos (appeal to authority)
+* Pathos (appeal to emotion)
 
 How do we talk about "best practices"? Consensus and authority. Affect the behaviour of the team.
 
