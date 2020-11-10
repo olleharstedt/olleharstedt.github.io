@@ -14,7 +14,7 @@ _One mock to rule them all_
 
 ## Introduction
 
-Read-compute-write pipeline, where each triple is a _stage_. Enforced on framework level; don't inject any object with side-effects. The side-effect factory produces promises that can be resolved concurrently when wanted.
+Read-process-write pipeline, where each triple is a _stage_. Enforced on framework level; don't inject any object with side-effects. The side-effect factory produces promises that can be resolved concurrently when wanted.
 
 Yield as async/await. Add new IO and return to logic. Yield always waits. Yield array of promises is concurrent.
 
@@ -26,7 +26,7 @@ No mocking needed. Only mock the _result_ of the resolved side-effects.
 
 A pipeline is an array of:
 
-* Commands (promises)
+* Commands objects (promises)
 * Filters
 * Callables (processing and push write commands using yield)
 
@@ -57,3 +57,7 @@ public function revertAdmin(int $userId = 1, IO $io): array
     ];
 }
 ```
+
+## MVC
+
+The model-view-controller pattern is based on the faulty assumption that's there a difference reading from a browser than it is reading from a database. The design patter is cutting along the wrong lines.
