@@ -81,10 +81,11 @@ Consider the following dialogue:
 -- It will be harder to read, but the modern parts will be eaiser to test and maintain. It's worth the trade-off, I think.<br/>
 -- What's wrong with the current way we test with *F*?<br/>
 -- The tests are too slow, which gives the developers a too long feedback loop when they program.<br/>
--- But if we always apply the most modern idioms, we become victims to hype-driven development, and the design patterns will change from year to year. How can we reach stability or architectural integrity like this?<br/>
--- Maybe we should update to framework *F2* instead, which includes more modern idioms?<br/>
+-- But if we always apply the most modern idioms, we become victims to hype-driven development, and the design patterns will change from year to year. How can we reach stability or architectural integrity like this? Maybe we should update to framework *F2* instead, which includes more modern idioms?<br/>
 -- That would take too long. We don't have the money.<br/>
 
 Which rules and modes are present here? Lots of concerns and priorities. Hidden agendas? Experimental vs conservative.
+
+A game moving from concern -> solution -> trade-off. Both concerns and solutions can be logos and ethos, appeal to logic or authority.
 
 Similar topics: Personality types.
