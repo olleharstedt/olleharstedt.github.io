@@ -29,7 +29,7 @@ In a team consensus matters. If you don't want to be completely authoritarian an
 
 ## How do we argue?
 
-We already know _why_ we argue. We argue because we're concerned, concerned that we will have to maintain someone else's spaghetti mess, fix someone else's bugs, failure at project level, going over budget, angry customers or bosses, _not following best practices_, or concerned of just being bored at work. We all feel and think something is at stake when we develop, and what you do today will affect me tomorrow and vice versa. So how do we approach this, together, as a team and community? Which rules do we follow when we argue about best practices?
+We already know _why_ we argue, or discuss. We do it because we're concerned, concerned that we will have to maintain someone else's spaghetti mess, fix someone else's bugs, failure at project level, going over budget, angry customers or bosses, _not following best practices_, or concerned of just being bored at work. We all feel and think something is at stake when we develop, and what you do today will affect me tomorrow and vice versa. So how do we approach this, together, as a team and community? Which rules do we follow when we argue about best practices?
 
 Maybe we use different:
 
@@ -88,4 +88,17 @@ Which rules and modes are present here? Lots of concerns and priorities. Hidden 
 
 A game moving from concern -> solution -> trade-off. Both concerns and solutions can be logos and ethos, appeal to logic or authority.
 
-Similar topics: Personality types.
+## Ethos vs logos
+
+Paraphrasing a discussion I once took part of:
+
+-- How come this list is not made with the list item HTML tag, but instead with div?<br/>
+-- That's how Bootstrap does it, and we use Bootstrap.<br/>
+-- But it's a _list_! It's semantically a list. Lists should be represented with list elements, not with divs.<br/>
+-- Look, Bootstrap knows what they're doing. They work with CSS and HTML all day long. We can trust them.<br/>
+
+Two type of arguments are clashing here: Logos (using logical arguments), and ethos (appeal to (external) authority, in this case the Bootstrap team). In the end, the Bootstrap person got tired of arguing and yielded. Whether or not Bootstrap actually _does_ use lists or divs is not relevant for the structure of the argument.
+
+## Further reading
+
+Similar topics: Personality type (colours).
