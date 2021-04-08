@@ -9,7 +9,7 @@ categories: programming
 <img src="{{ site.url }}/assets/img/noescape.jpg" alt="y tho" height="300px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
-*No escape*
+*No escape for non-escaping variables*
 {: refdef}
 
 <div style='margin: 1em 3em;'>
@@ -23,11 +23,11 @@ categories: programming
 
 ## Introduction
 
-There exists no language with memory-safe opt-out of garbage collection as I know of.
-
-80/20 sweetspot, where 20% _must_ be fast, but 80% does not.
+There exists no language with memory-safe and painless opt-out of garbage collection that I know of. No language hits the 80/20 sweetspot, where 20% of an application _must_ be fast, but 80% does not. C# is on is way, with refs and value types. This article outlines a different concept.
 
 TODO: Which domain has this requirement? Games, where you often combine two languages?
+
+todo: tuple languages
 
 ## Memory
 
@@ -44,6 +44,12 @@ These scenarios can be dealt with the following strategies:
 * Garbage collection
 
 (The case when you know size but not scope is trivially solved by a global variable.)
+
+Example use-cases:
+
+* Bla
+* Linked list
+* Bla
 
 Possible syntax:
 
@@ -85,6 +91,16 @@ No value types, everything is passed by reference like in Java.
 Can hack something in OCaml which compiles to C. Use a simple memory pool system and insert reference counting.
 
 todo: cycles with ref count
+
+## Other systems
+
+No language I know of that painlessly lets you opt out or in to/from GC in a memory-safe manner.
+
+Rust has Rc and Arc but always puts the burden of borrowing and lifetime annotations on the developer; there's no "don't care" modus.
+
+Clean and uniqueness would be one alternative: [Uniqueness typing](https://clean.cs.ru.nl/download/happlytml_report/CleanRep.2.2_11.htm). (Not maintained.)
+
+Cyclone has regions but is not memory safe.
 
 ## TODO
 
