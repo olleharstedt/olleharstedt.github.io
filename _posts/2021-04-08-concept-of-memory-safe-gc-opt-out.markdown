@@ -108,17 +108,31 @@ Note how `local` propagates the stack-local scope through the line:
 local points = [new Point {1, 2}, new Point {2, 3}];
 ```
 
+Locality must be part of function signature so that the calling function can know if it variables escape or not:
+
+```c++
+todo
+```
+
+Note that this allows both aliasing and mutability in a memory-safe manner.
+
 Can hack something in OCaml which compiles to C. Use a simple memory pool system and insert reference counting.
 
 todo: cycles with ref count
 
 No value types, everything is passed by reference like in Java.
 
+In summary:
+
+* Three locality kinds for stack-, region and non-locality
+* Pass-by-reference
+* Mutation and aliasing allowed
+
 ## Other systems
 
 No language I know of that painlessly lets you opt out or in to/from GC in a memory-safe manner.
 
-Rust has Rc and Arc but always puts the burden of borrowing and lifetime annotations on the developer; there's no "don't care" modus.
+Rust has Rc and Arc but always puts the burden of borrowing and lifetime annotations on the developer; there's no "don't care" modus (they had pre-1.0.0 release).
 
 Clean and uniqueness would be one alternative: [Uniqueness typing](https://clean.cs.ru.nl/download/happlytml_report/CleanRep.2.2_11.htm). (Not maintained.)
 
