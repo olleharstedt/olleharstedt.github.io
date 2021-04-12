@@ -92,34 +92,35 @@ To achieve this check, you need to track an alias graph of all variables. Lots o
 The three locality kinds can be expressed with:
 
 * `local` keyword
-* `let x = ... in r` and `foo() with r` for region passing
+* `let x = ... in r` and `foo() with r` for region allocation and passing
 * Reference counted is the default
 
 Example:
 
 ```c++
 // Not allowed to escape current scope
-local point = new Point {10, 20};
+local point = new Point {1, 2};
 let r = new Region;
-// point2 is not allowed to escape the lifetime of r (same as stack allocation)
-let point2 = new Point {20, 30} in r;
+// point2 is not allowed to escape the lifetime of r
+let point2 = new Point {3, 4} in r;
 // Defaults to garbage collection; allowed to escape anywhere
-let point3 = new Point {30, 40};
+let point3 = new Point {5, 6};
 ```
 
-Note how `local` propagates the stack-local scope through the line:
+Note how `local` propagates the stack locality through the line:
 
 ```c++
 // Two stack-allocated points and a stack-allocated array
 local points = [new Point {1, 2}, new Point {2, 3}];
 ```
 
-Locality must be part of function signature so that the calling function can know if it variables escape or not:
+Locality must be part of function signature so that the calling function can know if the arguments escape or not:
 
 ```c++
 void add_to_point(local Point p1, local Point p2) {
     p1.x += p2.x
     p1.y += p2.y;
+    // return p1 or p2 would be invalid here
 }
 ```
 
@@ -178,3 +179,4 @@ Cyclone has regions but is not memory safe.
 ## TODO
 
 * Does not cover parallelization or green threads
+* Proof-of-concept implementation
