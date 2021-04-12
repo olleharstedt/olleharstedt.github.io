@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  A concept for memory-safe GC opt-out with non-escaping variables
+title:  A concept for memory-safe opt-out of GC with locality kinds
 date:   2021-04-08
 categories: programming
 ---
@@ -9,7 +9,7 @@ categories: programming
 <img src="{{ site.url }}/assets/img/noescape.jpg" alt="y tho" height="300px"/>
 {: refdef}
 {:refdef: style="text-align: center;"}
-*No escape for non-escaping variables*
+*Oh noe*
 {: refdef}
 
 <div style='margin: 1em 3em;'>
@@ -23,19 +23,17 @@ categories: programming
 
 ## Introduction
 
-There exists no language with memory-safe and painless opt-out of garbage collection that I know of. No language hits the 80/20 sweetspot, where 20% of an application _must_ be fast, but 80% does not. C# is on is way, with refs and value types. This article outlines a different concept.
+There exists few languages with memory-safe and painless opt-out of garbage collection that I know of. No language really hits the 80/20 sweetspot, where 20% of an application _must_ be fast, but 80% does not. Rust and C are designed for code that must be fast 99% of the time. C# is on is way towards GC opt-out, with refs and value types. D has unsafe opt-out. This article outlines a different approach based on non-escaping variables.
 
-TODO: Which domain has this requirement? Games, where you often combine two languages?
+## Locality kinds
 
-todo: tuple languages
-
-## Memory
-
-When you, the developer, write a variable and allocates memory, there are three basic scenarios:
+When you, the developer, write a variable and allocate memory, there are three basic scenarios:
 
 * You know the scope _and_ the size
 * You know the scope _but not_ the size
 * You know _neither_ the size nor the scope
+
+(Scope is bound to lifetime.)
 
 These scenarios can be dealt with the following strategies:
 
@@ -43,35 +41,29 @@ These scenarios can be dealt with the following strategies:
 * Region (memory pool)
 * Garbage collection
 
-(The case when you know size but not scope is trivially solved by a global variable.)
+(The case when you know size but not scope is solved by a global static variable.)
 
-Example use-cases:
+Example use-cases, respectively:
 
-* Bla
-* Linked list
-* Bla
+* Data-transfer object, like user data
+* Tree data-structure, like with A\* algorithm
+* Web server data, like cached pages
 
-Possible syntax:
+You end up with three different _locality kinds_:
 
-```rust
-// Not allowed to escape current scope
-local point = new Point {10, 20};
-let r = new Region;
-// point2 is not allowed to escape the lifetime of r (same as stack allocation)
-let point2 = new Point {20, 30} in r;
-// Defaults to garbage collection; allowed to escape anywhere
-let point3 = new Point {30, 40};
-```
+* Stack-local
+* Region-local
+* Non-local
 
-## Escaping
+## Escape analysis
 
-Escaping its life-time or scope.
+Escape analysis is a technique used in many different compilers, like Go and Java. It enables different optimizations, for example stack allocation and scalar replacement. The idea is to track with variables escape scope or not, under the assumption that if they do not escape, they can be stack allocated instead of heap allocated.
 
-Escape analysis usually used in the backend of the compiler, like in Go. Multiple optimizing techniques related to it, like stack allocation and scalar replacement.
+Escape analysis is usually applied opportunistically, meaning that non-escaping is the default and the compiler will check and apply optimizations when possible.
 
-Idea: To put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape its scope, giving a compile-tiem warning if it does.
+To enforce locality kinds at compile-time, you put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape its scope.
 
-Example:
+Example in C:
 
 ```c
 Point* new_point() {
@@ -82,15 +74,32 @@ Point* new_point() {
 
 To achieve this check, you need to track an alias graph of all variables. Lots of known algoriths for this in the literature and papers, and in compilers (but usually on IR, not on the syntax tree).
 
-## References
-
-No value types, everything is passed by reference like in Java.
-
 ## Implemenation
+
+The three locality kinds can be expressed like so:
+
+```c++
+// Not allowed to escape current scope
+local point = new Point {10, 20};
+let r = new Region;
+// point2 is not allowed to escape the lifetime of r (same as stack allocation)
+let point2 = new Point {20, 30} in r;
+// Defaults to garbage collection; allowed to escape anywhere
+let point3 = new Point {30, 40};
+```
+
+Note how `local` propagates the stack-local scope through the line:
+
+```c++
+// Two stack-allocated points and a stack-allocated array
+local points = [new Point {1, 2}, new Point {2, 3}];
+```
 
 Can hack something in OCaml which compiles to C. Use a simple memory pool system and insert reference counting.
 
 todo: cycles with ref count
+
+No value types, everything is passed by reference like in Java.
 
 ## Other systems
 
@@ -104,4 +113,4 @@ Cyclone has regions but is not memory safe.
 
 ## TODO
 
-* Does not cover parallelization
+* Does not cover parallelization or green threads
