@@ -59,7 +59,7 @@ You end up with three different _locality kinds_:
 
 Escape analysis is a technique used in many different compilers, like Go and Java. It's the basis of different optimizations, for example stack allocation and scalar replacement. The idea is to track which variables escape scope or not, under the assumption that if they do not escape, they can be stack allocated instead of heap allocated, or replaced entirely.
 
-Escape analysis is usually applied opportunistically, meaning that non-escaping is the default and the compiler will check and apply optimizations when possible. To enforce locality kinds at compile-time, you put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape its scope.
+Escape analysis is usually applied opportunistically, meaning that escaping (unknown lifetime) is the default and the compiler will check and apply optimizations when possible. To enforce locality kinds at compile-time, you put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape its scope.
 
 Example in C:
 
@@ -76,7 +76,7 @@ If this was done in Java or Go, it would allocated on heap instead of stack, _be
 
 ```c++
 Point new_point() {
-    // Stack-locality propagated to all constructors in right-side:
+    // Stack-locality propagated to all constructors on right-side:
     local point = new Point {1, 2};
     // Aliasing is allowed
     local point2 = point;
