@@ -46,7 +46,7 @@ These scenarios can be dealt with the following strategies:
 Example use-cases, respectively:
 
 * Data-transfer object, like user data
-* Tree data-structure, like with A\* algorithm
+* Tree data-structure, like with A\* algorithm or abstract syntax-tree
 * Web server data, like cached pages
 
 You end up with three different _locality kinds_:
@@ -57,9 +57,9 @@ You end up with three different _locality kinds_:
 
 ## Escape analysis
 
-Escape analysis is a technique used in many different compilers, like Go and Java. It's the basis of different optimizations, for example stack allocation and scalar replacement. The idea is to track which variables escape scope or not, under the assumption that if they do not escape, they can be stack allocated instead of heap allocated, or replaced entirely.
+[Escape analysis](https://en.wikipedia.org/wiki/Escape_analysis) is a technique used in many different compilers, like Go and Java. It's the basis of different optimizations, for example stack allocation and scalar replacement. The idea is to track which variables escape scope or not, under the assumption that if they do not escape, they can be stack allocated instead of heap allocated, or replaced entirely.
 
-Escape analysis is usually applied opportunistically, meaning that escaping (unknown lifetime) is the default and the compiler will check and apply optimizations when possible. To enforce locality kinds at compile-time, you put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape its scope.
+Escape analysis is usually applied opportunistically, meaning that escaping (unknown lifetime) is the default and the compiler will check and apply optimizations when possible. To enforce locality kinds at compile-time, you put escape analysis at the _front_ of the compiler, giving the programmer the opportunity to create variables that are disallowed to escape their scope.
 
 Example in C:
 
@@ -85,15 +85,17 @@ Point new_point() {
 }
 ```
 
-To achieve this check, you need to track an alias graph of all variables. Lots of known algoriths for this in the literature and papers, and in compilers (but usually on IR, not on the syntax tree).
+To achieve this feature, you need to check an alias graph of all variables for each function. There are lots of algorithms for this in the literature, papers and in compilers (but usually on the intermediate representation, not on the syntax tree).
 
-## Implemenation
+## Possible language design
 
 The three locality kinds can be expressed with:
 
 * `local` keyword
 * `let x = ... in r` and `foo() with r` for region allocation and passing
 * Reference counted is the default
+
+Each variable will have both a type and a locality.
 
 Example:
 
