@@ -65,9 +65,10 @@ Example in C:
 
 ```c
 Point* new_point() {
-    Point p = {10, 20};
+    Point p = {1, 2};
     Point* q = &p;
-    return q;  // Wrong, stack allocation escapes scope
+    // Runtime error, stack allocation escapes scope
+    return q;
 }
 ```
 
@@ -75,9 +76,12 @@ If this was done in Java or Go, it would allocated on heap instead of stack, _be
 
 ```c++
 Point new_point() {
+    // Stack-locality propagated to all constructors in right-side:
     local point = new Point {1, 2};
+    // Aliasing is allowed
     local point2 = point;
-    return point2;  // Compilation error - not allowed to escape scope
+    // Compilation error - not allowed to escape scope
+    return point2;
 }
 ```
 
