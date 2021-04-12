@@ -136,6 +136,20 @@ int main() {
 }
 ```
 
+(You could pass multiple regions this way.)
+
+It would not be allowed to return regions:
+
+```c++
+Region new_region() {
+    r = new Region;
+    // Compile-time error: Regions are bound to function scope lifetime
+    return r;
+}
+```
+
+todo, copy, clone
+
 Note that this allows both aliasing and mutability in a memory-safe manner.
 
 Can hack something in OCaml which compiles to C. Use a simple memory pool system and insert reference counting.
@@ -148,6 +162,7 @@ In summary:
 
 * Three locality kinds for stack-, region and non-locality
 * Pass-by-reference
+* No implicit copy
 * Mutation and aliasing allowed
 
 ## Other systems
