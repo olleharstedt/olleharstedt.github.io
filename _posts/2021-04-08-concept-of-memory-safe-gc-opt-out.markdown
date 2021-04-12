@@ -89,7 +89,13 @@ To achieve this check, you need to track an alias graph of all variables. Lots o
 
 ## Implemenation
 
-The three locality kinds can be expressed like so:
+The three locality kinds can be expressed with:
+
+* `local` keyword
+* `let x = ... in r` and `foo() with r` for region passing
+* Reference counted is the default
+
+Example:
 
 ```c++
 // Not allowed to escape current scope
@@ -111,7 +117,23 @@ local points = [new Point {1, 2}, new Point {2, 3}];
 Locality must be part of function signature so that the calling function can know if it variables escape or not:
 
 ```c++
-todo
+void add_to_point(local Point p1, local Point p2) {
+    p1.x += p2.x
+    p1.y += p2.y;
+}
+```
+
+Regions are passed to functions with `with`:
+
+```c++
+Point new_point() with r {
+    let p = new Point {1, 2} in r;
+    return p;
+}
+int main() {
+    r = new Region;
+    let p = new_point() with r;
+}
 ```
 
 Note that this allows both aliasing and mutability in a memory-safe manner.
