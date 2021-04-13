@@ -44,15 +44,15 @@ If the pre-condition is not fulfilled, there are at least two ways to abort:
 * Failed assertion
 * Throw an exception
 
-Assertions should be used for internal invariants, things that should "never" happen or are expected by the programmers to always be upheld. One example is to check the string length given to a translation function - it can be asserted to always be at least one (translating an empty string is considered a bug). Assertions are disabled in production code.
+**Assertions** should be used for internal invariants, things that should "never" happen or are expected by the programmers to always be upheld. One example is to check the string length given to a translation function - it can be asserted to always be at least one (translating an empty string is considered a bug). Assertions are disabled in production code.
 
-Throwing exceptions happen when the interaction with the outside world goes awry. Maybe a database connection is no longer active, or the file system cannot be accessed. Another formulation is that it's correct to throw exception when it's impossible to fulfill the post-condition even when the pre-condition was fulfilled.
+**Throwing exceptions** happen when the interaction with the outside world goes awry. Maybe a database connection is no longer active, or the file system cannot be accessed. Another formulation is that it's correct to throw exception when it's impossible to fulfill the post-condition even when the pre-condition was fulfilled.
 
 Use both assertions and exception to make sure all your input is correct before starting to operate. If you fail early, it will make the code easier to debug.
 
 todo, "string" not good, "int" not good, should be more precise, might be better with wrapper classes (type alias in non-PHP), like Email or Weight instead of string and float, to reduce the risk of confusing different units.
 
-Unit-tests should be used to make sure the contract of a function remains intact, even after a long time and after multiple people have changed the code. Test both the happy path and failures; it's important that every function fails correctly.
+**Unit-tests** should be used to make sure the contract of a function remains intact, even after a long time and after multiple people have changed the code. Test both the happy path and failures; it's important that every function fails correctly.
 
 Returning null can be a normal part of the post-condition, for example when searching for a file that doesn't exist.
 
