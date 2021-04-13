@@ -174,6 +174,7 @@ In summary:
 ## TODO
 
 * Does not cover parallelization
+* Need to outline rules for interaction between locality kinds, e.g. heap pointing to stack is OK but not other way around
 * Feedback to check the integrity of the concept
 * Proof-of-concept implementation with a couple of benchmarks
 * Forget about the project forever :)
