@@ -162,11 +162,7 @@ todo, copy, clone
 
 Note that this allows both aliasing and mutability in a memory-safe manner.
 
-Can hack something in OCaml which compiles to C. Use a simple memory pool system and insert reference counting.
-
 todo: cycles with ref count
-
-No value types, everything is passed by reference like in Java.
 
 In summary:
 
