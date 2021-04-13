@@ -95,9 +95,16 @@ The three locality kinds can be expressed with:
 * `let x = ... in r` and `foo() with r` for region allocation and passing
 * Reference counted is the default
 
-Each variable will have both a type and a locality.
+User-defined types can have any locality; the locality is not specified in the type.
 
-Example:
+```c++
+struct Point {
+    int x;
+    int y;
+};
+```
+
+Each variable will have both a type and a locality (assuming it's inferred here):
 
 ```c++
 // Not allowed to escape current scope
@@ -116,7 +123,7 @@ Note how `local` propagates the stack locality through the line:
 local points = [new Point {1, 2}, new Point {2, 3}];
 ```
 
-Locality must be part of function signature so that the calling function can know if the arguments escape or not:
+Locality must be part of function signature so that the calling function can know if the arguments escape or not. Left out locality defaults to non-local and garbage collected.
 
 ```c++
 void add_to_point(local Point p1, local Point p2) {
@@ -129,7 +136,7 @@ void add_to_point(local Point p1, local Point p2) {
 Regions are passed to functions with `with`:
 
 ```c++
-Point new_point() with r {
+reg Point new_point() with r {
     let p = new Point {1, 2} in r;
     return p;
 }
@@ -168,17 +175,9 @@ In summary:
 * No implicit copy
 * Mutation and aliasing allowed
 
-## Other systems
-
-No language I know of that painlessly lets you opt out or in to/from GC in a memory-safe manner.
-
-Rust has Rc and Arc but always puts the burden of borrowing and lifetime annotations on the developer; there's no "don't care" modus (they had pre-1.0.0 release).
-
-Clean and uniqueness would be one alternative: [Uniqueness typing](https://clean.cs.ru.nl/download/happlytml_report/CleanRep.2.2_11.htm). (Not maintained.)
-
-Cyclone has regions but is not memory safe.
-
 ## TODO
 
-* Does not cover parallelization or green threads
-* Proof-of-concept implementation
+* Does not cover parallelization
+* Feedback to check the integrity of the concept
+* Proof-of-concept implementation with a couple of benchmarks
+* Forget about the project forever :)
