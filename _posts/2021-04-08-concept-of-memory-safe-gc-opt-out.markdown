@@ -23,7 +23,7 @@ categories: programming
 
 ## Introduction
 
-There exists few languages with memory-safe and painless opt-out of garbage collection that I know of. No language really hits the 80/20 sweetspot, where 20% of an application _must_ be fast, but 80% does not. Rust and C are designed for code that must be fast 99% of the time. C# is on is way towards GC opt-out, with refs and value types. D has unsafe opt-out. This article outlines a different approach based on non-escaping variables.
+There exists few languages with memory-safe and painless opt-out of garbage collection that I know of. No language really hits the 80/20 sweetspot, where 20% of an application _must_ be fast, but 80% does not. Rust and C are designed for code that must be fast 99% of the time. C# is on its way towards GC opt-out, with refs and value types. D has unsafe opt-out. This article outlines a different approach based on non-escaping variables.
 
 ## Locality kinds
 
