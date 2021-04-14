@@ -50,7 +50,7 @@ If the pre-condition is not fulfilled, there are at least two ways to abort:
 
 Use both assertions and exception to make sure all your input is correct before starting to operate. If you fail early, it will make the code easier to debug.
 
-todo, "string" not good, "int" not good, should be more precise, might be better with wrapper classes (type alias in non-PHP), like Email or Weight instead of string and float, to reduce the risk of confusing different units.
+todo, hardening the contract with value classes, especially if they have validation, "string" not good, "int" not good, should be more precise, might be better with wrapper classes (type alias in non-PHP), like Email or Weight instead of string and float, to reduce the risk of confusing different units.
 
 **Unit-tests** should be used to make sure the contract of a function remains intact, even after a long time and after multiple people have changed the code. Test both the happy path and failures; it's important that every function fails correctly.
 
