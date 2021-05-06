@@ -115,3 +115,5 @@ class PointPersistance implements PersistanceInterface
     construct(PersistanceInterface pers)
     save(Point point)
 ```
+
+Point.toXML, .toJSON, .toSQL (column, rows)
