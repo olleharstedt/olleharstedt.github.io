@@ -99,6 +99,13 @@ Paraphrasing a discussion I once took part of:
 
 Two type of arguments are clashing here: Logos (using logical arguments), and ethos (appeal to (external) authority, in this case the Bootstrap team). In the end, the Bootstrap person got tired of arguing and yielded. Whether or not Bootstrap actually _does_ use lists or divs is not relevant for the structure of the argument.
 
+Rules for this particular language game:
+
+* That we _can_ discuss. Few people would every suggest that no suggestion is possible or meaningful.
+* That there's no obvious hierarchy between logos and ethos; sometimes it's ethos, sometimes logos. One hidden assumption is that ethos, appeal to authority, always can be boiled down to logos; any authority has _good reason_ to suggest a best practice or design pattern.
+
+Pathos: Using fear? "If we don't apply this technique/practice, business will fail/we won't be able to hire new devs."
+
 ## Further reading
 
 Similar topics: Personality type (colours).
