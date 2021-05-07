@@ -76,4 +76,26 @@ let area_of_shape (s : shape) : int =
         | Point p -> 0
         | Rectangle {bottom_left; top_right} -> 1
         | Circle {center; radius} -> 2
+
+module Surface = struct
+    type t
+end
+
+module type SHAPE = sig
+    type t
+    val area : t -> int
+    val draw : t -> Surface.t -> unit
+end
+
+module Point : SHAPE = struct
+    type t = {x : int; y : int}
+    let area t = 0
+    let draw t surface = ()
+end
+
+module Rectangle : SHAPE = struct
+    type t = {bottom_left : Point.t; top_right : Point.t}
+    let area t = 0
+    let draw t surface = ()
+end
 ```
