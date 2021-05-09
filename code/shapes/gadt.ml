@@ -19,6 +19,4 @@ let area_of_shape : type a. a shape -> int = fun s -> match s with
 
 let l = [Any (new_point ()); Any (new_rec ());]
 
-let () =
-  let areas = List.map (fun (Any s) -> area_of_shape s) l in
-  ()
+let areas = List.map (fun (Any s) -> area_of_shape s) l
