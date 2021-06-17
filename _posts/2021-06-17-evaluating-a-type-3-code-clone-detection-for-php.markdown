@@ -86,7 +86,7 @@ We don't use Java in-house, only PHP, and so I wanted a good CLI tool in the Uni
 
 In the end, was it worth it? Does our code-base contain enough Type 3 clones to motivate the slower run time of the new algorithm compared to the much faster hash algorithm? And do those clones contain faults? Don't know. So far, it seems like the example above, where the middle line was changed, is not too common. Often a Type 3 clone can be identified by two smaller Type 2 clones after each other. The new algorithm is more precise, though, and more often detect the _full_ clone without stopping at a small token change. Tuning the algorithm correctly is also a challenge. Too many false positives and everyone will be annoyed.
 
-I'm struggling still on how to integrate it in our CI. I think a first step would be _single-file analysis_, where you run the algorithm on each file separately. This way you can tune the algorithm to be more sensitive, assuming single classes can be better factored than an entire project, especially with legacy code.
+I'm struggling still on how to integrate it in our CI. I think a first step would be _single-file analysis_, where you run the algorithm on each file separately. This way you can tune the algorithm to be more sensitive, assuming single classes can be better factored than an entire project, especially with legacy code. Then the faster algorithm can be used project-wide.
 
 Thanks for reading! Ping me on Github if you have any questions. :)
 
