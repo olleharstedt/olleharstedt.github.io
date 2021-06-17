@@ -93,7 +93,7 @@ Thanks for reading! Ping me on Github if you have any questions. :)
 Olle
 
 {:refdef: style="text-align: center;"}
-<img src="{{ site.url }}/assets/img/limesurveylogo.png" alt="LimeSurvey" height="50px"/>
+<a href="https://www.limesurvey.org"><img src="{{ site.url }}/assets/img/limesurveylogo.png" alt="LimeSurvey" height="50px"/></a>
 {: refdef}
 {:refdef: style="text-align: center;"}
 **Open-source survey tool**
