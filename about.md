@@ -4,4 +4,4 @@ title: About
 permalink: /about/
 ---
 
-Olle Härstedt, 35 year old developer from Sweden, living in Hamburg.
+Olle Härstedt, 38 year old developer from Sweden, living in Hamburg.
