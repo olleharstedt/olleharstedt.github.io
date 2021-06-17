@@ -32,7 +32,7 @@ There are four main types of code clones defined by researchers:
 * Type 1 (exact, except for whitespace and comments)
 * Type 2 (exact, except for renaming of identifiers)
 * Type 3 (might include removed or added lines)
-* Type 4 (different but semantically same)<ref>Liuqing Li et al, CCLearner: A Deep Learning-Based CloneDetection Approach</ref><ref>Andrew Walker et al, Open-Source Tools and Benchmarks for Code-CloneDetection: Past, Present, and Future Trends</ref>
+* Type 4 (different but semantically same)
 
 The **edit distance** can be seen as the numbers of changes needed between two clones to make them identical. These changes are in terms of tokens, not white-space or variable naming.
 
