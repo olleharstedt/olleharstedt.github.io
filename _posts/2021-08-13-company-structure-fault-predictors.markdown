@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Company culture fault predictors
+title:  Company structure fault predictors
 date:   2021-08-13
 categories: programming
 ---
