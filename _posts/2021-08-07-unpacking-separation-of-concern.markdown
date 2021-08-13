@@ -1,9 +1,11 @@
 ---
 layout: post
-title:  Unpacking Separation of Concern
+title:  Unpacking separation of concern
 date:   2021-08-07
 categories: programming
 ---
+
+DRAFT
 
 <div style='margin: 1em 3em;'>
 <table>
