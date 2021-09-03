@@ -51,6 +51,11 @@ Example use-cases, respectively:
 * Tree data-structure, like with A\* algorithm or abstract syntax-tree
 * Web server data, like cached pages
 
+Use-cases for non-growing vs growing regions:
+
+* Cache
+* IO buffer (TODO: elaborate; fragmentation)
+
 You end up with three different _locality kinds_:
 
 * Stack-local
