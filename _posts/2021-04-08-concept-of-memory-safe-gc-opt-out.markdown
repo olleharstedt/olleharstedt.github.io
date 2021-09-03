@@ -33,6 +33,8 @@ When you, the developer, write a variable and allocate memory, there are three b
 * You know the scope _but not_ the size
 * You know _neither_ the size nor the scope
 
+(TODO: Difference between known size and known upper bound; what's the diff between upper bound and average usage in, say, A\*?)
+
 (Scope is bound to lifetime.)
 
 These scenarios can be dealt with the following strategies:
