@@ -38,7 +38,7 @@ function recalculateOrder(order, country): order {
     // ...
 }
 ```
-* Side-effects[Explanation] decrease composability, move them up in the stack trace when possible[Example 1]
+* Side-effects (writing/reading to/from IO, file, database, etc) decrease composability, move them up in the stack trace when possible
 ```java
 // Not good
 function processOrders(orderIds) {
@@ -50,7 +50,7 @@ function processOrders(orders) {
     // ...
 }
 ```
-* Implicit dependencies decrease composability, make them explicit either with injection or as function arguments[Example 2]
+* Implicit dependencies decrease composability, make them explicit either with injection or as function arguments
 ```java
 // Not good
 function foo() {
@@ -74,3 +74,4 @@ function foo() {
 * There's no established code metric to measure composability
 * When you have code clones, there are composable parts to factor out
 * The expressiveness of a programming language sets limits on what you can combine and compose
+* There's little or no empirical evidence related to composability and changeability.
