@@ -11,7 +11,7 @@ This is not related to composable infrastructure.
 
 * Code should either:<br/>
 1) Organise composable parts; or<br/>
-2) Be a composable part[Functional core, imperative shell]
+2) Be a composable part[^1]
 * Functions are composable when they can be combined freely
 ```java
 foo(bar())
@@ -38,7 +38,7 @@ function recalculateOrder(order, country): order {
     // ...
 }
 ```
-* Side-effects (writing/reading to/from IO, file, database, etc) decrease composability, move them up in the stack trace when possible
+* Side-effects[^2] decrease composability, move them up in the stack trace when possible
 ```java
 // Not good
 function processOrders(orderIds) {
@@ -67,11 +67,19 @@ function foo() {
 }
 ```
 * Composable parts are easier to unit test
-* Developing composable parts is like constructing a language[SICP]
+* Developing composable parts is like constructing a language[^3]
 * Code consisting of composable and interchangeable parts are easier to change, both for bug fixes and feature requests
 * Writing to a class property decreases composability, prefer returning a value when possible
 * You can never have 100% composability due to cross-cutting concerns
 * There's no established code metric to measure composability
-* When you have code clones, there are composable parts to factor out
+* When you have code clones, there are composable parts to factor out (excluding false positives)
 * The expressiveness of a programming language sets limits on what you can combine and compose
 * There's little or no empirical evidence related to composability and changeability.
+
+<br/>
+
+[^1]: [Functional core, imperative shell](https://github.com/kbilsted/Functional-core-imperative-shell/blob/master/README.md)
+
+[^2]: Writing/reading to/from IO, file, database, etc
+
+[^3]: [ Structure and Interpretation of Computer Programs](https://mitpress.mit.edu/sites/default/files/sicp/index.html)
