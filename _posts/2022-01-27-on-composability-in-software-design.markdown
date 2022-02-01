@@ -69,6 +69,7 @@ function foo() {
 * Composable parts are easier to unit test
 * Developing composable parts is like constructing a language[^3]
 * Code consisting of composable and interchangeable parts are easier to change, both for bug fixes and feature requests
+* Composability is domain specific, no one would expect a string library to be composable with mathematical functions
 * Writing to a class property decreases composability, prefer returning a value when possible
 * You can never have 100% composability due to cross-cutting concerns
 * There's no established code metric to measure composability
