@@ -22,3 +22,9 @@ Web dev, PHP, but applicable to other dynamic scripting langs.
 ## que()
 
 `que()` is a queue function for side-effects that can happen "anytime" during a request run.
+
+This only works when you DO NOT need the result of the operation, at all. Possibly only throw exception at failure.
+
+## run()
+
+`run()` is used when you immediately need the result of a side-effect. This is an alternative to mocking objects and inject dependencies. Instead you configure `run()` by giving it a configuration object, saying what to return for each call.
