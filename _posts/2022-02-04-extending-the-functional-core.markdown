@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Extending the functional core
+title:  Strategies for extending the functional core - delayed effect queue builder
 date:   2022-01-27
 categories: programming
 ---
@@ -9,13 +9,8 @@ categories: programming
 
 Pre-reqs:
 
-* Read about functional core, imperative shell architecture
-* Command object pattern
+* [Functional core, imperative shell architecture](https://github.com/kbilsted/Functional-core-imperative-shell/blob/master/README.md)
 * Purity, referential transparency, side-effects
-
-Web dev, PHP, but applicable to other dynamic scripting langs.
-
-This is theoretical and not intended as a finished concept.
 
 Rational:
 
@@ -31,16 +26,45 @@ The different categories of side-effects (or just "effects") in this article are
 * Effects that depend on each other
 * Effects where the result is needed at once
 
-## que()
+Use-case: A function to create x number of dummy users from a web request object, save them in database and show a result.
 
-`que()` is a queue function for side-effects that can happen "anytime" during a request run.
+```java
+function createDummyUsers(Request request, St st)
+{
+    times  = request.getParam("times", 5);
+    dummyUsers = new Stack();
 
-This only works when you DO NOT need the result of the operation, at all. Possibly only throw exception at failure.
+    for (; times > 0; times--) {
+        user           = new User();
+        user.username  = "John Doe";
 
-## seq()
+        st.if(() -> user.save())
+          .then(() -> dummyUsers.push(["username" => user.username]));
+    }
 
-Each next closure is only executed if previous one returns `true`.
+    return {
+        "success":    true,
+        "dummyUsers": dummyUsers
+    };
+}
 
-## run()
+```
 
-`run()` is used when you immediately need the result of a side-effect. This is an alternative to mocking objects and inject dependencies. Instead you configure `run()` by giving it a configuration object, saying what to return for each call during unit testing.
+```java
+user = new User();
+// ... set properties
+st(() -> user.save() ? void : throw new Exception("Could not save user"));
+```
+
+(An alternative is `st.throwOnFalse(fn () => user.save());`)
+
+```java
+st
+  .if(() -> user.save())
+  .then(() -> /* Do something */)
+  .else(() -> /* Throw exception? */);
+```
+
+> But why?
+
+To get rid of mocking and injection.  When writing the unit test, you can skip the `if` part and just run the `then` or `else` part to check the behaviour at success or failure. You don't even have to mock the state object `st`, just get the event queue and manipulate it however you want in the test code.
