@@ -91,7 +91,9 @@ Full code-listing can be found in [this gist](https://gist.github.com/olleharste
 ## Related concepts
 
 * [Tagless-final](https://discuss.ocaml.org/t/explain-like-im-5-years-old-tagless-final-pattern/)
-* [Flutent interface](https://martinfowler.com/bliki/FluentInterface.html)
+* [Builder pattern](https://refactoring.guru/design-patterns/builder)
+* [Expression builder](https://martinfowler.com/bliki/ExpressionBuilder.html)
+* [Fluent interface](https://martinfowler.com/bliki/FluentInterface.html)
 * [Event sourcing](https://eventsauce.io/docs/event-sourcing/)
 * [Multi-stage programming](https://en.wikipedia.org/wiki/Multi-stage_programming)
 
