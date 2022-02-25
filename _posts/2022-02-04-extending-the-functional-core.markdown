@@ -20,6 +20,7 @@ Rational:
 * It's to be desired to extend the ratio of pure methods and functions in a code-base
 * Sometimes you can easily extend the functional core by lifting out side-effects to calling code
 * Sometimes, the side-effects are entangled inside business logic, and it's not clear if it's possible to "purify"
+* Another motivation is that mocking is often complex (and boring) to write, and reducing the need of mocking in testing will make your test suite simpler
 
 ## The EDSL
 
@@ -103,7 +104,6 @@ Full code-listing can be found in [this gist](https://gist.github.com/olleharste
 
 ## Notes
 
-* Another motivation is that mocking is often complex (and boring) to write, and reducing the need of mocking in testing will make your test suite simpler
 
 The different categories of side-effects (or just "effects") are:
 
