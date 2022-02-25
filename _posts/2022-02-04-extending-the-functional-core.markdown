@@ -21,6 +21,8 @@ Rational:
 * Sometimes you can easily extend the functional core by lifting out side-effects to calling code
 * Sometimes, the side-effects are entangled inside business logic, and it's not clear if it's possible to "purify"
 
+## The EDSL
+
 Consider the pipeline schema read-process-write, where "read" means reading IO, "process" means pure business logic, and "write" means writing to IO.
 
 * Some times you have read-process in one function. Then it's often easy to lift out the read-part and pass it as an argument instead.
@@ -42,6 +44,7 @@ function createDummyUsers(Request $request, St $st): array
         $user->username = 'John Doe';
 
         // Using the EDSL builder to create an AST
+        // The AST is not evaluated or executed at this point
         $st
             ->if(save($user))
             ->then(pushToStack($dummyUsers, $user->username));
@@ -54,11 +57,11 @@ function createDummyUsers(Request $request, St $st): array
 }
 ```
 
-And to use this code:
+And to use, this code:
 
 ```php
 $st = new St();
-$result = createDummyUsers(new Request(), $st);
+$result = createDummyUsers(new Request($_POST), $st);
 // You need an evaluator to run the AST from $st
 (new Evaluator($st))->run();
 renderJson($result);
@@ -66,20 +69,16 @@ renderJson($result);
 
 The big benefit of wrapping side-effects in an AST that's evaluated, is that in your test code, you can use the same dry-run spy-evaluator in _all_ tests. One mock to rule them all.
 
-```php
-$user = new User();
-// ... set properties
-st(() -> user.save() ? void : throw new Exception("Could not save user"));
-```
-
-(An alternative is `st.throwOnFalse(fn () => user.save());`)
+Test code:
 
 ```php
-st
-  .if(() -> user.save())
-  .then(() -> /* Do something */)
-  .else(() -> /* Throw exception? */);
+$st = new St();
+$result = createDummyUsers(new Request(), $st);
+(new DryRunSpyEvaluator($st))->run();
+// ...check that $result and effects recorded in the spy correlate
+// E.g. try to create 5 dummy users, 1 fail, you should have 4 usernames writes to stack and in $result
 ```
+
 
 > But why?
 
