@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Strategies for extending the functional core - delayed effect queue builder
+title:  Strategies for extending the functional core - an effect EDSL 
 date:   2022-01-27
 categories: programming
 ---
@@ -11,16 +11,20 @@ Pre-reqs:
 
 * [Functional core, imperative shell architecture](https://github.com/kbilsted/Functional-core-imperative-shell/blob/master/README.md)
 * Purity, referential transparency, side-effects
+* EDSL means [embedded domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language#External_and_Embedded_Domain_Specific_Languages)
 
 Rational:
 
 * The functional core is more testable and more composable than the imperative shell or effectful code
+* It's to be desired to extend the ratio of pure methods and functions in a code-base
 * Sometimes you can easily extend the functional core by lifting out side-effects to calling code
 * Sometimes, the side-effects are entangled inside business logic
+* Consider the pipeline schema read-process-write
+
 * This blog post outlines a couple of strategies to extend what's considered "functional core" by wrapping side-effects in different categories of command objects or closures
 * Another motivation is that mocking is often complex (and boring) to write, and reducing the need of mocking in testing will make your test suite simpler
 
-The different categories of side-effects (or just "effects") in this article are:
+The different categories of side-effects (or just "effects") are:
 
 * Effects that can be delayed
 * Effects that depend on each other
@@ -28,26 +32,29 @@ The different categories of side-effects (or just "effects") in this article are
 
 Use-case: A function to create x number of dummy users from a web request object, save them in database and show a result.
 
-```java
-function createDummyUsers(Request request, St st)
+Coded in PHP below, but the pattern is language agnostic.
+
+```php
+function createDummyUsers(Request $request, St $st): array
 {
-    times  = request.getParam("times", 5);
-    dummyUsers = new Stack();
+    $times  = $request->getParam('times', 5);
+    $dummyUsers = new SplStack();
 
-    for (; times > 0; times--) {
-        user           = new User();
-        user.username  = "John Doe";
+    for (; $times > 0; $times--) {
+        $user           = new User();
+        $user->username = 'John Doe';
 
-        st.if(() -> user.save())
-          .then(() -> dummyUsers.push(["username" => user.username]));
+        // Using the EDSL
+        $st
+            ->if(save($user))
+            ->then(pushToStack($dummyUsers, $user->username));
     }
 
-    return {
-        "success":    true,
-        "dummyUsers": dummyUsers
-    };
+    return [
+        'success'    => true,
+        'dummyUsers' => $dummyUsers
+    ];
 }
-
 ```
 
 ```java
