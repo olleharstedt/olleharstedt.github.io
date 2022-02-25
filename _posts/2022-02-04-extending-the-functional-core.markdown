@@ -12,7 +12,7 @@ Pre-reqs:
 * [Functional core, imperative shell architecture](https://github.com/kbilsted/Functional-core-imperative-shell/blob/master/README.md)
 * Purity, referential transparency, side-effects
 * EDSL means [embedded domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language#External_and_Embedded_Domain_Specific_Languages)
-* [Abstract syntax-tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
+* [Abstract syntax-tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST)
 
 Rational:
 
@@ -23,11 +23,13 @@ Rational:
 
 ## The EDSL
 
-Consider the pipeline schema read-process-write, where "read" means reading IO, "process" means pure business logic, and "write" means writing to IO.
+Consider the pipeline schema `read-process-write`, where "read" means reading IO, "process" means pure business logic, and "write" means writing to IO.
 
-* Some times you have read-process in one function. Then it's often easy to lift out the read-part and pass it as an argument instead.
-* Other times you have process-write in one function, in which case you can either mock the writing class in testing, or return a command object representing the write
-* When read-process-write is entangled, it's sometimes possible to use an effect DSL to represent writes. Details below.
+* Some times you have `read-process` in one function. Then it's often easy to lift out the read-part and pass it as an argument instead.
+* Other times you have `process-write` in one function, in which case you can either mock the writing class in testing, or return a small command object representing the write which is executed in the client code
+* When `read-process-write` is entangled, it's sometimes possible to use an effect DSL to represent writes. Details below.
+
+If you have function which does `process-write-process-write`, you can delay all writes until after the function is done.
 
 Consider the following use-case: A function to create x number of dummy users from a web request object, save them in database and show a result.
 
@@ -57,32 +59,33 @@ function createDummyUsers(Request $request, St $st): array
 }
 ```
 
-And to use, this code:
+The interesting part is the `$st` object, which is a builder for an AST, in which each node represent an effect like `Save` or `PushToStack`, _or_ a condition (the `if-then-else` node).
+
+The client code looks like this:
 
 ```php
 $st = new St();
 $result = createDummyUsers(new Request($_POST), $st);
-// You need an evaluator to run the AST from $st
 (new Evaluator($st))->run();
 renderJson($result);
 ```
 
+You need an evaluator to run and execute the nodes in the AST. Just as in the event source pattern, we here separate data from behaviour, in which a `Save` node can be parsed in different ways (for example, either a database interaction, or a mocked action).
+
 The big benefit of wrapping side-effects in an AST that's evaluated, is that in your test code, you can use the same dry-run spy-evaluator in _all_ tests. One mock to rule them all.
 
-Test code:
+Unit-testing code:
 
 ```php
 $st = new St();
 $result = createDummyUsers(new Request(), $st);
 (new DryRunSpyEvaluator($st))->run();
-// ...check that $result and effects recorded in the spy correlate
-// E.g. try to create 5 dummy users, 1 fail, you should have 4 usernames writes to stack and in $result
+// ...assert that $result and effects recorded in the spy correlate
+// E.g. try to create 5 dummy users, 5 write nodes in the AST
+// should correspond to 5 usernames in $result
 ```
 
-
-> But why?
-
-To get rid of mocking and injection.  When writing the unit test, you can skip the `if` part and just run the `then` or `else` part to check the behaviour at success or failure. You don't even have to mock the state object `st`, just get the event queue and manipulate it however you want in the test code.
+Full code-listing can be found in [this gist](https://gist.github.com/olleharstedt/88752595d8abb0ff7ba7197d26b3d15b).
 
 ## Related concepts
 
