@@ -19,7 +19,7 @@ Rational:
 * The functional core is more testable and more composable than the imperative shell or effectful code
 * It's to be desired to extend the ratio of pure methods and functions in a code-base
 * Sometimes you can easily extend the functional core by lifting out side-effects to calling code
-* Sometimes, the side-effects are entangled inside business logic
+* Sometimes, the side-effects are entangled inside business logic, and it's not clear if it's possible to "purify"
 
 Consider the pipeline schema read-process-write, where "read" means reading IO, "process" means pure business logic, and "write" means writing to IO.
 
