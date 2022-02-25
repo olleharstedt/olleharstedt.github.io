@@ -92,6 +92,7 @@ Full code-listing can be found in [this gist](https://gist.github.com/olleharste
 
 * [Tagless-final](https://discuss.ocaml.org/t/explain-like-im-5-years-old-tagless-final-pattern/)
 * [Flutent interface](https://martinfowler.com/bliki/FluentInterface.html)
+* [Event sourcing](https://eventsauce.io/docs/event-sourcing/)
 
 ## Thanks to
 
@@ -101,12 +102,3 @@ Full code-listing can be found in [this gist](https://gist.github.com/olleharste
 {:refdef: style="text-align: center;"}
 **Open-source survey tool**
 {: refdef}
-
-## Notes
-
-
-The different categories of side-effects (or just "effects") are:
-
-* Effects that can be delayed
-* Effects that depend on each other
-* Effects where the result is needed at once
