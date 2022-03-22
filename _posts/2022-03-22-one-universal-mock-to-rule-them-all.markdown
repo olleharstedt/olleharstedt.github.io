@@ -7,6 +7,8 @@ categories: programming
 
 This blog post outlines a strategy to remove the need for mocking in tests, by using an expression builder class for side-effects.
 
+Examples are made in PHP, but the concept is applicable to any OOP language.
+
 Motivating example (from [here](https://blog.ploeh.dk/2016/09/26/decoupling-decisions-from-effects/)):
 
 ```java
