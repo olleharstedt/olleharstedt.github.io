@@ -107,3 +107,7 @@ In short, you can statically make sure your SQL queries are correct, _without_ r
 
 * This is a little bit like type-state programming, which _could_ allow for type-safe embedded domain-specific language (EDSL) if the problems could be adressed.
 * Also see tagless-final, another way to do type-safe EDSL in functional programming
+
+<br/>
+
+[My GitHub Sponsors](https://github.com/sponsors/olleharstedt)
