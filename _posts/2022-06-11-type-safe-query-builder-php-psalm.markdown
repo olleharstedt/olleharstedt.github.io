@@ -5,9 +5,7 @@ date:   2022-06-11
 categories: programming
 ---
 
-Caveats below.
-
-Main point: Use Psalm type annotations to statically disallow faulty states.
+**Main point: Use Psalm's type-annotations to statically disallow faulty states in a class.**
 
 [Psalm](https://psalm.dev) is a static analyser for PHP.
 
@@ -48,19 +46,37 @@ class QueryBuilder
     /**
      * @psalm-if-this-is QueryBuilder<HasSelect, HasFrom>
      */
-    public function execute(): void
+    public function execute(): mixed
     {
+        return 'result';
     }
 }
 ```
 
-How to use it:
+Example usages:
 
 ```php
+// $qb has type QueryBuilder<mixed, mixed>
 $qb = new QueryBuilder();
+// $qb has type QueryBuilder<HasSelect, mixed>
 $qb->select();
+// $qb has type QueryBuilder<HasSelect, HasFrom>
 $qb->from();
-$qb->execute();  // $qb has type QueryBuilder<HasSelect, HasFrom>, so this call is valid
+// $qb has type QueryBuilder<HasSelect, HasFrom>, so this call is valid
+$qb->execute();
+```
+
+It's also possible to change the order of the function calls:
+
+```php
+// $qb has type QueryBuilder<mixed, mixed>
+$qb = new QueryBuilder();
+// $qb has type QueryBuilder<null, HasFrom>
+$qb->from();
+// $qb has type QueryBuilder<HasSelect, HasFrom>
+$qb->select();
+// $qb has type QueryBuilder<HasSelect, HasFrom>, so this call is valid
+$qb->execute();
 ```
 
 Example of failing use:
@@ -68,7 +84,8 @@ Example of failing use:
 ```php
 $qb = new QueryBuilder();
 $qb->select();
-$qb->execute();  // $qb has type QueryBuilder<HasSelect, mixed> - not valid
+// $qb has type QueryBuilder<HasSelect, mixed> - not valid
+$qb->execute();
 ```
 
 This will fail with:
@@ -78,12 +95,15 @@ ERROR: IfThisIsMismatch - Class type must be QueryBuilder<HasSelect, HasFrom>
 current type QueryBuilder<HasSelect, mixed>
 ```
 
-In short, you can statically make sure all your SQL queries are correct, _without_ running the code.
+In short, you can statically make sure your SQL queries are correct, _without_ running the code.
 
-Some caveats:
+**Caveats:**
 
-* These annotations do not work with method chaining
-* Aliasing will confuse the type-checker, e.g. using `$foo = $qb`, Psalm will not understand they are pointing to the same object; one possible solution is to forbid aliasing, that is, only allow _one_ variable pointing to an object at a time (related to ownership)
-* It would probably be really hard to build a _complete_ type-safe SQL query builder
+* These annotations do not work with method chaining in current version of Psalm
+* Aliasing will confuse the type-checker, e.g. setting `$foo = $qb`, Psalm will not understand they are pointing to the same object; one possible solution is to forbid aliasing, that is, only allow _one_ variable pointing to an object at a time (related to ownership and uniqueness)
+* It would probably be really hard to build a type-safe query builder for _all_ possible SQL queries
 
-This is a little bit like type-state programming, which _could_ allow for type-safe embedded DSL if the problems could be adressed.
+**Related concepts:**
+
+* This is a little bit like type-state programming, which _could_ allow for type-safe embedded domain-specific language (EDSL) if the problems could be adressed.
+* Also see tagless-final, another way to do type-safe EDSL in functional programming
