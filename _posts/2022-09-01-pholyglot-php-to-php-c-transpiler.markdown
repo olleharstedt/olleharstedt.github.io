@@ -136,6 +136,10 @@ Another use-case could be cronjobs that need to run fast, but CTO is not ready o
 
 One interesting milestone would be to run the [composer](https://getcomposer.org/) dependency resolver in Pholly. I don't think it'll ever happen, tho.
 
+> Tech stack of the transpiler?
+
+OCaml with Menhir, dune, opam.
+
 **Unresolved issues**
 
 PHP's `array`. Hard to type-infer. Could be a list, an actual C array (dynamic or fixed size), a tuple, or a hash table. Wrapping it in classes together with PHP class aliases could maybe be a way forward.
