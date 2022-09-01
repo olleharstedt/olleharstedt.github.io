@@ -5,7 +5,7 @@ date:   2022-06-11
 categories: programming
 ---
 
-[Pholyglot](https://github.com/olleharstedt/pholyglot) is a small and never-to-be-completed hobby project transpiler that takes a subset of PHP as input, and outputs [polyglot](https://en.wikipedia.org/wiki/Polyglot_(computing)) code that can be run in both PHP and C. See example below.
+[Pholyglot](https://github.com/olleharstedt/pholyglot) is a small hobby project transpiler that takes a subset of PHP as input, and outputs [polyglot](https://en.wikipedia.org/wiki/Polyglot_(computing)) code that can be run in both PHP and C. See example below.
 
 The PHP subset is called "Pholly", of course. :)
 
@@ -102,7 +102,7 @@ Why not?
 
 > Hey, you did a stack allocation of point in C!
 
-Yeah. I'm working on some different approaches. I've wanted to implement escape analysis for a long time, and started with it now. Stack alloc is safe if the memory does not escape scope. Regions could be an alternative for dynamic datastructures like linked lists. Also, just don't collect...? If the script is short-lived, it's "fine".
+Yeah. I'm working on some different approaches. I've wanted to implement escape analysis for a long time, and started with it now. Stack alloc is safe if the memory does not escape scope. Regions could be an alternative for dynamic data-structures like linked lists. Also, just don't collect...?
 
 > Inheritance? Interfaces?
 
@@ -134,7 +134,7 @@ Hm, maybe for simple REST calls that does not change often and have a high load?
 
 Another use-case could be cronjobs that need to run fast, but CTO is not ready or willing to introduce a new language into the tech stack. Then a rewrite into Pholly could be easier to sell and do, perhaps? Assuming the transpiler would be more feature complete. Which will never happen.
 
-One interesting milestone would be to run the [composer](https://getcomposer.org/) dependency resolver in Pholly. I don't think it'll ever happen, tho.
+One interesting milestone would be to run the [composer](https://getcomposer.org/) dependency resolver in Pholly.
 
 > Tech stack of the transpiler?
 
@@ -145,3 +145,7 @@ OCaml with Menhir, dune, opam.
 PHP's `array`. Hard to type-infer. Could be a list, an actual C array (dynamic or fixed size), a tuple, or a hash table. Wrapping it in classes together with PHP class aliases could maybe be a way forward.
 
 Memory, as noted above.
+
+Including files, like `include "me_too.c"`. But might not be so hard, actually.
+
+`mixed` type? Or parametric polymorphism? Dunno.
