@@ -30,7 +30,9 @@ A pain-point in not being able to use "normal" array access notation, which is t
 
 PHP `new` keyword also can be used as `new(<string of classname)`, which works with the above C macro. Assumes a constructor function will exist, e.g. `Point__constructor`.
 
-Thanks to these solutions, we get code like
+What's yet missing is different allocation strategies, e.g. using ref counting, Boehm or stack allocation as above with `alloca`. I'm thinking of using the `_Generic` C functionality for this, with a hard-coded list inside the macro created during the transpilation.
+
+Thanks to these solutions, we get code like:
 
 ```php
 //?>
@@ -41,7 +43,7 @@ $points = array_make(Point, 2, new(Point), new(Point));
 
 which is pretty readable, I'd say.
 
-Another pain-point is the reference notation. PHP has value semantics for arrays. I didn't want to implement that in C, so instead I chose to enforce references for array as arguments to functions. The PHP notation `&` exists in C++ but not C. Because of a regression, it's not possible anymore in PHP 8.1 and up to but comments between reference and variable, else I could have done
+Another pain-point is the reference notation. PHP has value semantics for arrays. I didn't want to implement that in C, so instead I chose to enforce references for array as arguments to functions. The PHP notation `&` exists in C++ but not C. Because of a regression, it's not possible anymore in PHP 8.1 and up to but comments between reference and variable, else I could have done:
 
 ```
 function foo(
