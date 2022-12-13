@@ -9,7 +9,7 @@ TODO
 
 The target is semi-readable PHP+C polyglot code.
 
-```c
+```cpp
 #define array(...) {__VA_ARGS__}
 #define array_make(type, i, ...) {.thing = (type[]) array(__VA_ARGS__), .length = i}
 typedef struct array array;
@@ -20,7 +20,7 @@ Make array struct that keeps the length of the array. The type is known during c
 
 I'm limiting myself to fixed-size arrays. Linked lists and hash tables will probably be wrapped in classes/structs instead.
 
-```c
+```c++
 #define array_get(type, arr, i) ((type*) arr.thing)[i]
 ```
 
