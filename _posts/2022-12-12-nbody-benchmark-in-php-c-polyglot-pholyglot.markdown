@@ -45,7 +45,7 @@ which is pretty readable, I'd say.
 
 Another pain-point is the reference notation. PHP has value semantics for arrays. I didn't want to implement that in C, so instead I chose to enforce references for array as arguments to functions. The PHP notation `&` exists in C++ but not C. Because of a regression, it's not possible anymore in PHP 8.1 and up to but comments between reference and variable, else I could have done:
 
-```
+```php
 function foo(
 #if __PHP__
 &
@@ -56,7 +56,7 @@ $points
 
 The only other solution I could think of is to duplicate the function signature when there's an array passed around:
 
-```
+```php
 //?>
 void foo(array $points)
 //<?php
