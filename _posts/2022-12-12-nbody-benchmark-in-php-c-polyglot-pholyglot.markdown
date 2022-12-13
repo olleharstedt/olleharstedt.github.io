@@ -9,7 +9,7 @@ TODO
 
 The target is semi-readable PHP+C polyglot code.
 
-```C
+```c
 #define array(...) {__VA_ARGS__}
 #define array_make(type, i, ...) {.thing = (type[]) array(__VA_ARGS__), .length = i}
 typedef struct array array;
@@ -18,13 +18,13 @@ struct array {void* thing; size_t length; };
 
 Make array struct that keeps the length of the array. The type is known during compile-time.
 
-```C
+```c
 #define array_get(type, arr, i) ((type*) arr.thing)[i]
 ```
 
 A pain-point in not being able to use "normal" array access notation, which is the same in both C and PHP. I chose this so I could keep length of array in the struct. Obviously it means a performance overhead when run as PHP, with a function call at each array access.
 
-```C
+```c
 #define new(x) x ## __constructor(alloca(sizeof(struct x)))
 ```
 
