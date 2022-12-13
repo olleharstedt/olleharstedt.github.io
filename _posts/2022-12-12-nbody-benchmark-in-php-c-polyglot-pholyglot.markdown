@@ -9,6 +9,8 @@ TODO
 
 0.0.-2-betachicken
 
+The target is semi-readable PHP+C polyglot code.
+
 ```C
 #define array(...) {__VA_ARGS__}
 #define array_make(type, i, ...) {.thing = (type[]) array(__VA_ARGS__), .length = i}
@@ -32,7 +34,7 @@ PHP `new` keyword also can be used as `new(<string of classname)`, which works w
 
 What's yet missing is different allocation strategies, e.g. using ref counting, Boehm or stack allocation as above with `alloca`. I'm thinking of using the `_Generic` C functionality for this, with a hard-coded list inside the macro created during the transpilation.
 
-Thanks to these solutions, we get code like:
+Thanks to these solutions, we finally get code like:
 
 ```php
 //?>
