@@ -7,8 +7,6 @@ categories: programming
 
 TODO
 
-0.0.-2-betachicken
-
 The target is semi-readable PHP+C polyglot code.
 
 ```C
@@ -70,3 +68,5 @@ function foo(array &$points)
 ```
 
 So close tho. :(
+
+Stay tuned for the next version: pholyglot-0.0.-2-betachicken.
