@@ -18,6 +18,8 @@ struct array {void* thing; size_t length; };
 
 Make array struct that keeps the length of the array. The type is known during compile-time.
 
+I'm limiting myself to fixed-size arrays. Linked lists and hash tables will probably be wrapped in classes/structs instead.
+
 ```c
 #define array_get(type, arr, i) ((type*) arr.thing)[i]
 ```
