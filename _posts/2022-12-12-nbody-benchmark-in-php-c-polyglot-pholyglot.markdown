@@ -7,7 +7,23 @@ categories: programming
 
 TODO
 
-The target is semi-readable PHP+C polyglot code.
+TODO: Polymorphic arrays carrying length
+
+TODO: Malloc
+
+Pholyglot is a PHP-to-PHP+C transpiler. The output is C code that's also runnable by PHP, so called polyglot code.
+
+Target is supposed to be semi-readable.
+
+Issues to resolve to do the nbody benchmark:
+
+* Polymorph arrays
+* Some kind of allocation
+* Functions
+* Loops (foreach and do-while)
+* Some kind of generics for `array_slice`
+* Basic arithmetic
+* Class/struct base
 
 ```cpp
 #define array(...) {__VA_ARGS__}
