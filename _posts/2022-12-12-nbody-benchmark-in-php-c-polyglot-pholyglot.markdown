@@ -25,6 +25,19 @@ Issues to resolve to do the nbody benchmark:
 * Basic arithmetic
 * Class/struct base
 
+## Arrays
+
+The array is a very basic struct like so:
+
+```c
+struct array {
+    uintptr_t* thing;
+    size_t length;
+};
+```
+
+All it contains is a pointer to the actual array data and its length.
+
 ```cpp
 #define array(...) {__VA_ARGS__}
 #define array_make(type, i, ...) {.thing = (type[]) array(__VA_ARGS__), .length = i}
