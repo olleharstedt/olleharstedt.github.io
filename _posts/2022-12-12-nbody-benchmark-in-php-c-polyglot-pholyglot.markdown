@@ -13,6 +13,10 @@ _Pholly_ is the PHP dialect that's supported by Pholyglot (mostly a subset + som
 
 This blog post describes the features needed inside the Pholyglot compiler to complete the nbody benchmark from [benchmarkgames](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html).
 
+Full code listing of the Pholly code: ...
+
+Full code listing of the transpiled PHP+C code: ...
+
 Topics:
 
 * Polymorphic arrays
