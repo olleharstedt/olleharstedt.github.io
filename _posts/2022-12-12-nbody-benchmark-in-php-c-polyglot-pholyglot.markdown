@@ -5,23 +5,17 @@ date:   2022-12-12
 categories: programming
 ---
 
-TODO: Malloc
-
-_Pholyglot_ is a PHP-to-PHP+C transpiler. The output is C code that's also runnable by PHP, so called polyglot code.
+_[Pholyglot](https://github.com/olleharstedt/pholyglot)_ is a PHP-to-PHP+C transpiler. The output is C code that's also runnable by PHP, so called polyglot code.
 
 _Pholly_ is the PHP dialect that's supported by Pholyglot (mostly a subset + some required annotations).
 
 This blog post describes the features needed inside the Pholyglot compiler to complete the nbody benchmark from [benchmarkgames](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html).
 
-Full code listing of the Pholly code: ...
-
-Full code listing of the transpiled PHP+C code: ...
-
 Topics:
 
 * Polymorphic arrays
 * Class/struct base
-* Loops (foreach and do-while)
+* Loops
 * Some kind of generics for `array_slice`
 
 **Arrays**
@@ -181,9 +175,21 @@ for (; $i < count($bodies); $i = $i + 1) {
 }
 ```
 
+**Generics**
+
+I didn't really add support for any generics, just the needed internal parts to tell the compiler that `array_slice` expects the same type out as it gets in. Future development would adapt the `@template T` notation from [Psalm](https://psalm.dev/docs/annotating_code/templated_annotations/) and other tools.
+
+**Future milestones**
+
+I'd like to do one of the following next:
+
+* A-star algorithm, testing dynamic memory allocation strategies
+* A simple REST API call, using MySQL, ini-file, perhaps curl
+
 Stay tuned for the next version: pholyglot-0.0.-2-betachicken.
 
-## Scrap
+**Code**
 
-What's yet missing is different allocation strategies, e.g. using ref counting, Boehm or stack allocation as above with `alloca`. I'm thinking of using the `_Generic` C functionality for this, with a hard-coded list inside the macro created during the transpilation.
+Full code listing of the Pholly code: ...
 
+Full code listing of the transpiled PHP+C code: ...
