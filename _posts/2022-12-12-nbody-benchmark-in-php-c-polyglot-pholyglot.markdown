@@ -9,14 +9,14 @@ _[Pholyglot](https://github.com/olleharstedt/pholyglot)_ is a PHP-to-PHP+C trans
 
 _Pholly_ is the PHP dialect that's supported by Pholyglot (mostly a subset + some required annotations).
 
-This blog post describes the features needed inside the Pholyglot compiler to complete the nbody benchmark from [benchmarkgames](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html).
+This blog post describes the features needed inside the Pholyglot compiler to complete the nbody benchmark from [benchmarksgame](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html).
 
 Topics:
 
 * Polymorphic arrays
-* Class/struct base
+* Class/struct base with "methods"
 * Loops
-* Some kind of generics for `array_slice`
+* Some kind of generics for `array_slice` function
 
 **Arrays**
 
@@ -49,13 +49,13 @@ Maybe in some cases this can be used, but in general I'll use a helper macro/fun
 #define array_make(type, i, ...) {.thing = (type[]) array(__VA_ARGS__), .length = i}
 ```
 
-The corresponding PHP code just discards first two arguments:
+(Note: This is still a stack allocation, it will have to be rewritten with a malloc etc.)
+
+The corresponding PHP code just discards the first two arguments:
 
 ```php
 function array_make($type, $length, ...$values) { return $values; }
 ```
-
-TODO: Still stack alloc here
 
 This makes array init a bit more akward but still C+PHP compatible:
 
@@ -92,25 +92,49 @@ First of all, just macro the "class" keyword:
 We'll make all properties public and redefine the "public" keyword at each property to its proper type:
 
 ```
-class Point {
+class Body {
 #define public float
-#define __object_property_x $__object_property_x
-public $__object_property_x;
+#define __prop_vx $__prop_vx
+public $__prop_vx;
 #undef public
 };
 ```
 
-The clunky `__object_property_x` is needed since PHP implies the dollar sign at property access and C of course does not.
+The clunky `__prop_vx` is needed since PHP implies the dollar sign at property access and C of course does not.
 
 Methods are not really needed for the nbody benchmark, but for completeness:
 
+```
+#__C__ void (*offsetMomentum) (Body $__self, float $px, float $py, float $pz); 
+```
+
 Function pointer struct members only in C.
 
-Function body same in both C and PHP.
+Pass around `$__self` explicitly since C has no `this` concept.
 
-Struct ends before PHP class.
+The important part is that the _method body_ is the same in both C and PHP. The function signature is duplicated, though.
 
-TODO
+```php
+#__C__ void Body__offsetMomentum (Body $__self, float $px, float $py, float $pz)
+#if __PHP__
+public function offsetMomentum(Body $__self, float $px, float $py, float $pz): void
+#endif
+{
+    #__C__ float
+    $pi = 3.1415926535897931;
+    #__C__ float
+    $solarmass = 4. * $pi * $pi;
+    $__self->__prop_vx = (0. - $px) / $solarmass;
+    $__self->__prop_vy = (0. - $py) / $solarmass;
+    $__self->__prop_vz = (0. - $pz) / $solarmass;
+}
+```
+
+Method calling is then polyglot, like so:
+
+```php
+$b->offsetMomentum($b, $px, $py, $pz);
+```
 
 Fun fact, the `new` keyword in PHP can also be called with parenthesis and a string, which we'll abuse for a `new` C macro:
 
@@ -118,43 +142,19 @@ Fun fact, the `new` keyword in PHP can also be called with parenthesis and a str
 #define new(x) x ## __constructor(malloc(sizeof(struct x)))
 ```
 
-This assumes that a constructor function will exist, e.g. `Point__constructor` used to init function pointers.
+This assumes that a constructor function will exist, e.g. `Body__constructor` used to init function pointers.
 
 Thanks to these solutions, we finally get code like:
 
 ```php
 #if __PHP__
-define("Point", "Point");
+define("Body", "Body");
 #endif
 #__C__ array
-$points = array_make(Point, 2, new(Point), new(Point));
+$bodies = array_make(Body, 2, new(Body), new(Body));
 ```
 
 which is pretty readable, I'd say.
-
-Another pain-point is the reference notation. PHP has value semantics for arrays. I didn't want to implement that in C, so instead I chose to enforce references for array as arguments to functions. The PHP notation `&` exists in C++ but not C. Because of a regression, it's not possible anymore in PHP 8.1 and up to but comments between reference and variable, else I could have done:
-
-```php
-function foo(
-#if __PHP__
-&
-#endif
-$points
-);
-```
-
-The only other solution I could think of is to duplicate the function signature when there's an array passed around:
-
-```php
-#__C__ void foo(array $points)
-#if __PHP__
-function foo(array &$points)
-#endif
-{
-}
-```
-
-So close tho. :(
 
 **Looping**
 
@@ -164,7 +164,7 @@ The PHP `foreach` loop can simply transpile down to a classic for-loop that runs
 foreach ($bodies as $body) { ... }
 ```
 
-will become:
+will transpile to:
 
 ```php
 #__C__ int
@@ -177,19 +177,28 @@ for (; $i < count($bodies); $i = $i + 1) {
 
 **Generics**
 
-I didn't really add support for any generics, just the needed internal parts to tell the compiler that `array_slice` expects the same type out as it gets in. Future development would adapt the `@template T` notation from [Psalm](https://psalm.dev/docs/annotating_code/templated_annotations/) and other tools.
+I didn't _really_ add support for generics, just the needed internal parts to tell the compiler that `array_slice` expects the same type out as it gets in. Future development would adapt the `@template T` notation from [Psalm](https://psalm.dev/docs/annotating_code/templated_annotations/) and other tools.
+
+**Performance**
+
+Well, obviously compiled C will be faster than PHP in numerical calculations, that's trivially true. Even more so when the polyglot PHP code has a couple of slowdowns, like the `array_get` access function. More interesting benchmarks would be with proper database and file IO, etc.
+
+**Memory leaks**
+
+The OS is the garbage collector...
+
+**Code**
+
+[Full code listing of the Pholly code](https://gist.github.com/olleharstedt/457030e66b311f1642f504d601391280)
+
+[Full code listing of the transpiled PHP+C code](https://gist.github.com/olleharstedt/07f0172423d167d97d813c954507ac22)
 
 **Future milestones**
 
 I'd like to do one of the following next:
 
 * A-star algorithm, testing dynamic memory allocation strategies
-* A simple REST API call, using MySQL, ini-file, perhaps curl
+    * Especially interested in if per-variable memory allocation is feasible, like `$body = /** @alloc stack */ new Body();`, allowing programmers to opt-out of the default GC when needed. [Odin](https://odin-lang.org/docs/overview/#allocators) has something similar.
+* A simple REST API call, using MySQL, reading a config file, perhaps curl
 
 Stay tuned for the next version: pholyglot-0.0.-2-betachicken.
-
-**Code**
-
-Full code listing of the Pholly code: ...
-
-Full code listing of the transpiled PHP+C code: ...
