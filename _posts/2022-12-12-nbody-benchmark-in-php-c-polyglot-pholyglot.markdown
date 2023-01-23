@@ -183,10 +183,6 @@ I didn't _really_ add support for generics, just the needed internal parts to te
 
 Well, obviously compiled C will be faster than PHP in numerical calculations, that's trivially true. Even more so when the polyglot PHP code has a couple of slowdowns, like the `array_get` access function. More interesting benchmarks would be with proper database and file IO, etc.
 
-**Memory leaks**
-
-The OS is the garbage collector...
-
 **Code**
 
 [Full code listing of the Pholly code](https://gist.github.com/olleharstedt/457030e66b311f1642f504d601391280)
