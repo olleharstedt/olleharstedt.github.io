@@ -4,3 +4,5 @@ title:  A memory-polymorphic, polyglot implementation of SplDoublyLinkedList (as
 date:   2023-03-19
 categories: programming
 ---
+
+DRAFT
