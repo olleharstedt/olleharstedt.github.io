@@ -14,3 +14,7 @@ Cognitive therapy, "underlying assumptions", `IF <I do this> THEN <complete the 
 Army recommendations for decisions, move from assumption to fact as soon as possible.
 
 PMBOK, https://www.linkedin.com/pulse/assumptions-analysis-testing-neetu-verma-mba-pmp-pmi-acp-pmi-rmp-
+
+RAID log.
+
+Learn about your most important assumptions using experiments.
