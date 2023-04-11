@@ -65,4 +65,4 @@ Second step, we can defer the all writes.
 
 Fluid interface.
 
-Negative example, copy a folder. React if write failes etc. Unlink.
+Negative example, copy a folder. React if write failes etc. Unlink. While readdir, recursively.
