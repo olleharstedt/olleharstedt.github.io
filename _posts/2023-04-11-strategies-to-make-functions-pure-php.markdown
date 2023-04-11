@@ -68,3 +68,21 @@ Fluid interface.
 Negative example, copy a folder. React if write failes etc. Unlink. While readdir, recursively.
 
 Separate the decision about the effect from the effect itself. But when read depends on write depends on read...
+
+Is there anything to gain from lifting out writes?
+Contract gets more complicated: pure > read from immutable state > read from state > io read > io write.
+
+```php
+foreach ($surveys as $survey) {
+    if ($survey->hasTokensTable) {
+        $token = \Token::model($survey->sid)->findByAttributes(['participant_id' => $participant->participant_id], "emailstatus <> 'OptOut'");
+        if (!empty($token)) {
+            $token->emailstatus = 'OptOut';
+            defer(() => $token->save());
+            $optedoutSurveyIds[] = $survey->sid;
+        }
+    }
+}
+```
+
+Would `defer` make it harder to understand the function? Because now the caller must run the deferred statements.
