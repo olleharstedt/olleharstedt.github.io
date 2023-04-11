@@ -38,4 +38,31 @@ State monad? But can't inspect which effect it is?
 
 Example: Copy domain entity, command class. `$io->defer('db.save', () => $thing->save());`
 
+```php
+class CopyThingCommand {
+    public function run(array $options) {
+        // Depending on $options, copy translations, settings, etc
+    }
+    public function copyTranslations();
+    public function copySettings();
+}
+```
+
+And
+
+```php
+public function copySettings($id) {
+    // Get all settings belonging to $id from database
+    // Loop them
+    // Create copy
+    // Write copy to database
+}
+```
+
+First step, move the read out from the method, since it's always happening.
+
+Second step, we can defer the all writes.
+
 Fluid interface.
+
+Negative example, copy a folder. React if write failes etc. Unlink.
