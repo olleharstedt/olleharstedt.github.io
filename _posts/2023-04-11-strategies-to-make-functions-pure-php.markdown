@@ -37,3 +37,5 @@ State monad? But can't inspect which effect it is?
 `read . () => doThingWithResult()`
 
 Example: Copy domain entity, command class. `$io->defer('db.save', () => $thing->save());`
+
+Fluid interface.
