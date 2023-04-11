@@ -66,3 +66,5 @@ Second step, we can defer the all writes.
 Fluid interface.
 
 Negative example, copy a folder. React if write failes etc. Unlink. While readdir, recursively.
+
+Separate the decision about the effect from the effect itself. But when read depends on write depends on read...
