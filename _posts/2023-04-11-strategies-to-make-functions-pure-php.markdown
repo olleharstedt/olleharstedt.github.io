@@ -86,3 +86,5 @@ foreach ($surveys as $survey) {
 ```
 
 Would `defer` make it harder to understand the function? Because now the caller must run the deferred statements.
+
+Unconditional reads and writes that nothing depends on are less complex than reads and writes that enforce a certain order of operation.
