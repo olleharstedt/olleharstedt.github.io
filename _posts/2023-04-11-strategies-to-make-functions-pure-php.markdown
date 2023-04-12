@@ -85,6 +85,19 @@ foreach ($surveys as $survey) {
 }
 ```
 
+```php
+foreach ($surveys as $survey) {
+    pipe(
+        $survey->hasTokensTable(...),
+        fn() => getToken($survey, $participant)
+        fn($token) => $token->emailstatus = 'OptOut' && $token->save() && $optedoutSurveyIds[] $survey->sid
+    );
+}
+```
+
 Would `defer` make it harder to understand the function? Because now the caller must run the deferred statements.
 
 Unconditional reads and writes that nothing depends on are less complex than reads and writes that enforce a certain order of operation.
+
+cp vs mv
+read-write, read-write-write (second write deletes file)
