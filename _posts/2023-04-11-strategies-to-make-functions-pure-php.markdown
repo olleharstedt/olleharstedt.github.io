@@ -7,6 +7,22 @@ categories: programming php
 
 DRAFT
 
+Pure functions are generally better than effectful functions.
+
+* Can be combined more easily
+* Can be tested without any mocking
+
+Two different effects we care about:
+
+* Read
+* Write
+
+You can read/write to file, database, curl, PHP session, etc.
+
+A read can be _unconditional_, that is, it happens for all logical paths inside a function.
+
+A write can be _independent_, which means that no read in that function depends on the write.
+
 Move read from before
 
 Defer write with yield
@@ -89,10 +105,17 @@ foreach ($surveys as $survey) {
 foreach ($surveys as $survey) {
     pipe(
         $survey->hasTokensTable(...),
-        fn() => getToken($survey, $participant)
+        fn() => getToken($survey, $participant),
         fn($token) => $token->emailstatus = 'OptOut' && $token->save() && $optedoutSurveyIds[] $survey->sid
     );
 }
+```
+
+```php
+pipe(
+    fn() => $this->getToken($survey, $participant),
+    fn($token) => 
+);
 ```
 
 ```php
