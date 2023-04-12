@@ -39,7 +39,7 @@ State monad? But can't inspect which effect it is?
 Example: Copy domain entity, command class. `$io->defer('db.save', () => $thing->save());`
 
 ```php
-class CopyThingCommand {
+class CopyThingCommand implements CommandInterface {
     public function run(array $options) {
         // Depending on $options, copy translations, settings, etc
     }
@@ -92,6 +92,17 @@ foreach ($surveys as $survey) {
         fn() => getToken($survey, $participant)
         fn($token) => $token->emailstatus = 'OptOut' && $token->save() && $optedoutSurveyIds[] $survey->sid
     );
+}
+```
+
+```php
+foreach ($surveys as $survey) {
+    if survey has tokens table
+    and token
+    then
+        set email status
+        defer save
+        collect result
 }
 ```
 
