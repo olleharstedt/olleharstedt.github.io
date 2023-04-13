@@ -23,6 +23,8 @@ A read can be _unconditional_, that is, it happens for all logical paths inside 
 
 A write can be _independent_, which means that no read in that function depends on the write.
 
+We are interested which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity.
+
 Move read from before
 
 Defer write with yield
