@@ -1,35 +1,135 @@
 ---
 layout: post
-title:  Strategies to make functions pure in PHP
+title:  Strategies to make functions pure
 date:   2023-04-11
 categories: programming php
 ---
 
 DRAFT
 
-Pure functions are generally better than effectful functions.
+<style>
+h4 {
+  display: none; /* hide */
+}
+h4 + p {
+    padding: 10px;
+    background-color: rgb(221, 244, 255);
+    margin: 10px;
+    color: #333;
+}
+</style>
 
-* Can be combined more easily
-* Can be tested without any mocking
+#### Note
+**&#x24D8;** This post uses PHP notation but the patterns are applicable to most languages.
 
-Two different effects we care about:
+Pure functions are generally better than effectful functions. They can be:
+
+* Combined more easily with other functions
+* Tested without any mocking
+* They have clear contract
+
+In this article, there are two different effects we care about:
 
 * Read
-* Write
+* Write[^1]
 
-You can read/write to file, database, curl, PHP session, etc.
+You can read/write to file, database, sockets, PHP session, etc.
 
 A read can be _unconditional_, that is, it happens for all logical paths inside a function.
 
-A write can be _independent_, which means that no read in that function depends on the write.
+A write can be _independent_, which means that no logic in that function depends on the write.
 
-We are interested which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity.
+We are interested in which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity. Strategies that are idiomatic in the language you work with are to be preferred, of course.
 
-Move read from before
+**Unconditional read**
+
+Consider the following function:
+
+```php
+function copySettings($id) {
+    // Get all settings belonging to $id from database
+    // Loop them
+    //   Create copy
+    //   Write copy to database
+}
+```
+
+As you can see, the first line happens for all logical paths, so it can be moved up one step in the stack trace, like this:
+
+```php
+function copySettings($settings) {
+    // Loop them
+    //   Create copy
+    //   Write copy to database
+}
+```
+
+Great! We've already made the function a bit easier to combine and test.[^2]
+
+**Independent write**
+
+Again looking at the `copySettings` function, we see that no logic after the write actually depends on the it.[^3] There are a couple of ways we can deley or defer the effect.
+
+* Return a lambda wrapping the effect
+* Return a command class, like `WriteSettingToDatabase`
+* Pass an `IO` class which accepts effects to be executed later, `$io->defer(new WriteSettingToDatabase($setting))`
+* Use `yield`
+
+All of these alternatives have the drawback of giving more responsibility to the calling code.
+
+```php
+function copySettings(array $settings): array {
+    $writes = [];
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        $writes = fn() => $copy->save();
+    }
+    return $writes;
+}
+```
+
+The drawback of returning lambdas is that you cannot inspect them further. If you have a function that returns a mix of lambdas doing different things, you probably want to know in your tests what exactly is happening. That's where command classes can be more useful.
+
+```php
+function copySettings(array $settings): array {
+    $commands = [];
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        $commands = new WriteSettingToDatabase($copy);
+    }
+    return $commands;
+}
+```
+
+Passing around an object that collects commands instead of returning them is useful if you don't want to pollute your functions' return types.
+
+```php
+function copySettings(array $settings, IO $io): void {
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        $io->defer(new WriteSettingToDatabase($copy));
+    }
+}
+```
+
+And finally combining command object with generators and yield:
+
+```php
+function copySettings(array $settings, IO $io): generator {
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        yield new WriteSettingToDatabase($copy);
+    }
+}
+```
+
+In all the above cases it's the calling code's responsibility to make sure the commands are being run properly.
 
 Defer write with yield
 
-Defer write with command class. `__destructor` from SO.
+**Conditional reads and writes**
+
+Depend on logic vs depend on reads/writes.
 
 Defer + exception = :( Running $refer class in shutdown function not that fun, especially since you don't know what went wrong.
 
@@ -113,6 +213,14 @@ foreach ($surveys as $survey) {
 }
 ```
 
+```
+return new Pipe(
+    $survey->hasTokensTable(...),
+    $this->fetchToken(...),
+    $this->saveToken(...)
+);
+```
+
 ```php
 pipe(
     fn() => $this->getToken($survey, $participant),
@@ -137,3 +245,13 @@ Unconditional reads and writes that nothing depends on are less complex than rea
 
 cp vs mv
 read-write, read-write-write (second write deletes file)
+
+defer/start or defer/end
+
+Can use db transaction or not, if you wish; also defer some decisions.
+
+**Footnotes**
+
+[^1]: We don't care about division-by-zero and exceptions as effects here.
+[^2]: It would be interesting if static analyzer could detect unconditional reads like this, but I've never seen one that can do it.
+[^3]: Though it is missing defensive programming, to check and take action if the write fails.
