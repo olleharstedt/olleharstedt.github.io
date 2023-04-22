@@ -68,7 +68,7 @@ Great! We've already made the function a bit easier to combine and test.[^2]
 
 **Independent write**
 
-Again looking at the `copySettings` function, we see that no logic after the write actually depends on the it.[^3] There are a couple of ways we can deley or defer the effect.
+Again looking at the `copySettings` function, we see that no logic after the write actually depends on it.[^3] There are a couple of ways we can deley or defer the effect.
 
 * Return a lambda wrapping the effect
 * Return a command class, like `WriteSettingToDatabase`
@@ -125,9 +125,52 @@ function copySettings(array $settings, IO $io): generator {
 
 In all the above cases it's the calling code's responsibility to make sure the commands are being run properly.
 
-Defer write with yield
-
 **Conditional reads and writes**
+
+So far for the easy stuff, but what about writes and reads that depend on each other?
+
+The simplest case of effect dependency is where a number of reads each depend on the previous one not returning null. So you get a pipeline like `read-read-read-doThing`, where a failed read would abort and return null.
+
+That's easy enough with a simple `Pipe` class.
+
+The example below reads a theme domain entity from database, gets the belonging configuration file, and then extracts the attributes from the config file. This is a `read-read-process` pipeline.
+
+```php
+function getAttributesFromTheme(string $themeName)
+{
+    $theme = getTheme($themeName);
+    if (empty($theme)) {
+        return null;
+    }
+    $xml = getXmlFile($theme->path);
+    if (empty($xml)) {
+        return null;
+    }
+    return extractAttributes($xml);
+}
+
+function caller()
+{
+    $attributes = getAttributesFromTheme('mytheme');
+}
+```
+
+Fixed with moving the unconditional read out, and applying the pipe pattern:
+
+```php
+function getAttributesFromTheme()
+{
+    return Pipe::make(
+        $this->getXmlFile(...),
+        $this->extractAttributes(...)
+    )->stopIfEmpty();
+}
+
+function caller()
+{
+    $attributes = getAttributesFromTheme()->run(getTheme('mytheme'));
+}
+```
 
 Depend on logic vs depend on reads/writes.
 
