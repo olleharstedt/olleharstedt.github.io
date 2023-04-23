@@ -138,11 +138,11 @@ The example below reads a theme domain entity from database, gets the belonging 
 ```php
 function getAttributesFromTheme(string $themeName)
 {
-    $theme = getTheme($themeName);
+    $theme = $this->getTheme($themeName);
     if (empty($theme)) {
         return null;
     }
-    $xml = getXmlFile($theme->path);
+    $xml = $this->getXmlFile($theme->path);
     if (empty($xml)) {
         return null;
     }
@@ -173,6 +173,11 @@ function caller()
 ```
 
 Depend on logic vs depend on reads/writes.
+
+TODO: Important difference to pipeline libs is:
+
+1. Stop the pipeline on failure
+2. Primarily pipe methods together, not classes
 
 Defer + exception = :( Running $refer class in shutdown function not that fun, especially since you don't know what went wrong.
 
