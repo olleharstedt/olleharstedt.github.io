@@ -37,3 +37,7 @@ Filter?
 Async?
 
 Functional core, imperative shell
+
+```php
+$pipe->withLogger(Logger::class);
+```

@@ -20,6 +20,13 @@ h4 + p {
 h3 + p {
     background-color: #fff8c4;
 }
+hr {
+    margin: 2em;
+    color: #fafafa;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
 </style>
 
 ### Warning
@@ -47,6 +54,8 @@ A write can be _independent_, which means that no logic in that function depends
 
 We are interested in which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity. Strategies that are idiomatic in the language you work with are to be preferred, of course.
 
+---
+
 **Unconditional read**
 
 Consider the following function:
@@ -71,6 +80,8 @@ function copySettings($settings) {
 ```
 
 Great! We've already made the function a bit easier to combine and test.[^2]
+
+---
 
 **Independent write**
 
@@ -131,6 +142,8 @@ function copySettings(array $settings, IO $io): generator {
 
 In all the above cases it's the calling code's responsibility to make sure the commands are being run properly.
 
+---
+
 **Conditional reads and writes**
 
 So far for the easy stuff, but what about writes and reads that depend on each other?
@@ -183,10 +196,48 @@ function caller()
 
 Depend on logic vs depend on reads/writes.
 
-TODO: Important difference to pipeline libs is:
+---
 
-1. Stop the pipeline on failure
-2. Primarily pipe methods together, not classes
+**Early return**
+
+If multiple early returns happen before a write, the function can possibly be split into a boolean pure function and the write itself.
+
+```php
+function setMySQLDefaultEngine(?string $dbEngine, Connection $db)
+{
+    if (empty($dbEngine)) {
+        return;
+    }
+    if (!in_array($db->driverName, [DB_TYPE_MYSQL]) {
+        return;
+    }
+    $this->writeDefaultEngine($db);
+}
+```
+
+Better is a split between the effect and the logic to decide to do the write:
+
+```php
+function shouldSetMySQLDefaultEngine(?string $dbEngine, Connection $db): bool
+{
+    if (empty($dbEngine)) {
+        return false;
+    }
+    if (!in_array($db->driverName, [DB_TYPE_MYSQL])) {
+        return false;
+    }
+    return true;
+}
+
+function caller()
+{
+    // ...
+    if ($this->shouldSetMySQLDefaultEngine($dbEngine, $db)) {
+        $this->writeDefaultEngine($db);
+    }
+    // ...
+}
+```
 
 Defer + exception = :( Running $refer class in shutdown function not that fun, especially since you don't know what went wrong.
 
@@ -307,9 +358,20 @@ defer/start or defer/end
 
 Can use db transaction or not, if you wish; also defer some decisions.
 
+---
+
 TMP
 
 Most pipe libs seem to use classes to bind together, but I think that's foregoing its most useful use-case, namely to string together and separate pure methods from effectful ones (methods that read/write to database, file, socket, etc).
+
+Function that writes at the end unless early return. See SurveyActivator class.
+
+TODO: Important difference to pipeline libs is:
+
+1. Stop the pipeline on failure
+2. Primarily pipe methods together, not classes
+
+---
 
 **Footnotes**
 
