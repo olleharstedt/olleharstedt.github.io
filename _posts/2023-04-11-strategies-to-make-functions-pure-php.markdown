@@ -5,19 +5,25 @@ date:   2023-04-11
 categories: programming php
 ---
 
-DRAFT
-
 <style>
-h4 {
+h4, h3 {
   display: none; /* hide */
 }
-h4 + p {
+h4 + p, h3 + p {
     padding: 10px;
-    background-color: rgb(221, 244, 255);
     margin: 10px;
     color: #333;
 }
+h4 + p {
+    background-color: rgb(221, 244, 255);
+}
+h3 + p {
+    background-color: #fff8c4;
+}
 </style>
+
+### Warning
+**&#x26a0;** DRAFT
 
 #### Note
 **&#x24D8;** This post uses PHP notation but the patterns are applicable to most languages.
