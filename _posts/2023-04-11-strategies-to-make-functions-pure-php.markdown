@@ -61,21 +61,23 @@ We are interested in which strategies can be applied to remove reads and writes 
 Consider the following function:
 
 ```php
-function copySettings($id) {
-    // Get all settings belonging to $id from database
-    // Loop them
-    //   Create copy
-    //   Write copy to database
+function copySettings(int $id): void {
+    $settings = getAllSettings($id);
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        writeCopyToDatabase($copy);
+    }
 }
 ```
 
 As you can see, the first line happens for all logical paths, so it can be moved up one step in the stack trace, like this:
 
 ```php
-function copySettings($settings) {
-    // Loop them
-    //   Create copy
-    //   Write copy to database
+function copySettings(array $settings): void {
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        writeCopyToDatabase($copy);
+    }
 }
 ```
 
@@ -194,11 +196,20 @@ function caller()
 }
 ```
 
-Depend on logic vs depend on reads/writes.
+The pipe pattern can be used to deal with `copySettings` too, with a `foreach` pipe feature:
+
+```php
+function copySettings($settings) {
+    return Pipe::make(
+        $this->createCopy(...),
+        $this->writeCopyToDatabase(...)
+    )->foreach($settings);
+}
+```
 
 ---
 
-**Early return**
+**Early returns and writes**
 
 If multiple early returns happen before a write, the function can possibly be split into a boolean pure function and the write itself.
 
@@ -239,15 +250,29 @@ function caller()
 }
 ```
 
-Defer + exception = :( Running $refer class in shutdown function not that fun, especially since you don't know what went wrong.
+---
 
-Defer with lambda, can't check what's happening in test. Effect class - check its name.
+**Branching on a read**
+
+Expression builder pattern.
+
+---
+
+**Summary**
+
+Following code improvements pattern:
+
+* Move unconditional reads up in the stack trace
+
+The following design patterns were considered in this blog post:
+
+* Pipe
+* Expression builder
+* Command class
 
 Subscriber-observer pattern to be used for defer?
 
 When write depends on result from read, generate an AST (tagless-final)
-
-AR vs repository pattern?
 
 Capabilities.
 
@@ -376,5 +401,5 @@ TODO: Important difference to pipeline libs is:
 **Footnotes**
 
 [^1]: We don't care about division-by-zero and exceptions as effects here.
-[^2]: It would be interesting if static analyzer could detect unconditional reads like this, but I've never seen one that can do it.
+[^2]: It would be interesting if a static analyzer could detect unconditional reads like this, but I've never seen one that can do it.
 [^3]: Though it is missing defensive programming, to check and take action if the write fails.
