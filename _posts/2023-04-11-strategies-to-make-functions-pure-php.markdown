@@ -142,7 +142,7 @@ function getAttributesFromTheme(string $themeName)
     if (empty($theme)) {
         return null;
     }
-    $xml = $this->getXmlFile($theme->path);
+    $xml = $this->getXmlFromTheme($theme);
     if (empty($xml)) {
         return null;
     }
@@ -151,24 +151,27 @@ function getAttributesFromTheme(string $themeName)
 
 function caller()
 {
-    $attributes = getAttributesFromTheme('mytheme');
+    $attributes = $this->getAttributesFromTheme('mytheme');
 }
 ```
 
 Fixed with moving the unconditional read out, and applying the pipe pattern:
 
 ```php
-function getAttributesFromTheme()
+function getAttributesFromTheme(string $themeName)
 {
     return Pipe::make(
-        $this->getXmlFile(...),
+        $this->getTheme(...),
+        $this->getXmlFromTheme(...),
         $this->extractAttributes(...)
-    )->stopIfEmpty();
+    )
+    ->stopIfEmpty()
+    ->from($themeName);
 }
 
 function caller()
 {
-    $attributes = getAttributesFromTheme()->run(getTheme('mytheme'));
+    $attributes = $this->getAttributesFromTheme('mytheme')->run();
 }
 ```
 
@@ -297,6 +300,10 @@ read-write, read-write-write (second write deletes file)
 defer/start or defer/end
 
 Can use db transaction or not, if you wish; also defer some decisions.
+
+TMP
+
+Most pipe libs seem to use classes to bind together, but I think that's foregoing its most useful use-case, namely to string together and separate pure methods from effectful ones (methods that read/write to database, file, socket, etc).
 
 **Footnotes**
 
