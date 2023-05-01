@@ -254,7 +254,62 @@ function caller()
 
 **Branching on a read**
 
-Expression builder pattern.
+The following example branches on reads and writes when it creates a new folder.
+
+In pseudo-code:
+
+```text
+If folder exists
+    Nothing to do
+Else
+    Create folder
+    If create fails
+        Abort with error
+    Else
+        Write file in folder
+        If write fails
+            Abort with error
+```
+
+```php
+function createSurveyDirectory(string $uploadDir, int $id): bool
+{
+    $folder = $uploaddir . "/surveys/" . $id . "/files";
+    $html   = "<html><head></head><body></body></html>";
+    if (!file_exists($folder)) {
+        if (!mkdir($folder, 0777, true)) {
+            return false;
+        } else {
+            if (file_put_contents($folder . "/index.html", $html) === false) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+```
+
+This function can be made pure in two ways:
+
+* Rewrite the logic to fit a pipe pattern
+* Expression builder pattern (as explained shorty by Martin Fowler [here](https://www.martinfowler.com/dslCatalog/expressionBuilder.html))
+
+A pipe-adapted version of the same code would look like this:
+
+```php
+function createSurveyDirectory(string $uploadDir, int $id): bool
+{
+    $folder = $uploaddir . "/surveys/" . $id . "/files";
+    $html   = "<html><head></head><body></body></html>";
+    return pipe(
+        fn() => !file_exists($folder),
+        fn() => mkdir($folder, 0777, true),
+        fn() => file_put_contents($folder . "/index.html", $html)
+    )->stopIfFalse();
+}
+```
+
+There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue though).
 
 Time to bring out the big guns.
 
