@@ -256,13 +256,18 @@ function caller()
 
 Expression builder pattern.
 
+Time to bring out the big guns.
+
+Problematic for the imperative shell to deal with lots of different returned objects from the core? Can maybe be solved if Pipe and St both implement same interface.
+
 ---
 
 **Summary**
 
-Following code improvements pattern:
+Following code improvement patterns:
 
 * Move unconditional reads up in the stack trace
+* Defer or delay independent writes
 
 The following design patterns were considered in this blog post:
 
@@ -395,6 +400,8 @@ TODO: Important difference to pipeline libs is:
 
 1. Stop the pipeline on failure
 2. Primarily pipe methods together, not classes
+
+TODO: Find independent write example that does not depend on read before it
 
 ---
 

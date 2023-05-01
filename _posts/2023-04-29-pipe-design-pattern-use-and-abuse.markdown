@@ -41,3 +41,5 @@ Functional core, imperative shell
 ```php
 $pipe->withLogger(Logger::class);
 ```
+
+Merge pipes together at imperative shell level.
