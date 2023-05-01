@@ -461,7 +461,11 @@ TODO: Important difference to pipeline libs is:
 1. Stop the pipeline on failure
 2. Primarily pipe methods together, not classes
 
+How to get proper error message from a pipe failure?
+
 TODO: Find independent write example that does not depend on read before it
+
+TODO: Note, most examples are taken from the LimeSurvey code-base.
 
 ---
 
