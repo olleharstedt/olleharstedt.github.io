@@ -58,7 +58,7 @@ We are interested in which strategies can be applied to remove reads and writes 
 
 **Unconditional read**
 
-Consider the following function:
+Consider the following function[^4]:
 
 ```php
 function copySettings(int $id): void {
@@ -270,6 +270,8 @@ Else
         If write fails
             Abort with error
 ```
+
+PHP code:
 
 ```php
 function createDirectory(string $uploadDir, int $id): bool
@@ -501,3 +503,4 @@ TODO: Note, most examples are taken from the LimeSurvey code-base.
 [^1]: We don't care about division-by-zero and exceptions as effects here.
 [^2]: It would be interesting if a static analyzer could detect unconditional reads like this, but I've never seen one that can do it.
 [^3]: Though it is missing defensive programming, to check and take action if the write fails.
+[^4]: All code examples are fetched from [LimeSurvey](https://github.com/LimeSurvey/LimeSurvey/).
