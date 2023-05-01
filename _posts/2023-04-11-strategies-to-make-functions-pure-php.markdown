@@ -272,7 +272,7 @@ Else
 ```
 
 ```php
-function createSurveyDirectory(string $uploadDir, int $id): bool
+function createDirectory(string $uploadDir, int $id): bool
 {
     $folder = $uploaddir . "/surveys/" . $id . "/files";
     $html   = "<html><head></head><body></body></html>";
@@ -297,7 +297,7 @@ This function can be made pure in two ways:
 A pipe-adapted version of the same code would look like this:
 
 ```php
-function createSurveyDirectory(string $uploadDir, int $id): bool
+function createDirectory(string $uploadDir, int $id): bool
 {
     $folder = $uploaddir . "/surveys/" . $id . "/files";
     $html   = "<html><head></head><body></body></html>";
@@ -312,6 +312,8 @@ function createSurveyDirectory(string $uploadDir, int $id): bool
 There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue though).
 
 Time to bring out the big guns.
+
+In both these cases, we're separating the decision on what to do from the doing itself.
 
 Problematic for the imperative shell to deal with lots of different returned objects from the core? Can maybe be solved if Pipe and St both implement same interface.
 
