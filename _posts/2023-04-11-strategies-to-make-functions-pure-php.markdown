@@ -342,7 +342,31 @@ Some people would recommend against boolean arguments like that.
 
 To get a proper exception on failure one could use `$pipe->throwOnFalse()` instead of just stopping the pipe.
 
-Time to bring out the big guns.
+Time to bring out the big guns. The next solution builds up an expression tree that can be evaluated independent of its construction. The performance hit is pretty obvious.
+
+The functions `not`, `fileExists` etc all create _nodes_ in the tree, so they're not run until someone calls `$st->eval()` on the tree itself.
+
+```php
+use St\not;
+use St\fileExists;
+use St\makeDir;
+use St\filePutContents;
+function createDirectory(string $uploadDir, int $id, St $st): St
+{
+    // read-branch-write-write
+    $folder = $uploaddir . "/surveys/" . $id . "/files";
+    $html   = "<html><head></head><body></body></html>";
+    return $st
+        ->if(not(fileExists($folder)))
+        ->then(
+            $st
+                ->if(makeDir($folder, 0777, true))
+                ->then(filePutContents($folder . "/index.html", $html))
+        );
+}
+```
+
+An expression builder like this can be fully inspected by test code by passing a mock version of `St` - a big plus in my book.
 
 In both these cases, we're separating the decision on what to do from the doing itself.
 
