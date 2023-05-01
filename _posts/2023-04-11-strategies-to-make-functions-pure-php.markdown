@@ -297,7 +297,7 @@ This function can be made pure in two ways:
 A pipe-adapted version of the same code would look like this:
 
 ```php
-function createDirectory(string $uploadDir, int $id): bool
+function createDirectory(string $uploadDir, int $id): Pipe
 {
     $folder = $uploaddir . "/surveys/" . $id . "/files";
     $html   = "<html><head></head><body></body></html>";
@@ -308,6 +308,8 @@ function createDirectory(string $uploadDir, int $id): bool
     )->stopIfFalse();
 }
 ```
+
+Top read is unconditional btw, so can be moved out.
 
 There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue though).
 
@@ -346,7 +348,8 @@ Diminishing return.
 
 Mocking works equally well, but purity gives better composability...?
 
-State monad? But can't inspect which effect it is?
+State monad? But can't inspect which effect it is? Similar problem with pipe?
+
 `read . () => doThingWithResult()`
 
 Example: Copy domain entity, command class. `$io->defer('db.save', () => $thing->save());`
