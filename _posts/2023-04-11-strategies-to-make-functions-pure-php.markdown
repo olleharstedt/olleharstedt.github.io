@@ -309,9 +309,36 @@ function createDirectory(string $uploadDir, int $id): Pipe
 }
 ```
 
-Top read is unconditional btw, so can be moved out.
+There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue too).
 
-There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue though).
+Top read is unconditional btw (happens in all logical paths), so it can be moved out:
+
+```php
+function createDirectory(string $folder, bool $folderExists): Pipe
+{
+    $html = "<html><head></head><body></body></html>";
+    if ($folderExists) {
+        return pipe();
+    } else {
+        return pipe(
+            fn() => mkdir($folder, 0777, true),
+            fn() => file_put_contents($folder . "/index.html", $html)
+        )->stopIfFalse();
+    }
+}
+
+function caller()
+{
+    // ...
+    $folder = $this->bakeFolder($uploadDir, $id);
+    $this->createDirectory($folder, file_exists($folder))->run();
+    // ...
+}
+```
+
+Some people would recommend against boolean arguments like that.
+
+To get a proper exception on failure one could use `$pipe->throwOnFalse()` instead of just stopping the pipe.
 
 Time to bring out the big guns.
 
