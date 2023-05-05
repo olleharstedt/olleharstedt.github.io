@@ -52,6 +52,8 @@ A read can be _unconditional_, that is, it happens for all logical paths inside 
 
 A write can be _independent_, which means that no logic in that function depends on the write.
 
+Around reads and writes, you have chunks of pure logic, processing, or business logic, that can sometimes be moved to separate functions.
+
 We are interested in which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity. Strategies that are idiomatic in the language you work with are to be preferred, of course.
 
 ---
@@ -81,7 +83,7 @@ function copySettings(array $settings): void {
 }
 ```
 
-Great! We've already made the function a bit easier to combine and test.[^2]
+Great! We've already made the function a bit easier to combine and test.[^2] For example, maybe someone would like to fetch the settings in some other way than by id?
 
 ---
 
@@ -142,7 +144,16 @@ function copySettings(array $settings, IO $io): generator {
 }
 ```
 
-In all the above cases it's the calling code's responsibility to make sure the commands are being run properly.
+In all the above cases it becomes the calling code's responsibility to make sure the commands are being run properly.
+
+---
+
+**Moving out logical chunks**
+
+It's easy enough to mix effects with pure logic out of habit. Here's an example which can be improved by moving out logic to separate methods:
+
+```php
+```
 
 ---
 
@@ -167,7 +178,7 @@ function getAttributesFromTheme(string $themeName)
     if (empty($xml)) {
         return null;
     }
-    return extractAttributes($xml);
+    return $this->extractAttributes($xml);
 }
 
 function caller()
@@ -372,6 +383,8 @@ In both these cases, we're separating the decision on what to do from the doing 
 
 Problematic for the imperative shell to deal with lots of different returned objects from the core? Can maybe be solved if Pipe and St both implement same interface.
 
+I'm not covering the monadic way here, but it could be done with promises etc.
+
 ---
 
 **Summary**
@@ -519,6 +532,8 @@ How to get proper error message from a pipe failure?
 TODO: Find independent write example that does not depend on read before it
 
 TODO: Note, most examples are taken from the LimeSurvey code-base.
+
+TODO: Add section about moving out logical chunk.
 
 ---
 
