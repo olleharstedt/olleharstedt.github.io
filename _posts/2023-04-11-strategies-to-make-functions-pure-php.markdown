@@ -153,6 +153,12 @@ In all the above cases it becomes the calling code's responsibility to make sure
 It's easy enough to mix effects with pure logic out of habit. Here's an example which can be improved by moving out logic to separate methods:
 
 ```php
+possibly get permission
+function getPermission()
+{
+    // construct the query conditions
+    return $query->exec();
+}
 ```
 
 ---
