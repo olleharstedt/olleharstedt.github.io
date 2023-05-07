@@ -395,16 +395,21 @@ I'm not covering the monadic way here, but it could be done with promises etc.
 
 **Summary**
 
-Following code improvement patterns:
+The following simple code improvement patterns were suggested:
 
 * Move unconditional reads up in the stack trace
 * Defer or delay independent writes
+* Factor out pure business logic in smaller, independent functions
 
-The following design patterns were considered in this blog post:
+The following design patterns were described:
 
 * Pipe
 * Expression builder
 * Command class
+
+---
+
+DRAFT NOTES BELOW
 
 Subscriber-observer pattern to be used for defer?
 
