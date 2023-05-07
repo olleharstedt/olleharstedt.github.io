@@ -52,7 +52,7 @@ A read can be _unconditional_, that is, it happens for all logical paths inside 
 
 A write can be _independent_, which means that no logic in that function depends on the write.
 
-Around reads and writes, you have chunks of pure logic, processing, or business logic, that can sometimes be moved to separate functions.
+Around reads and writes, you have chunks of pure logic, processing, or business logic, that can sometimes be moved to separate functions. In fact, the smaller your functions are on average, the higher the probability that you already have a good separation between effectful and pure code.
 
 We are interested in which strategies can be applied to remove reads and writes from a function without causing considerable increase in complexity. Strategies that are idiomatic in the language you work with are to be preferred, of course.
 
