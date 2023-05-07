@@ -93,6 +93,7 @@ Again looking at the `copySettings` function, we see that no logic after the wri
 
 * Return a lambda wrapping the effect
 * Return a command class, like `WriteSettingToDatabase`
+** An alternative to command classes is to use promises instead, though they can be harder to inspecct by the unit test code
 * Pass an `IO` class which accepts effects to be executed later, `$io->defer(new WriteSettingToDatabase($setting))`
 * Use `yield`
 
