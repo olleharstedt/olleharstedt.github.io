@@ -98,6 +98,8 @@ Again looking at the `copySettings` function, we see that no logic after the wri
 
 All of these alternatives have the drawback of giving more responsibility to the calling code.
 
+The example below wraps the writes in lambdas:
+
 ```php
 function copySettings(array $settings): array {
     $writes = [];
