@@ -234,9 +234,7 @@ function getAttributesFromTheme(string $themeName)
 
 ---
 
-**Conditional reads and writes**
-
-So far for the easy stuff, but what about writes and reads that depend on each other?
+**Conditional reads**
 
 The simplest case of side-effect dependency is where a number of reads each depend on the previous one not returning null. So you get a pipeline like `read-read-read-doThing`, where a failed read would abort and return null.
 
@@ -320,9 +318,9 @@ function caller()
 
 ---
 
-**Branching on a read**
+**Branching on a write**
 
-The following example considers a more complex situation than just "stop on null read in a read chain", where it branches on reads and writes when creating a new folder.
+The following example considers a more complex situation than just "stop on null-read in a read chain", where it branches on reads and writes when creating a new folder.
 
 In pseudo-code:
 
@@ -381,7 +379,7 @@ function createDirectory(string $uploadDir, int $id): Pipe
 
 There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue too).
 
-Top read is unconditional, by the way (happens in all logical paths), so it can be moved out:
+Top read is unconditional, by the way (happens in all logical paths), so it can be moved out. We should also rewrite the lambdas to something that can be inspected. And probably throw on failure.
 
 ```php
 function createDirectory(string $folder, bool $folderExists): Pipe
@@ -391,9 +389,9 @@ function createDirectory(string $folder, bool $folderExists): Pipe
         return pipe();
     } else {
         return pipe(
-            fn() => mkdir($folder, 0777, true),
-            fn() => file_put_contents($folder . "/index.html", $html)
-        )->stopIfFalse();
+            new MakeDir($folder, 0777, true),
+            new FilePutContents($folder . "/index.html", $html)
+        )->throwIfFalse();
     }
 }
 
@@ -401,16 +399,17 @@ function caller()
 {
     // ...
     $folder = $this->bakeFolder($uploadDir, $id);
-    $this->createDirectory($folder, file_exists($folder))->run();
-    // ...
+    try {
+        $this->createDirectory($folder, file_exists($folder))->run();
+    } catch (Exception $ex) {
+        // ...
+    }
 }
 ```
 
 Some people would recommend against boolean arguments like that.
 
-To get a proper exception on failure one could use `$pipe->throwOnFalse()` instead of just stopping the pipe.
-
-Time to bring out the big guns. The next solution builds up an expression tree that can be evaluated independent of its construction. The performance hit is pretty obvious.
+Time to bring out the big guns. The next solution builds up an [expression tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) that can be evaluated independent of its construction. The performance hit is pretty obvious.
 
 The functions `not`, `fileExists` etc all create _nodes_ in the tree, so they're not run until someone calls `$st->eval()` on the tree itself. Also, the logic of the nodes is _not_ inside the node objects themselves, but rather in the evaluator class (one mega-switch statement or such). This makes it possible to run any type of behaviour (in our case, mostly live "normal" behaviour vs mocked behaviour in the unit-tests) for the nodes[^6].
 
