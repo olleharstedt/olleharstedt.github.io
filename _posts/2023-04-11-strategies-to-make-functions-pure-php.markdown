@@ -29,11 +29,8 @@ hr {
 }
 </style>
 
-### Warning
-**&#x26a0;** DRAFT
-
 #### Note
-**&#x24D8;** This post uses PHP notation but the patterns are applicable to most languages.
+**&#x24D8;** This post uses PHP notation but the patterns are applicable to most OOP languages.
 
 Pure functions are generally better than effectful functions. They can be:
 
@@ -41,7 +38,7 @@ Pure functions are generally better than effectful functions. They can be:
 * Tested without any mocking
 * They have clear contract
 
-In this article, there are two different effects we care about:
+In this article, there are two different side-effects[^7] we care about:
 
 * Read
 * Write[^1]
@@ -85,18 +82,19 @@ function copySettings(array $settings): void {
 
 Great! We've already made the function a bit easier to combine and test.[^2] For example, maybe someone would like to fetch the settings in some other way than by id?
 
+By the way, if you have a function or method with many unconditional reads spread out in the function, it might be a hint to split it into multiple functions instead.
+
 ---
 
 **Independent write**
 
-Again looking at the `copySettings` function, we see that no logic after the write actually depends on it.[^3] There are a couple of ways we can delay or defer the effect.
+Again looking at the `copySettings` function, we see that no logic after the write actually depends on it.[^3] There are a number of ways we can delay or defer the effect.
 
 * Return a lambda wrapping the effect
 * Return a command class, like `WriteSettingToDatabase` (an alternative to command classes is to use promises instead, though they can be harder to inspecct by the unit test code)
-* Pass an `IO` class which accepts effects to be executed later, `$io->defer(new WriteSettingToDatabase($setting))`
+* Pass an `IO` class which accepts effects to be executed later, `$io->defer(new WriteSettingToDatabase($setting))`, or possibly `$io->defer('write.db', fn() => $db->save($setting))`.
 * Use `yield`
-
-All of these alternatives have the drawback of giving more responsibility to the calling code.
+* Use events
 
 The example below wraps the writes in lambdas:
 
@@ -133,47 +131,90 @@ function copySettings(array $settings, IO $io): void {
         $io->defer(new WriteSettingToDatabase($copy));
     }
 }
+
+function caller() {
+    $io = new IO();
+    copySettings($id, $io);
+    // ... possibly more code
+    $io->runDeferred();
+}
 ```
 
-And finally combining command object with generators and yield:
+Combining command object with generators and yield:
 
 ```php
-function copySettings(array $settings, IO $io): generator {
+function copySettings(array $settings): generator {
     foreach ($settings as $setting) {
         $copy = createCopy($setting);
         yield new WriteSettingToDatabase($copy);
     }
 }
+
+function caller()
+{
+    $writes = [];
+    $writes = array_merge($writes, iterator_to_array(copySettings(getSettings($id))));
+    // ... possibly more code
+    array_map(fn($write) => $write->run(), $writes);
+}
 ```
 
+The handling code is pretty explicit in the `caller` above, but it can be improved by wrapping it in a class helper, I think.
+
 In all the above cases it becomes the calling code's responsibility to make sure the commands are being run properly.
+
+With events and command objects:
+
+```php
+function copySettings(array $settings): void {
+    foreach ($settings as $setting) {
+        $copy = createCopy($setting);
+        Event::fire('io.write', new WriteSettingToDatabase($copy));
+    }
+}
+
+function caller() {
+    Event::subscribe('io.write', function ($command) { $command->run(); });
+    copySettings(getSettings($id));
+}
+```
+
+The live event handler just runs the commands. In a unit-test setting, it would be a mock instead.
+
+You can of course inject an event manager instead of having a hard-coded dependency like above, especially if you want to signal in the function signature that the function is effectful.
 
 ---
 
 **Moving out logical chunks**
 
-It's easy enough to mix effects with pure logic out of habit. Here's an example which can be improved by moving out logic to separate methods:
+It's easy enough to mix effects with pure logic out of habit or stress. Here's an example which can be improved by moving out logic to separate methods. You don't have to care about the actual meaning of the code, just that no side-effects are happening after `getXmlFromTheme`.
 
 ```php
-possibly get permission
-function getPermission()
+function getAttributesFromTheme(string $themeName)
 {
-    // construct the query conditions
-    return $query->exec();
+    $theme = $this->getTheme($themeName);
+    if (empty($theme)) {
+        return null;
+    }
+    $xml = $this->getXmlFromTheme($theme);
+    if (empty($xml)) {
+        return null;
+    }
+    $xmlAttributes = $xml->getNodeAsArray('attributes');
+    if (!empty($xmlAttributes['attribute']['name'])) {
+        $xmlAttributes['attribute'] = [($xmlAttributes['attribute']];
+    }
+    $attributes = [];
+    foreach ($xmlAttributes['attribute'] as $attribute) {
+        if (!empty($attribute['name'])) {
+            $attributes[$attribute['name']] = array_merge(self::getBaseDefinition(), $attribute);
+        }
+    }
+    return $attributes;
 }
 ```
 
----
-
-**Conditional reads and writes**
-
-So far for the easy stuff, but what about writes and reads that depend on each other?
-
-The simplest case of effect dependency is where a number of reads each depend on the previous one not returning null. So you get a pipeline like `read-read-read-doThing`, where a failed read would abort and return null.
-
-That's easy enough with a simple `Pipe` class.
-
-The example below reads a theme domain entity from database, gets the belonging configuration file, and then extracts the attributes from the config file. This is a `read-read-process` pipeline.
+The logical chunk after the second `return` becomes its own function, and can now be tested without any mocking:
 
 ```php
 function getAttributesFromTheme(string $themeName)
@@ -189,13 +230,21 @@ function getAttributesFromTheme(string $themeName)
     return $this->extractAttributes($xml);
 }
 
-function caller()
-{
-    $attributes = $this->getAttributesFromTheme('mytheme');
-}
 ```
 
-Fixed with moving the unconditional read out, and applying the pipe pattern:
+---
+
+**Conditional reads and writes**
+
+So far for the easy stuff, but what about writes and reads that depend on each other?
+
+The simplest case of side-effect dependency is where a number of reads each depend on the previous one not returning null. So you get a pipeline like `read-read-read-doThing`, where a failed read would abort and return null.
+
+That's easy enough with a simple `Pipe` class.
+
+The example `getAttributesFromTheme` from above reads a theme domain entity from database, gets the belonging configuration file, and then extracts the attributes from the config file. This is a `read-read-process` pipeline.
+
+Applying the pipe pattern, it could look like this[^8]:
 
 ```php
 function getAttributesFromTheme(string $themeName)
@@ -215,14 +264,14 @@ function caller()
 }
 ```
 
-The pipe pattern can be used to deal with `copySettings` too, with a `foreach` pipe feature:
+The pipe pattern can be used to deal with the `copySettings` example too, with a `forall` pipe method (`foreach` is already taken):
 
 ```php
 function copySettings($settings) {
     return Pipe::make(
         $this->createCopy(...),
         $this->writeCopyToDatabase(...)
-    )->foreach($settings);
+    )->forall($settings);
 }
 ```
 
@@ -273,7 +322,7 @@ function caller()
 
 **Branching on a read**
 
-The following example branches on reads and writes when it creates a new folder.
+The following example considers a more complex situation than just "stop on null read in a read chain", where it branches on reads and writes when creating a new folder.
 
 In pseudo-code:
 
@@ -313,7 +362,7 @@ function createDirectory(string $uploadDir, int $id): bool
 This function can be made pure in two ways:
 
 * Rewrite the logic to fit a pipe pattern
-* Expression builder pattern (as explained shorty by Martin Fowler [here](https://www.martinfowler.com/dslCatalog/expressionBuilder.html))
+* Expression builder pattern (as explained shorty by Martin Fowler [here](https://www.martinfowler.com/dslCatalog/expressionBuilder.html))[^5]
 
 A pipe-adapted version of the same code would look like this:
 
@@ -332,7 +381,7 @@ function createDirectory(string $uploadDir, int $id): Pipe
 
 There's a semantic problem here, since stopping if the file exists is different (should be different) than a failure to write (original code has same issue too).
 
-Top read is unconditional btw (happens in all logical paths), so it can be moved out:
+Top read is unconditional, by the way (happens in all logical paths), so it can be moved out:
 
 ```php
 function createDirectory(string $folder, bool $folderExists): Pipe
@@ -363,7 +412,7 @@ To get a proper exception on failure one could use `$pipe->throwOnFalse()` inste
 
 Time to bring out the big guns. The next solution builds up an expression tree that can be evaluated independent of its construction. The performance hit is pretty obvious.
 
-The functions `not`, `fileExists` etc all create _nodes_ in the tree, so they're not run until someone calls `$st->eval()` on the tree itself.
+The functions `not`, `fileExists` etc all create _nodes_ in the tree, so they're not run until someone calls `$st->eval()` on the tree itself. Also, the logic of the nodes is _not_ inside the node objects themselves, but rather in the evaluator class (one mega-switch statement or such). This makes it possible to run any type of behaviour (in our case, mostly live "normal" behaviour vs mocked behaviour in the unit-tests) for the nodes[^6].
 
 ```php
 use St\not;
@@ -389,10 +438,6 @@ An expression builder like this can be fully inspected by test code by passing a
 
 In both these cases, we're separating the decision on what to do from the doing itself.
 
-Problematic for the imperative shell to deal with lots of different returned objects from the core? Can maybe be solved if Pipe and St both implement same interface.
-
-I'm not covering the monadic way here, but it could be done with promises etc.
-
 ---
 
 **Summary**
@@ -411,148 +456,13 @@ The following design patterns were described:
 
 ---
 
-DRAFT NOTES BELOW
-
-When write depends on result from read, generate an AST (tagless-final)
-
-Capabilities.
-
-Psalm and enforcing interfaces.
-
-Easier to allow for mocking? When is purity better than mocks?
-
-Diminishing return.
-
-Mocking works equally well, but purity gives better composability...?
-
-State monad? But can't inspect which effect it is? Similar problem with pipe?
-
-`read . () => doThingWithResult()`
-
-Example: Copy domain entity, command class. `$io->defer('db.save', () => $thing->save());`
-
-```php
-class CopyThingCommand implements CommandInterface {
-    public function run(array $options) {
-        // Depending on $options, copy translations, settings, etc
-    }
-    public function copyTranslations();
-    public function copySettings();
-}
-```
-
-And
-
-```php
-public function copySettings($id) {
-    // Get all settings belonging to $id from database
-    // Loop them
-    // Create copy
-    // Write copy to database
-}
-```
-
-First step, move the read out from the method, since it's always happening.
-
-Second step, we can defer the all writes.
-
-Fluid interface.
-
-Negative example, copy a folder. React if write failes etc. Unlink. While readdir, recursively.
-
-Separate the decision about the effect from the effect itself. But when read depends on write depends on read...
-
-Is there anything to gain from lifting out writes?
-Contract gets more complicated: pure > read from immutable state > read from state > io read > io write.
-
-```php
-foreach ($surveys as $survey) {
-    if ($survey->hasTokensTable) {
-        $token = \Token::model($survey->sid)->findByAttributes(['participant_id' => $participant->participant_id], "emailstatus <> 'OptOut'");
-        if (!empty($token)) {
-            $token->emailstatus = 'OptOut';
-            defer(() => $token->save());
-            $optedoutSurveyIds[] = $survey->sid;
-        }
-    }
-}
-```
-
-```php
-foreach ($surveys as $survey) {
-    pipe(
-        $survey->hasTokensTable(...),
-        fn() => getToken($survey, $participant),
-        fn($token) => $token->emailstatus = 'OptOut' && $token->save() && $optedoutSurveyIds[] $survey->sid
-    );
-}
-```
-
-```
-return new Pipe(
-    $survey->hasTokensTable(...),
-    $this->fetchToken(...),
-    $this->saveToken(...)
-);
-```
-
-```php
-pipe(
-    fn() => $this->getToken($survey, $participant),
-    fn($token) => 
-);
-```
-
-```php
-foreach ($surveys as $survey) {
-    if survey has tokens table
-    and token
-    then
-        set email status
-        defer save
-        collect result
-}
-```
-
-Would `defer` make it harder to understand the function? Because now the caller must run the deferred statements.
-
-Unconditional reads and writes that nothing depends on are less complex than reads and writes that enforce a certain order of operation.
-
-cp vs mv
-read-write, read-write-write (second write deletes file)
-
-defer/start or defer/end
-
-Can use db transaction or not, if you wish; also defer some decisions.
-
----
-
-TMP
-
-Most pipe libs seem to use classes to bind together, but I think that's foregoing its most useful use-case, namely to string together and separate pure methods from effectful ones (methods that read/write to database, file, socket, etc).
-
-Function that writes at the end unless early return. See SurveyActivator class.
-
-TODO: Important difference to pipeline libs is:
-
-1. Stop the pipeline on failure
-2. Primarily pipe methods together, not classes
-
-How to get proper error message from a pipe failure?
-
-TODO: Find independent write example that does not depend on read before it
-
-TODO: Note, most examples are taken from the LimeSurvey code-base.
-
-TODO: Add section about moving out logical chunk.
-
-TODO: Can also use events, subscriber-observer pattern to be used for defer?
-
----
-
 **Footnotes**
 
 [^1]: We don't care about division-by-zero and exceptions as effects here.
 [^2]: It would be interesting if a static analyzer could detect unconditional reads like this, but I've never seen one that can do it.
 [^3]: Though it is missing defensive programming, to check and take action if the write fails.
 [^4]: All code examples are fetched from [LimeSurvey](https://github.com/LimeSurvey/LimeSurvey/).
+[^5]: In functional programming you can use the IO monad pattern to make effectful code pure, but it really only makes sense when the programming language supports monadic syntax.
+[^6]: This pattern lies on the other end of the so called [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
+[^7]: I use "effect" and "side-effect" interchangeably.
+[^8]: `foo(...)` in PHP is actual syntax to return a first-class callable for a function.
