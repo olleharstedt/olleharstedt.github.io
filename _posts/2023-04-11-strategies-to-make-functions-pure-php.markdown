@@ -89,7 +89,7 @@ Great! We've already made the function a bit easier to combine and test.[^2] For
 
 **Independent write**
 
-Again looking at the `copySettings` function, we see that no logic after the write actually depends on it.[^3] There are a couple of ways we can deley or defer the effect.
+Again looking at the `copySettings` function, we see that no logic after the write actually depends on it.[^3] There are a couple of ways we can delay or defer the effect.
 
 * Return a lambda wrapping the effect
 * Return a command class, like `WriteSettingToDatabase` (an alternative to command classes is to use promises instead, though they can be harder to inspecct by the unit test code)
