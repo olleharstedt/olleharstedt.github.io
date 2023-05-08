@@ -275,7 +275,7 @@ function copySettings($settings) {
 
 ---
 
-**Early returns and writes**
+**Trailing writes**
 
 If multiple early returns happen before a write, the function can possibly be split into a boolean pure function and the write itself.
 
