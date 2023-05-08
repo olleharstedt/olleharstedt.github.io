@@ -413,8 +413,6 @@ The following design patterns were described:
 
 DRAFT NOTES BELOW
 
-Subscriber-observer pattern to be used for defer?
-
 When write depends on result from read, generate an AST (tagless-final)
 
 Capabilities.
@@ -547,6 +545,8 @@ TODO: Find independent write example that does not depend on read before it
 TODO: Note, most examples are taken from the LimeSurvey code-base.
 
 TODO: Add section about moving out logical chunk.
+
+TODO: Can also use events, subscriber-observer pattern to be used for defer?
 
 ---
 
