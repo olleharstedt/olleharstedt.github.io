@@ -228,7 +228,6 @@ function getAttributesFromTheme(string $themeName): ?array
     }
     return $this->extractAttributes($xml);
 }
-
 ```
 
 ---
