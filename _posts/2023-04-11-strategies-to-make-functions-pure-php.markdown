@@ -36,7 +36,7 @@ Pure functions are generally better than effectful functions. They can be:
 
 * Combined more easily with other functions
 * Tested without any mocking
-* They have clear contract
+* They have a clear contract
 
 In this article, there are two different side-effects[^7] we care about:
 
