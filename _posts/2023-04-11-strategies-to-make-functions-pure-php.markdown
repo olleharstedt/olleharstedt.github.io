@@ -216,7 +216,7 @@ function getAttributesFromTheme(string $themeName): ?array
 The logical chunk after the second `return` becomes its own function, and can now be tested without any mocking:
 
 ```php
-function getAttributesFromTheme(string $themeName): array
+function getAttributesFromTheme(string $themeName): ?array
 {
     $theme = $this->getTheme($themeName);
     if (empty($theme)) {
