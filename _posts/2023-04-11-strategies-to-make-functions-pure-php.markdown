@@ -166,16 +166,17 @@ In all the above cases it becomes the calling code's responsibility to make sure
 With events and command objects:
 
 ```php
-function copySettings(array $settings): void {
+function copySettings(array $settings, EventManager $em): void {
     foreach ($settings as $setting) {
         $copy = createCopy($setting);
-        Event::fire('io.write', new WriteSettingToDatabase($copy));
+        $em->fire('io.write', new WriteSettingToDatabase($copy));
     }
 }
 
 function caller(): void {
-    Event::subscribe('io.write', function ($command) { $command->run(); });
-    copySettings(getSettings($id));
+    $em = new EventManager();
+    $em->subscribe('io.write', function ($command) { $command->run(); });
+    copySettings(getSettings($id), $em);
 }
 ```
 
