@@ -103,7 +103,7 @@ function copySettings(array $settings): array {
     $writes = [];
     foreach ($settings as $setting) {
         $copy = createCopy($setting);
-        $writes = fn() => $copy->save();
+        $writes[] = fn() => $copy->save();
     }
     return $writes;
 }
@@ -116,7 +116,7 @@ function copySettings(array $settings): array {
     $commands = [];
     foreach ($settings as $setting) {
         $copy = createCopy($setting);
-        $commands = new WriteSettingToDatabase($copy);
+        $commands[] = new WriteSettingToDatabase($copy);
     }
     return $commands;
 }
