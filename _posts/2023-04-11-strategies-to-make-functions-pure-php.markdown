@@ -143,7 +143,7 @@ function caller() {
 Combining command object with generators and yield:
 
 ```php
-function copySettings(array $settings): generator {
+function copySettings(array $settings): Generator {
     foreach ($settings as $setting) {
         $copy = createCopy($setting);
         yield new WriteSettingToDatabase($copy);
@@ -173,7 +173,7 @@ function copySettings(array $settings): void {
     }
 }
 
-function caller() {
+function caller(): void {
     Event::subscribe('io.write', function ($command) { $command->run(); });
     copySettings(getSettings($id));
 }
@@ -190,7 +190,7 @@ You can of course inject an event manager instead of having a hard-coded depende
 It's easy enough to mix effects with pure logic out of habit or stress. Here's an example which can be improved by moving out logic to separate methods. You don't have to care about the actual meaning of the code, just that no side-effects are happening after `getXmlFromTheme`.
 
 ```php
-function getAttributesFromTheme(string $themeName)
+function getAttributesFromTheme(string $themeName): array
 {
     $theme = $this->getTheme($themeName);
     if (empty($theme)) {
@@ -217,7 +217,7 @@ function getAttributesFromTheme(string $themeName)
 The logical chunk after the second `return` becomes its own function, and can now be tested without any mocking:
 
 ```php
-function getAttributesFromTheme(string $themeName)
+function getAttributesFromTheme(string $themeName): array
 {
     $theme = $this->getTheme($themeName);
     if (empty($theme)) {
@@ -245,7 +245,7 @@ The example `getAttributesFromTheme` from above reads a theme domain entity from
 Applying the pipe pattern, it could look like this[^8]:
 
 ```php
-function getAttributesFromTheme(string $themeName)
+function getAttributesFromTheme(string $themeName): Pipe
 {
     return Pipe::make(
         $this->getTheme(...),
@@ -256,7 +256,7 @@ function getAttributesFromTheme(string $themeName)
     ->from($themeName);
 }
 
-function caller()
+function caller(): void
 {
     $attributes = $this->getAttributesFromTheme('mytheme')->run();
 }
@@ -265,7 +265,7 @@ function caller()
 The pipe pattern can be used to deal with the `copySettings` example too, with a `forall` pipe method (`foreach` is already taken):
 
 ```php
-function copySettings($settings) {
+function copySettings($settings): Pipe {
     return Pipe::make(
         $this->createCopy(...),
         $this->writeCopyToDatabase(...)
@@ -280,7 +280,7 @@ function copySettings($settings) {
 If multiple early returns happen before a write, the function can possibly be split into a boolean pure function and the write itself.
 
 ```php
-function setMySQLDefaultEngine(?string $dbEngine, Connection $db)
+function setMySQLDefaultEngine(?string $dbEngine, Connection $db): void
 {
     if (empty($dbEngine)) {
         return;
@@ -306,7 +306,7 @@ function shouldSetMySQLDefaultEngine(?string $dbEngine, Connection $db): bool
     return true;
 }
 
-function caller()
+function caller(): void
 {
     // ...
     if ($this->shouldSetMySQLDefaultEngine($dbEngine, $db)) {
