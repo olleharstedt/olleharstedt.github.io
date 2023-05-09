@@ -182,8 +182,6 @@ function caller(): void {
 
 The live event handler just runs the commands. In a unit-test setting, it would be a mock instead.
 
-You can of course inject an event manager instead of having a hard-coded dependency like above, especially if you want to signal in the function signature that the function is effectful.
-
 ---
 
 **Moving out logical chunks**
@@ -422,7 +420,7 @@ use St\filePutContents;
 function createDirectory(string $uploadDir, int $id, St $st): St
 {
     // read-branch-write-write
-    $folder = $uploaddir . "/surveys/" . $id . "/files";
+    $folder = $uploadDir . "/surveys/" . $id . "/files";
     $html   = "<html><head></head><body></body></html>";
     return $st
         ->if(not(fileExists($folder)))
