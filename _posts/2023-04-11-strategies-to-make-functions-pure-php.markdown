@@ -189,7 +189,7 @@ The live event handler just runs the commands. In a unit-test setting, it would 
 It's easy enough to mix effects with pure logic out of habit or stress. Here's an example which can be improved by moving out logic to separate methods. You don't have to care about the actual meaning of the code, just that no side-effects are happening after `getXmlFromTheme`.
 
 ```php
-function getAttributesFromTheme(string $themeName): array
+function getAttributesFromTheme(string $themeName): ?array
 {
     $theme = $this->getTheme($themeName);
     if (empty($theme)) {
