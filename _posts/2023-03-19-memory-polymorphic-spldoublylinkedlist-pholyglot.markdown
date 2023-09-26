@@ -91,7 +91,7 @@ Meaning, it contains a pointer to an allocation function (currently to either th
 
 I hope this makes sense. :)
 
-Other possible memory strategies could be `unsafe` that just mallocs and never frees (possibly useful for global variables); `malloc` that mallocs and is not allowed to escape scope (because it's freed at end of scope); or `stack` that allocs on the stack instead of heap, and is also not allowed to escape. I've written more about my thoughts [here](http://127.0.0.1:4000/programming/2021/04/08/concept-of-memory-safe-gc-opt-out.html).
+Other possible memory strategies could be `unsafe` that just mallocs and never frees (possibly useful for global variables); `malloc` that mallocs and is not allowed to escape scope (because it's freed at end of scope); or `stack` that allocs on the stack instead of heap, and is also not allowed to escape. I've written more about my thoughts [here](http://olleharstedt.github.io/programming/2021/04/08/concept-of-memory-safe-gc-opt-out.html).
 
 A full example with points and lists can be found in [this gist](https://gist.github.com/olleharstedt/228f6e4a5ccf3ee97b7ab3f83362873c).
 
