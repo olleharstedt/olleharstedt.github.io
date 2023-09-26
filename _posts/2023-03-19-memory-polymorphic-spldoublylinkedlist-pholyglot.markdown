@@ -23,9 +23,6 @@ h3 + p {
 }
 </style>
 
-### Warning
-**&#x26a0;** DRAFT
-
 [Pholyglot](https://github.com/olleharstedt/pholyglot) is a [transpiler](https://en.wikipedia.org/wiki/Source-to-source_compiler) that compiles a subset of PHP into PHP-and-C compatible code, so called [polyglot code](https://en.wikipedia.org/wiki/Polyglot_(computing)).
 
 This blog post describes the new features added into version 0.2 of the Pholyglot transpiler:
