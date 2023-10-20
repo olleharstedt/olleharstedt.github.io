@@ -26,13 +26,11 @@ h3 + p {
 ### Warning
 **&#x26a0;** DRAFT
 
-Forth link, read-process-write
-
 All IO is put into invokable `Effect` classes.
 
 Performance hit?
 
-Can easily be made concurrent for any pipe.
+Can easily be made concurrent for any pipe. `pipe()->fork(2)->foreach($collection)`.
 
 FilePutContents vs FileGetContents, what's expected to be passed around in the pipe, and what's already decided or known when the pipe is created?
 
@@ -42,3 +40,13 @@ Assumption:
 
 * A computer program can be understood as a tree-structure of read-process-write pipelines [forth book]
 * All side-effects are wrapped in small `Effect` classes
+
+Cache read-effects?
+
+Compare with https://github.com/amphp/pipeline
+
+https://github.com/Crell/Transformer
+
+Implicit glue, stack-based lang: https://www.youtube.com/watch?v=umSuLpjFUf8  "Concatenative programming and stack-based languages" by Douglas Creager 
+
+https://peakd.com/php/@crell/don-t-use-mocking-libraries
