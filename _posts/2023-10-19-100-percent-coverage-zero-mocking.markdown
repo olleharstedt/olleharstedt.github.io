@@ -26,4 +26,19 @@ h3 + p {
 ### Warning
 **&#x26a0;** DRAFT
 
+Forth link, read-process-write
 
+All IO is put into invokable `Effect` classes.
+
+Performance hit?
+
+Can easily be made concurrent for any pipe.
+
+FilePutContents vs FileGetContents, what's expected to be passed around in the pipe, and what's already decided or known when the pipe is created?
+
+Link to pipeline design patter. Not the same as pipe operator.
+
+Assumption:
+
+* A computer program can be understood as a tree-structure of read-process-write pipelines [forth book]
+* All side-effects are wrapped in small `Effect` classes
