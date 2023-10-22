@@ -1,6 +1,7 @@
 ---
 layout: post
-title:  100% test coverage, zero mocking
+title:  100% test coverage, zero mocking 
+subtitle: A study in imperative shell, functional core using the pipeline design pattern
 date:   2023-10-19
 categories: programming php
 ---
@@ -27,6 +28,8 @@ h3 + p {
 **&#x26a0;** DRAFT
 
 All IO is put into invokable `Effect` classes.
+Also `Read`, `Write`, possibly `Rand` or event `Exception`.
+Could be more precise, like `DatabaseRead` etc, if there's a use-case.
 
 Performance hit?
 
