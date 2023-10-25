@@ -53,3 +53,5 @@ https://github.com/Crell/Transformer
 Implicit glue, stack-based lang: https://www.youtube.com/watch?v=umSuLpjFUf8  "Concatenative programming and stack-based languages" by Douglas Creager 
 
 https://peakd.com/php/@crell/don-t-use-mocking-libraries
+
+https://fsharpforfunandprofit.com/pipeline/
