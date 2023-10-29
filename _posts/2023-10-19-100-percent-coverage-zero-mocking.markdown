@@ -27,9 +27,15 @@ h3 + p {
 ### Warning
 **&#x26a0;** DRAFT
 
+What is a pipeline? Link to design pattern def.
+
+Not the same thing as pipe operator: `|>`. The operator is type-safe but cannot be configured.
+
 All IO is put into invokable `Effect` classes.
 Also `Read`, `Write`, possibly `Rand` or event `Exception`.
 Could be more precise, like `DatabaseRead` etc, if there's a use-case.
+
+![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
 Performance hit?
 
