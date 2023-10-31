@@ -89,7 +89,7 @@ $result = pipe(
 Since functions will return pipelines without running them, the effects are **deferred** until the calling code runs it.
 
 ```php
-function getUrls(array $urls): Pipeline
+function getUrls(array $urls): Pipeline  // Only thing missing here is the generic notation Pipeline<string[]>
 {
     return pipe(
         new FileGetContents(),
@@ -120,6 +120,12 @@ $result = pipe(
 ```
 
 The same technique can be used to replace the cache effect as above.
+
+**Drawbacks**
+
+Performance?
+
+Type.
 
 Can easily be made concurrent for any pipe. `pipe()->fork(2)->map($collection)`.
 
