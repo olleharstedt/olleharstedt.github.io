@@ -95,8 +95,7 @@ function getUrls(array $urls): Pipeline
         new FileGetContents(),
         htmlToMarkdown(...),
         firstText(...)
-    )
-        ->from($urls);
+    )->from($urls);
 }
 ```
 
