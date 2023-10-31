@@ -29,28 +29,57 @@ h3 + p {
 
 **The why**
 
-Writing mocks and stubs and spys is a total PITA, looking for new ways to avoid it.
+Writing mocks and stubs and spys is a total PITA, and I'm looking for new ways to avoid it. This is one possible concept, with a couple of other benefits (and some drawbacks).
 
 A pipeline[^1] is a certain design pattern to deal with processes where each output becomes the input for the next process step, like:
 
-    A -> B -> C
+    input -> f -> g -> h -> output
 
 Many, many things are implicit pipelines in web development, so you'd think it'd be a more established pattern.
 
-The middleware pattern[^2] is a pipeline, but its design limits its applicability, especially when it comes to eradicating mock code in tests.
+The middleware pattern[^2] is a pipeline of a sort, but its "big" design limits its applicability, especially when it comes to eradicating mock code in tests.
 
-Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The operator is type-safe but cannot be configured.
+Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The operator is type-safe but cannot be configured the same way as a pipe object can.
+
+<p align=center>
+<img src="/assets/img/pipeline.png"/>
+</p>
 
 All IO is put into invokable `Effect` classes.
 Also `Read`, `Write`, possibly `Rand` or event `Exception`.
 Could be more precise, like `DatabaseRead` etc, if there's a use-case.
 
-![Adapting]({{ site.url }}/assets/img/pipeline.png)
 ![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
-Performance hit?
+Example use-case: Fetch data from an array of URLs and process them:
 
-Can easily be made concurrent for any pipe. `pipe()->fork(2)->foreach($collection)`.
+    URLs -> fetch -> html2markdown -> first_paragraph
+
+Or in PHP;
+
+```php
+$result = pipe(
+    new FileGetContents(),  // file_get_contents is wrapped in an invokable class
+    htmlToMarkdown(...),    // Using the League\HTMLToMarkdown library
+    firstText(...)          // Just a substring call
+)->from($urls);             // ->from() defines the start value of the pipe
+```
+
+To test this piece of code, we need to **mock out** `FileGetContents` to return different test values instead. But, since **replacing IO effects** is supported by the pipeline class already, it's enough for us to do:
+
+```php
+$result = pipe(
+    new FileGetContents(),
+    htmlToMarkdown(...),
+    firstText(...)
+)
+    ->replaceEffect('Query\Effects\FileGetContents', $dummyContent)
+    ->from($dummyUrl)
+    ->run();
+```
+
+
+Can easily be made concurrent for any pipe. `pipe()->fork(2)->map($collection)`.
 
 FilePutContents vs FileGetContents, what's expected to be passed around in the pipe, and what's already decided or known when the pipe is created?
 
@@ -77,6 +106,7 @@ https://fsharpforfunandprofit.com/pipeline/
 
 https://www.youtube.com/watch?v=_IgqJr8jG8M - Stanford Seminar - Concatenative Programming: From Ivory to Metal
 
+Performance hit?
 
 **Footnotes**
 
