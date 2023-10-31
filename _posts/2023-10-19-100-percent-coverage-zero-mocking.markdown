@@ -29,11 +29,17 @@ h3 + p {
 
 **The why**
 
-What is a pipeline? Link to design pattern def.
+Writing mocks and stubs and spys is a total PITA, looking for new ways to avoid it.
 
-Not the same thing as pipe operator: `|>`. The operator is type-safe but cannot be configured.
+A pipeline[^1] is a certain design pattern to deal with processes where each output becomes the input for the next process step, like:
 
-Not the same as middleware.
+    A -> B -> C
+
+Many, many things are implicit pipelines in web development, so you'd think it'd be a more established pattern.
+
+The middleware pattern[^2] is a pipeline, but its design limits its applicability, especially when it comes to eradicating mock code in tests.
+
+Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The operator is type-safe but cannot be configured.
 
 All IO is put into invokable `Effect` classes.
 Also `Read`, `Write`, possibly `Rand` or event `Exception`.
@@ -71,12 +77,9 @@ https://fsharpforfunandprofit.com/pipeline/
 
 https://www.youtube.com/watch?v=_IgqJr8jG8M - Stanford Seminar - Concatenative Programming: From Ivory to Metal
 
-https://levelup.gitconnected.com/design-patterns-implementing-pipeline-design-pattern-824bd2d42bab
-
-https://www.php-fig.org/psr/psr-15/ - middleware
-
-https://wiki.php.net/rfc/pipe-operator-v2
 
 **Footnotes**
 
-[^1]: TODO
+[^1]: [Design Patterns: Implementing Pipeline design pattern](https://levelup.gitconnected.com/design-patterns-implementing-pipeline-design-pattern-824bd2d42bab)
+[^2]: [PSR-15: HTTP Server Request Handlers](https://www.php-fig.org/psr/psr-15)
+[^3]: [PHP RFC: Pipe Operator v2](https://wiki.php.net/rfc/pipe-operator-v2) or [Pipelining with the `|>` operator in OCaml](https://blog.shaynefletcher.org/2013/12/pipelining-with-operator-in-ocaml.html)
