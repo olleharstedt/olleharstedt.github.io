@@ -31,6 +31,8 @@ h3 + p {
 
 Writing mocks and stubs and spys is a total PITA, and I'm looking for new ways to avoid it. This is one possible concept, with a couple of other benefits (and some drawbacks).
 
+**Intro**
+
 A pipeline[^1] is a certain design pattern to deal with processes where each output becomes the input for the next process step, like:
 
     input -> f -> g -> h -> output
@@ -40,6 +42,8 @@ Many, many things are implicit pipelines in web development, so you'd think it'd
 The middleware pattern[^2] is a pipeline of a sort, but its "big" design limits its applicability, especially when it comes to eradicating mock code in tests.
 
 Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The operator is type-safe but cannot be configured the same way as a pipe object can.
+
+**A pipeline class**
 
 <p align=center>
 <img src="/assets/img/pipeline.png"/>
@@ -51,18 +55,22 @@ Could be more precise, like `DatabaseRead` etc, if there's a use-case.
 
 ![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
-Example use-case: Fetch data from an array of URLs and process them:
+**Example use-case**
+
+As an example, fetch data from an array of URLs and process them:
 
     URLs -> fetch -> html2markdown -> first_paragraph
 
 Or in PHP;
 
 ```php
-$result = pipe(
+$result = pipe(             // pipe() is a helper function that returns a pipeline object
     new FileGetContents(),  // file_get_contents is wrapped in an invokable class
     htmlToMarkdown(...),    // Using the League\HTMLToMarkdown library
     firstText(...)          // Just a substring call
-)->from($urls);             // ->from() defines the start value of the pipe
+)
+    ->from($urls);          // ->from() defines the start value of the pipe
+    ->run();                // Runs the pipeline
 ```
 
 To test this piece of code, we need to **mock out** `FileGetContents` to return different test values instead. But, since **replacing IO effects** is supported by the pipeline class already, it's enough for us to do:
@@ -78,6 +86,41 @@ $result = pipe(
     ->run();
 ```
 
+Since functions will return pipelines without running them, the effects are **deferred** until the calling code runs it.
+
+```php
+function getUrls(array $urls): Pipeline
+{
+    return pipe(
+        new FileGetContents(),
+        htmlToMarkdown(...),
+        firstText(...)
+    )
+        ->from($urls);
+}
+```
+
+**Other benefits**
+
+Some natural benefits occur when structuring your code as pipelines:
+
+1. You can easily cache side-effects using a `Cache` effect class
+2. You can easily `fork` when your input is a bigger array
+
+The following code forks into two processes[^4] and also caches the result from `FileGetContents`:
+
+```php
+$result = pipe(
+    new Cache(new FileGetContents()),
+    htmlToMarkdown(...),
+    firstText(...)
+)
+    ->fork(2)
+    ->setCache($cache)
+    ->map($urls);
+```
+
+The same technique can be used to replace the cache effect as above.
 
 Can easily be made concurrent for any pipe. `pipe()->fork(2)->map($collection)`.
 
@@ -113,3 +156,4 @@ Performance hit?
 [^1]: [Design Patterns: Implementing Pipeline design pattern](https://levelup.gitconnected.com/design-patterns-implementing-pipeline-design-pattern-824bd2d42bab)
 [^2]: [PSR-15: HTTP Server Request Handlers](https://www.php-fig.org/psr/psr-15)
 [^3]: [PHP RFC: Pipe Operator v2](https://wiki.php.net/rfc/pipe-operator-v2) or [Pipelining with the `|>` operator in OCaml](https://blog.shaynefletcher.org/2013/12/pipelining-with-operator-in-ocaml.html)
+[^4]: Using [spatie/fork](https://github.com/spatie/fork)
