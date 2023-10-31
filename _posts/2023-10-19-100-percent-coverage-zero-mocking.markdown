@@ -27,14 +27,19 @@ h3 + p {
 ### Warning
 **&#x26a0;** DRAFT
 
+**The why**
+
 What is a pipeline? Link to design pattern def.
 
 Not the same thing as pipe operator: `|>`. The operator is type-safe but cannot be configured.
+
+Not the same as middleware.
 
 All IO is put into invokable `Effect` classes.
 Also `Read`, `Write`, possibly `Rand` or event `Exception`.
 Could be more precise, like `DatabaseRead` etc, if there's a use-case.
 
+![Adapting]({{ site.url }}/assets/img/pipeline.png)
 ![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
 Performance hit?
@@ -52,6 +57,8 @@ Assumption:
 
 Cache read-effects?
 
+Do not advice 100% test coverage but rather risk-driven coverage - most tests for those parts which failure has the highest impact * probability.
+
 Compare with https://github.com/amphp/pipeline
 
 https://github.com/Crell/Transformer
@@ -61,3 +68,15 @@ Implicit glue, stack-based lang: https://www.youtube.com/watch?v=umSuLpjFUf8  "C
 https://peakd.com/php/@crell/don-t-use-mocking-libraries
 
 https://fsharpforfunandprofit.com/pipeline/
+
+https://www.youtube.com/watch?v=_IgqJr8jG8M - Stanford Seminar - Concatenative Programming: From Ivory to Metal
+
+https://levelup.gitconnected.com/design-patterns-implementing-pipeline-design-pattern-824bd2d42bab
+
+https://www.php-fig.org/psr/psr-15/ - middleware
+
+https://wiki.php.net/rfc/pipe-operator-v2
+
+**Footnotes**
+
+[^1]: TODO
