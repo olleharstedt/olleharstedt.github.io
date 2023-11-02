@@ -50,7 +50,7 @@ Also note that the pipeline design pattern is not the same thing as the pipe _op
 
 All IO is put into invokable `Effect` classes.
 Also `Read`, `Write`, possibly `Rand` or event `Exception`.
-Could be more precise, like `DatabaseRead` etc, if there's a use-case.
+A database query would implement the read or write interface depending on if it's a select or update/insert.
 
 ![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
