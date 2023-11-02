@@ -137,6 +137,10 @@ There are some drawbacks with this approach of course.
 * The lack of generic notation in PHP obfuscates the return values of functions. `string` becomes `Pipeline` as a return type, but what we want is `Pipeline<string>`.
 * Implicit glue also means the pipeline payload is implicit, which can obfuscate the code a bit. Compare with Forth and its implicit stacks.
 
+**Going forward**
+
+Native language support for pipelines and effects?
+
 **Other resources**
 
 Compare with https://github.com/amphp/pipeline
