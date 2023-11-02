@@ -1,4 +1,4 @@
-(---
+---
 layout: post
 title:  100% test coverage, zero mocking 
 subtitle: A study in imperative shell, functional core using the pipeline design pattern
