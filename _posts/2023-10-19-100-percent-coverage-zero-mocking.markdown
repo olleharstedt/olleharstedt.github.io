@@ -126,6 +126,8 @@ $result = pipe(
 
 The same technique can be used to replace the cache effect as above, using `replaceEffect`.
 
+The pipeline can recursively run pipelines returned by any of the processing steps. In this way, a computer program is structured like a tree of `read-process-write` pipelines[^5], and nothing gets executed until the top layer runs `run`; you separate, at least to a higher degree, what to do from how to do it[^6].
+
 **Drawbacks**
 
 There are some drawbacks with this approach of course.
@@ -160,3 +162,5 @@ Link to query repo.
 [^2]: [PSR-15: HTTP Server Request Handlers](https://www.php-fig.org/psr/psr-15)
 [^3]: [PHP RFC: Pipe Operator v2](https://wiki.php.net/rfc/pipe-operator-v2) or [Pipelining with the `|>` operator in OCaml](https://blog.shaynefletcher.org/2013/12/pipelining-with-operator-in-ocaml.html)
 [^4]: Using [spatie/fork](https://github.com/spatie/fork)
+[^5]: Thinking Forth?
+[^6]: Command query separation?
