@@ -56,9 +56,9 @@ A database query would implement the read or write interface depending on if it'
 
 **Example use-case**
 
-As an example, fetch data from an array of URLs and process them:
+As an example, fetch data from a URL and process it:
 
-    URLs -> fetch -> html2markdown -> first_paragraph
+    URL -> fetch -> html2markdown -> first_paragraph
 
 Or in PHP;
 
@@ -68,7 +68,7 @@ $result = pipe(             // pipe() is a helper function that returns a pipeli
     htmlToMarkdown(...),    // Using the League\HTMLToMarkdown library
     firstText(...)          // Just a substring call
 )
-    ->from($urls);          // ->from() defines the start value of the pipe
+    ->from($url);           // ->from() defines the start value of the pipe
     ->run();                // Runs the pipeline
 ```
 
@@ -89,13 +89,13 @@ $result = pipe(
 Since functions will return pipelines without running them, the effects are **deferred** until the calling code runs it.
 
 ```php
-function getUrls(array $urls): Pipeline  // Only thing missing here is the generic notation Pipeline<string[]>
+function getUrl(string $url): Pipeline  // Only thing missing here is the generic notation Pipeline<string[]>
 {
     return pipe(
         new FileGetContents(),
         htmlToMarkdown(...),
         firstText(...)
-    )->from($urls);
+    )->from($url);
 }
 ```
 
