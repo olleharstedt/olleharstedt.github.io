@@ -81,6 +81,7 @@ $result = pipe(
     htmlToMarkdown(...),
     firstText(...)
 )
+    // The magic part: all side-effects can be lifted out with a simple method call.
     ->replaceEffect('Query\Effects\FileGetContents', $dummyContent)
     ->from($dummyUrl)
     ->run();
@@ -110,16 +111,20 @@ The following code forks into two processes[^4] and also caches the result from 
 
 ```php
 $result = pipe(
+    // The file read effect is wrapped in a cache effect
     new Cache(new FileGetContents()),
     htmlToMarkdown(...),
     firstText(...)
 )
+    // At-your-fingertips parallelism
     ->fork(2)
+    // The Cache effect class uses the injected cache
     ->setCache($cache)
+    // Using map() here; foreach() or fold() are other possible iterations
     ->map($urls);
 ```
 
-The same technique can be used to replace the cache effect as above.
+The same technique can be used to replace the cache effect as above, using `replaceEffect`.
 
 **Drawbacks**
 
@@ -132,7 +137,6 @@ There are some drawbacks with this approach of course.
 Assumption:
 
 * A computer program can be understood as a tree-structure of read-process-write pipelines [forth book]
-* All side-effects are wrapped in small `Effect` classes
 
 Do not advice 100% test coverage but rather risk-driven coverage - most tests for those parts which failure has the highest impact * probability.
 
@@ -148,7 +152,7 @@ https://fsharpforfunandprofit.com/pipeline/
 
 https://www.youtube.com/watch?v=_IgqJr8jG8M - Stanford Seminar - Concatenative Programming: From Ivory to Metal
 
-Performance hit?
+Link to query repo.
 
 **Footnotes**
 
