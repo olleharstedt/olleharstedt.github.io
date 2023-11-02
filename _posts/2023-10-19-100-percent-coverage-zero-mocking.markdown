@@ -139,7 +139,7 @@ There are some drawbacks with this approach of course.
 
 **Going forward**
 
-Native language support for pipelines and effects?
+It would be nice with a programming language that has native support for pipelines and effects. I was considering if Forth could be transpiled to PHP. 
 
 **Other resources**
 
