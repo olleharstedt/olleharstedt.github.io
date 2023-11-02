@@ -123,22 +123,16 @@ The same technique can be used to replace the cache effect as above.
 
 **Drawbacks**
 
-Performance?
+There are some drawbacks with this approach of course.
 
-Type.
-
-Can easily be made concurrent for any pipe. `pipe()->fork(2)->map($collection)`.
-
-FilePutContents vs FileGetContents, what's expected to be passed around in the pipe, and what's already decided or known when the pipe is created?
-
-Link to pipeline design patter. Not the same as pipe operator.
+* Performance might take a hit if you replace normal function calls with invokable classes. A compiled language might deal with this better than PHP.
+* Type-safety diminishes. Instead of compile time errors for passing the wrong argument around, the pipeline will throw runtime exceptions.
+* Implicit glue also means the pipeline payload is implicit, which can obfuscate the code a bit. Compare with Forth and its implicit stacks.
 
 Assumption:
 
 * A computer program can be understood as a tree-structure of read-process-write pipelines [forth book]
 * All side-effects are wrapped in small `Effect` classes
-
-Cache read-effects?
 
 Do not advice 100% test coverage but rather risk-driven coverage - most tests for those parts which failure has the highest impact * probability.
 
