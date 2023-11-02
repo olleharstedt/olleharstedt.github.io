@@ -133,6 +133,7 @@ There are some drawbacks with this approach of course.
 
 * Performance might take a hit if you replace normal function calls with invokable classes. A compiled language might deal with this better than PHP.
 * Type-safety is recuced. Instead of compile time errors for passing the wrong argument around, the pipeline will throw runtime exceptions.
+* The lack of generic notation in PHP obfuscates the return values of functions. `string` becomes `Pipeline` as a return type, but what we want is `Pipeline<string>`.
 * Implicit glue also means the pipeline payload is implicit, which can obfuscate the code a bit. Compare with Forth and its implicit stacks.
 
 **Other resources**
