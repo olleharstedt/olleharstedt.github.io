@@ -1,4 +1,4 @@
----
+(---
 layout: post
 title:  100% test coverage, zero mocking 
 subtitle: A study in imperative shell, functional core using the pipeline design pattern
@@ -49,8 +49,9 @@ Also note that the pipeline design pattern is not the same thing as the pipe _op
 </p>
 
 All IO is put into invokable `Effect` classes.
-Also `Read`, `Write`, possibly `Rand` or event `Exception`.
+Also `Read`, `Write`, possibly `Rand` or even `Exception`.
 A database query would implement the read or write interface depending on if it's a select or update/insert.
+Plugin events could be effects too, opening up for customization (and spaghetti code...).
 
 ![Adapting]({{ site.url }}/assets/img/effectclass.png)
 
