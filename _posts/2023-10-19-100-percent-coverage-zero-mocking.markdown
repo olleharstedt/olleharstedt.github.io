@@ -31,6 +31,8 @@ h3 + p {
 
 Writing mocks and stubs and spys is a total PITA, and I'm looking for new ways to avoid it. This is one possible concept, with a couple of other benefits (and some drawbacks).
 
+(Obviously I do not recommend 100% test coverage, this is just to prove a point. Your test coverage should be defined by your risk analysis.)
+
 **Intro**
 
 A pipeline[^1] is a certain design pattern to deal with processes where each output becomes the input for the next process step, like:
@@ -104,8 +106,8 @@ function getUrls(array $urls): Pipeline  // Only thing missing here is the gener
 
 Some natural benefits occur when structuring your code as pipelines:
 
-1. You can easily cache side-effects using a `Cache` effect class
-2. You can easily `fork` when your input is a bigger array
+1. You can easily **cache** side-effects using a `Cache` effect class
+2. You can easily **fork** when your input is a bigger array
 
 The following code forks into two processes[^4] and also caches the result from `FileGetContents`:
 
@@ -126,21 +128,17 @@ $result = pipe(
 
 The same technique can be used to replace the cache effect as above, using `replaceEffect`.
 
-The pipeline can recursively run pipelines returned by any of the processing steps. In this way, a computer program is structured like a tree of `read-process-write` pipelines[^5], and nothing gets executed until the top layer runs `run`; you separate, at least to a higher degree, what to do from how to do it[^6].
+The pipeline can **recursively** run pipelines returned by any of the processing steps. In this way, a computer program is structured like a tree of `read-process-write` pipelines[^5], and nothing gets executed until the top layer calls `run`; you separate - at least to a higher degree - what to do from how to do it[^6].
 
 **Drawbacks**
 
 There are some drawbacks with this approach of course.
 
 * Performance might take a hit if you replace normal function calls with invokable classes. A compiled language might deal with this better than PHP.
-* Type-safety diminishes. Instead of compile time errors for passing the wrong argument around, the pipeline will throw runtime exceptions.
+* Type-safety is recuced. Instead of compile time errors for passing the wrong argument around, the pipeline will throw runtime exceptions.
 * Implicit glue also means the pipeline payload is implicit, which can obfuscate the code a bit. Compare with Forth and its implicit stacks.
 
-Assumption:
-
-* A computer program can be understood as a tree-structure of read-process-write pipelines [forth book]
-
-Do not advice 100% test coverage but rather risk-driven coverage - most tests for those parts which failure has the highest impact * probability.
+**Other resources**
 
 Compare with https://github.com/amphp/pipeline
 
