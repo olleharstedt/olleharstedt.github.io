@@ -24,9 +24,6 @@ h3 + p {
 }
 </style>
 
-### Warning
-**&#x26a0;** DRAFT
-
 **The why**
 
 Writing mocks and stubs and spys is a total PITA, and I'm looking for new ways to avoid it. This is one possible concept, with a couple of other benefits (and some drawbacks).
@@ -43,7 +40,7 @@ Many, many things are implicit pipelines in web development, so you'd think it'd
 
 The middleware pattern[^2] is a pipeline of a sort, but its "big" design limits its applicability, especially when it comes to eradicating mock code in tests.
 
-Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The operator is type-safe but cannot be configured the same way as a pipe object can.
+Also note that the pipeline design pattern is not the same thing as the pipe _operator_: `|>`[^3]. The pipe operator is type-safe but cannot be configured the same way a pipe object can, as I will demonstrate below.
 
 **A pipeline class**
 
