@@ -139,7 +139,7 @@ There are some drawbacks with this approach of course.
 
 **Going forward**
 
-It would be nice with a programming language that has native support for pipelines and effects. I was considering if Forth could be transpiled to PHP. or perhaps used as a meta-language to generate PHP code, implying certain design principles. A `Phorth`, if you will.
+It would be nice with a programming language that has native support for pipelines and effects. I was considering if [Forth](https://www.forth.com/forth/) could be transpiled to PHP. or perhaps used as a meta-language to generate PHP code, assuming certain design principles. A `Phorth`, if you will.
 
 **Other resources**
 
