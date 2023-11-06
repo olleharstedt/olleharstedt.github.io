@@ -90,7 +90,7 @@ $result = pipe(
 Since functions will return pipelines without running them, the effects are **deferred** until the calling code runs it.
 
 ```php
-function getUrl(string $url): Pipeline  // Only thing missing here is the generic notation Pipeline<string[]>
+function getUrl(string $url): Pipeline  // Only thing missing here is the generic notation Pipeline<string>
 {
     return pipe(
         new FileGetContents(),
