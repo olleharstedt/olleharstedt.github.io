@@ -139,23 +139,18 @@ There are some drawbacks with this approach of course.
 
 **Going forward**
 
-It would be nice with a programming language that has native support for pipelines and effects. I was considering if Forth could be transpiled to PHP. 
+It would be nice with a programming language that has native support for pipelines and effects. I was considering if Forth could be transpiled to PHP. or perhaps used as a meta-language to generate PHP code, implying certain design principles. A `Phorth`, if you will.
 
 **Other resources**
 
-Compare with https://github.com/amphp/pipeline
+I made a simple application to query Google from command-line that uses this pipeline-oriented design: https://github.com/olleharstedt/query/blob/main/query.php
 
-https://github.com/Crell/Transformer
-
-Implicit glue, stack-based lang: https://www.youtube.com/watch?v=umSuLpjFUf8  "Concatenative programming and stack-based languages" by Douglas Creager 
-
-https://peakd.com/php/@crell/don-t-use-mocking-libraries
-
-https://fsharpforfunandprofit.com/pipeline/
-
-https://www.youtube.com/watch?v=_IgqJr8jG8M - Stanford Seminar - Concatenative Programming: From Ivory to Metal
-
-Link to query repo.
+* [amphp/pipeline](https://github.com/amphp/pipeline)
+* [Crell/Transformer](https://github.com/Crell/Transformer): transformation pipelines based on typed PHP objects
+* ["Concatenative programming and stack-based languages" by Douglas Creager ](https://www.youtube.com/watch?v=umSuLpjFUf8)
+* [Don't use Mocking libraries](https://peakd.com/php/@crell/don-t-use-mocking-libraries)
+* [Pipeline-oriented Programming](https://fsharpforfunandprofit.com/pipeline/)
+* [Stanford Seminar - Concatenative Programming: From Ivory to Metal](https://www.youtube.com/watch?v=_IgqJr8jG8M) 
 
 **Footnotes**
 
