@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  How do I use the vocabulary in Forth?
-date:   2023-10-19
+date:   2023-11-05
 categories: programming forth gforth
 ---
 
