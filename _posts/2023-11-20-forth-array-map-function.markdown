@@ -7,8 +7,17 @@ categories: programming forth functional
 
 TODO: DRAFT
 
-```forth
-create arr 4 , 10 , 20 , 30 , 40 ,  \ Create an array of size 4 and store four numbers on it
+**Introduction**
+
+Short example of how to create an FP-like `map` word in Forth.
+
+**Acknowledgments**
+
+GeDaMo and others on Libera IRC `##forth` channel.
+
+```
+\ Create an array of size 4 and store four numbers on it
+create arr 4 , 10 , 20 , 30 , 40 ,
  
 : count ( A -- A+cell N ) 
     dup     \ Duplicate address of array
