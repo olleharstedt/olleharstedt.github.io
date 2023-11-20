@@ -15,6 +15,8 @@ Short example of how to create an FP-like `map` word in Forth.
 
 GeDaMo and others on Libera IRC `##forth` channel.
 
+**Code**
+
 ```
 \ Create an array of size 4 and store four numbers on it
 create arr 4 , 10 , 20 , 30 , 40 ,
