@@ -22,6 +22,31 @@ $sc = <<<SCHEME
 )
 SCHEME;
 
+$json = <<<JAVASCRIPT
+{
+    "title": "Lagerrapport",
+    "table": "articles",
+    "join": {
+        "table": "categories",
+        "on": ["articles.cat_dn", "categories.dn"]
+    },
+    "columns": [
+        {
+            "title": "Art nr",
+            "select": "articles.id",
+        },
+        {
+            "title": "Diff",
+            "css": "right-align",
+            "select": {
+                "op": "-",
+                "args": ["aricles.selling_price", "articles.purchase_price"]
+            }
+        }
+    ]
+}
+JAVASCRIPT;
+
 $f = <<<FORTH
 "Lagerrapport" title report
 "articles" table report
@@ -45,7 +70,7 @@ report struct
         column struct
             "Diff" title
             "right-align" css
-            - "articles.article_selling_price" "articles.article_purchase_price" select
+            "articles.article_selling_price" "articles.article_purchase_price" minus select
         end
     end
 end
@@ -156,12 +181,8 @@ class ReportSexpr extends SexprBase
         return $result;
     }
 
-    public function getSelect(SplStack $columns)
+    public function evalSelect($select)
     {
-        $columns = $this->findAll($columns, 'column');
-        $sql = '';
-        foreach ($columns as $column) {
-            $select = $this->findFirst($column, 'select');
             $top = $select->top();
             switch (gettype($top)) {
                 case 'string':
@@ -172,6 +193,15 @@ class ReportSexpr extends SexprBase
                     error_log('object');
                     break;
             }
+    }
+
+    public function getSelect(SplStack $columns)
+    {
+        $columns = $this->findAll($columns, 'column');
+        $sql = '';
+        foreach ($columns as $column) {
+            $select = $this->findFirst($column, 'select');
+            $sql .= $this->evalSelect($select);
         }
         return trim(trim($sql), ',');
     }
