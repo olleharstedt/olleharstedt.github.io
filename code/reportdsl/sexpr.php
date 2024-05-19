@@ -275,8 +275,8 @@ class StringBuffer
     {
         // Normalize string
         $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
-        // One extra space for the while-loop to work
-        $this->buffer = $s. ' ';
+        // Two extra space for the while-loop to work
+        $this->buffer = $s. '  ';
     }
 
     public function next()
@@ -286,10 +286,7 @@ class StringBuffer
         }
         if ($this->inside_quote === 1) {
             $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
-            error_log($this->pos);
-            error_log($nextQuote);
             $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
-            error_log($result);
             $this->pos = $nextQuote + 2;
             $this->inside_quote = 0;
         } else {
@@ -314,12 +311,11 @@ class ReportForth
         $this->buffer = $b;
     }
 
-    public function getQuery()
+    public function getEnvFromBuffer()
     {
         $env = [];
         $stack  = new SplStack();
         while ($word = $this->buffer->next()) {
-            error_log($word);
             if (trim($word, '"') !== $word) {
                 $stack->push($word);
             } elseif (ctype_digit($word)) {
@@ -327,7 +323,8 @@ class ReportForth
                 $stack->push($word);
             } elseif ($this->dict[$word]) {
                 $fn = $this->dict[$word];
-                $fn($stack, $this->buffer, $env);
+                // Execute word
+                $fn($stack, $this->buffer, $env, $word);
             } else {
                 throw new RuntimeException('Word is not a string, not a number, and not in dict: ' . $word);
             }
@@ -336,6 +333,25 @@ class ReportForth
             // if word is string
         }
         return $env;
+    }
+
+    public function getSelectFromColumns(Array_ $cols)
+    {
+        $sql = '';
+        foreach ($cols as $col) {
+            $sql .= trim($col->data['select:'], '"') . ', ';
+        }
+        return trim(trim($sql), ',');
+    }
+
+    public function getQuery()
+    {
+        $env = $this->getEnvFromBuffer();
+        $report = $env['report'];
+        $select = $this->getSelectFromColumns($report->data['columns']);
+        $table = $report->data['table:'];
+        $sql  = "SELECT $select FROM $table";
+        return $sql;
     }
 
     public function addWord($word, $fn)
@@ -359,12 +375,21 @@ $r->getQuery();
 $s = <<<FORTH
 struct report
     title: Lagerrapport
+    table: "articles"
     struct join
         table: "categories"
     end
     array columns
         struct column
             title: "Art nr"
+            select: "articles.id"
+        end
+        struct column
+            title: "Diff"
+            as: "diff"
+            select: (
+                "articles.selling_price" - "articles.purchase_price"
+            )
         end
     end
 end
@@ -383,17 +408,17 @@ class Array_ extends ArrayObject
 
 $r = new ReportForth(new StringBuffer($s));
 // Array is always property?
-$r->addWord('array', function($stack, $buffer, &$env) {
+$r->addWord('array', function($stack, $buffer, &$env, $word) {
     $arr = new Array_();
     $arr->name = $buffer->next();
     $stack->push($arr);
 });
-$r->addWord('struct', function($stack, $buffer, &$env) {
+$r->addWord('struct', function($stack, $buffer, &$env, $word) {
     $struct = new Struct();
     $struct->name = $buffer->next();
     $stack->push($struct);
 });
-$r->addWord('end', function($stack, $buffer, &$env) {
+$r->addWord('end', function($stack, $buffer, &$env, $word) {
     $item = $stack->pop();
     if ($item instanceof Struct) {
         if ($stack->count() > 0) {
@@ -419,12 +444,24 @@ $r->addWord('end', function($stack, $buffer, &$env) {
         }
     }
 });
-$datapropword = function($stack, $buffer, &$env) {
+$datapropword = function($stack, $buffer, &$env, $word) {
     $struct = $stack->pop();
-    $struct->data['title'] = $buffer->next();
+    $struct->data[$word] = $buffer->next();
     $stack->push($struct);
 };
 $r->addWord('title:', $datapropword);
 $r->addWord('table:', $datapropword);
+$r->addWord('as:', $datapropword);
+$r->addWord('select:', function($stack, $buffer, &$env, $word) {
+    $next = $buffer->next();
+    if ($next === '(') {
+        while ($w = $buffer->next() !== ')') {
+        }
+    } else {
+        $struct = $stack->pop();
+        $struct->data[$word] = $next;
+        $stack->push($struct);
+    }
+});
 $env = $r->getQuery();
 var_dump($env);
