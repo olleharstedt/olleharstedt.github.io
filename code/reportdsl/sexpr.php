@@ -50,13 +50,6 @@ $json = <<<JAVASCRIPT
 JAVASCRIPT;
 
 $f = <<<FORTH
-"Lagerrapport" title report
-"articles" table report
-"Art nr" title column
-"articles.article_id" select column
-FORTH;
-
-$f = <<<FORTH
 report struct
     "Lagerrapport" title
     "articles" table
