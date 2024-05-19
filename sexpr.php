@@ -27,6 +27,28 @@ $f = <<<FORTH
 "articles" table report
 "Art nr" title column
 "articles.article_id" select column
+FORTH;
+
+$f = <<<FORTH
+report struct
+    "Lagerrapport" title
+    "articles" table
+    join struct
+        "categories" table
+        "articles.cat_dn" "categories.dn" on
+    end
+    columns struct
+        column struct
+            "Art nr" title
+            "articles.article_id" select
+        end
+        column struct
+            "Diff" title
+            "right-align" css
+            - "articles.article_selling_price" "articles.article_purchase_price" select
+        end
+    end
+end
 
 FORTH;
 
@@ -109,7 +131,7 @@ class MathSexpr extends SexprBase
 
 class ReportSexpr extends SexprBase
 {
-    public function find(SplStack $sexp, string $symbol)
+    public function findFirst(SplStack $sexp, string $symbol)
     {
         foreach ($sexp as $s) {
             if ($s instanceof SplStack) {
@@ -121,15 +143,44 @@ class ReportSexpr extends SexprBase
         return null;
     }
 
+    public function findAll(SplStack $sexp, string $symbol)
+    {
+        $result = [];
+        foreach ($sexp as $s) {
+            if ($s instanceof SplStack) {
+                if ($s->bottom() === $symbol) {
+                    $result[] = $s;
+                }
+            }
+        }
+        return $result;
+    }
+
     public function getSelect(SplStack $columns)
     {
+        $columns = $this->findAll($columns, 'column');
+        $sql = '';
+        foreach ($columns as $column) {
+            $select = $this->findFirst($column, 'select');
+            $top = $select->top();
+            switch (gettype($top)) {
+                case 'string':
+                    $sql = $top . ', ';
+                    break;
+                case 'object':
+                    // TODO: Eval recursively
+                    error_log('object');
+                    break;
+            }
+        }
+        return trim(trim($sql), ',');
     }
 
     public function getQuery(SplStack $sexp)
     {
-        $report = $this->find($sexp, 'report');
-        $table = $this->find($report, 'table');
-        $columns = $this->find($report, 'columns');
+        $report = $this->findFirst($sexp, 'report');
+        $table = $this->findFirst($report, 'table');
+        $columns = $this->findFirst($report, 'columns');
         $select = $this->getSelect($columns);
         $sql  = "SELECT $select FROM {$table->pop()} ";
         return $sql;
