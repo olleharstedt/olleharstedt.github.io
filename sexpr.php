@@ -17,6 +17,7 @@ $sc = <<<SCHEME
             (title "Diff")
             (css "right-align")
             (select (- "articles.article_selling_price" "articles.article_purchase_price"))
+            (as "diff")
         )
     )
 )
@@ -41,7 +42,8 @@ $json = <<<JAVASCRIPT
             "select": {
                 "op": "-",
                 "args": ["aricles.selling_price", "articles.purchase_price"]
-            }
+            },
+            "as": "diff"
         }
     ]
 }
@@ -71,6 +73,7 @@ report struct
             "Diff" title
             "right-align" css
             "articles.article_selling_price" "articles.article_purchase_price" minus select
+            "diff" as
         end
     end
 end
@@ -181,18 +184,23 @@ class ReportSexpr extends SexprBase
         return $result;
     }
 
-    public function evalSelect($select)
+    public function evalSelect($top)
     {
-            $top = $select->top();
-            switch (gettype($top)) {
-                case 'string':
-                    $sql = $top . ', ';
-                    break;
-                case 'object':
-                    // TODO: Eval recursively
-                    error_log('object');
-                    break;
-            }
+        $sql = '';
+        switch (gettype($top)) {
+            case 'string':
+                $sql .= $top;
+                break;
+            case 'object':
+                $op = $top->bottom();
+                switch ($op) {
+                    case '-':
+                        $sql .= '(' . $this->evalSelect($top->pop()) . ' - ' . $this->evalSelect($top->pop()) . ')';
+                        break;
+                }
+                break;
+        }
+        return $sql;
     }
 
     public function getSelect(SplStack $columns)
@@ -201,7 +209,12 @@ class ReportSexpr extends SexprBase
         $sql = '';
         foreach ($columns as $column) {
             $select = $this->findFirst($column, 'select');
-            $sql .= $this->evalSelect($select);
+            $sql .= $this->evalSelect($select->top());
+            $as = $this->findFirst($column, 'as');
+            if ($as) {
+                $sql .= ' AS ' . $as->top();
+            }
+            $sql .= ', ';
         }
         return trim(trim($sql), ',');
     }
