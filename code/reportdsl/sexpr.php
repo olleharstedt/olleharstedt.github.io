@@ -81,9 +81,12 @@ FORTH;
 
 abstract class SexprBase
 {
+    /**
+     * @return SplStack<string>
+     */
     public function parse(string $sc)
     {
-        $sc = trim(preg_replace('/[\t\n\r\s]+/', ' ', $sc));
+        $sc = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $sc));
         $len = strlen($sc);
         $current = new SplStack();
         $base = $current;
@@ -122,7 +125,10 @@ abstract class SexprBase
 
 class MathSexpr extends SexprBase
 {
-    public function mathEval($sexpr)
+    /**
+     * @param SplStack<mixed>|string $sexpr
+     */
+    public function mathEval($sexpr): int
     {
         if (is_string($sexpr)) {
             return intval($sexpr);
@@ -130,29 +136,30 @@ class MathSexpr extends SexprBase
         $result = 0;
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
-            return mathEval($op);
+            return $this->mathEval($op);
         }
         switch ($op) {
             case '+':
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
-                return mathEval($arg1) + mathEval($arg2);
-                break;
+                return $this->mathEval($arg1) + $this->mathEval($arg2);
             case '-':
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
-                return mathEval($arg1) - mathEval($arg2);
-                break;
+                return $this->mathEval($arg1) - $this->mathEval($arg2);
             default:
                 return intval($op);
         }
-        return $result;
     }
 }
 
 class ReportSexpr extends SexprBase
 {
-    public function findFirst(SplStack $sexp, string $symbol)
+    /**
+     * @param SplStack<mixed> $sexp
+     * @return ?SplStack<mixed>
+     */
+    public function findFirst(SplStack $sexp, string $symbol): ?SplStack
     {
         foreach ($sexp as $s) {
             if ($s instanceof SplStack) {
@@ -164,7 +171,11 @@ class ReportSexpr extends SexprBase
         return null;
     }
 
-    public function findAll(SplStack $sexp, string $symbol)
+    /**
+     * @param SplStack<mixed> $sexp
+     * @return array<mixed>
+     */
+    public function findAll(SplStack $sexp, string $symbol): array
     {
         $result = [];
         foreach ($sexp as $s) {
@@ -177,7 +188,10 @@ class ReportSexpr extends SexprBase
         return $result;
     }
 
-    public function evalSelect($top)
+    /**
+     * @param SplStack<mixed>|string $top
+     */
+    public function evalSelect($top): string
     {
         $sql = '';
         switch (gettype($top)) {
@@ -195,13 +209,18 @@ class ReportSexpr extends SexprBase
         }
         return $sql;
     }
-
-    public function getSelect(SplStack $columns)
+    /**
+     * @param SplStack<mixed> $columns
+     */
+    public function getSelect($columns): string
     {
         $columns = $this->findAll($columns, 'column');
         $sql = '';
         foreach ($columns as $column) {
             $select = $this->findFirst($column, 'select');
+            if ($select === null) {
+                throw new RuntimeException('Found no select');
+            }
             $sql .= $this->evalSelect($select->top());
             $as = $this->findFirst($column, 'as');
             if ($as) {
@@ -212,11 +231,23 @@ class ReportSexpr extends SexprBase
         return trim(trim($sql), ',');
     }
 
-    public function getQuery(SplStack $sexp)
+    /**
+     * @param SplStack<mixed> $sexp
+     */
+    public function getQuery($sexp): string
     {
         $report = $this->findFirst($sexp, 'report');
+        if ($report === null) {
+            throw new RuntimeException('Found no report');
+        }
         $table = $this->findFirst($report, 'table');
+        if ($table === null) {
+            throw new RuntimeException('Found no table');
+        }
         $columns = $this->findFirst($report, 'columns');
+        if ($columns === null) {
+            throw new RuntimeException('Found no columns');
+        }
         $select = $this->getSelect($columns);
         $sql  = "SELECT $select FROM {$table->pop()} ";
         return $sql;
