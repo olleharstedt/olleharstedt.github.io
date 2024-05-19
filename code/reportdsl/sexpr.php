@@ -237,23 +237,23 @@ echo "\n";
 */
 
 $f = <<<FORTH
-report struct
-    "Lagerrapport" title
-    "articles" table
-    join struct
-        "categories" table
-        "articles.cat_dn" "categories.dn" on
+struct report
+    title "Lagerrapport"
+    table "articles"
+    struct join
+        table "categories"
+        on "articles.cat_dn" "categories.dn"
     end
-    columns struct
-        column struct
-            "Art nr" title
-            "articles.article_id" select
+    array columns
+        struct column
+            title "Art nr"
+            select "articles.article_id"
         end
-        column struct
-            "Diff" title
-            "right-align" css
+        struct column
+            title "Diff"
+            as "diff"
+            css "right-align"
             "articles.article_selling_price" "articles.article_purchase_price" minus select
-            "diff" as
         end
     end
 end
@@ -271,6 +271,7 @@ class StringBuffer
     {
         // Normalize string
         $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
+        // One extra space for the while-loop to work
         $this->buffer = $s. ' ';
     }
 
@@ -309,7 +310,7 @@ class ReportForth
                 $stack->push($word);
             } elseif ($this->dict[$word]) {
                 $fn = $this->dict[$word];
-                $fn($stack, $this->buffer);
+                $fn($stack, $this->buffer, $env);
             } else {
                 throw new RuntimeException('Word is not a string, not a number, and not in dict: ' . $word);
             }
@@ -317,7 +318,6 @@ class ReportForth
             // if word is number
             // if word is string
         }
-        var_dump($stack);
         return $env;
     }
 
@@ -331,8 +331,53 @@ $s = <<<FORTH
 1 2 3 + +
 FORTH;
 
+/*
 $r = new ReportForth(new StringBuffer($s));
 $r->addWord('+', function($stack, $buffer) {
     $stack->push($stack->pop() + $stack->pop());
 });
 $r->getQuery();
+ */
+
+$s = <<<FORTH
+struct report
+    title Lagerrapport
+    struct join
+        table "categories"
+    end
+end
+FORTH;
+
+class Struct
+{
+    public $name;
+    public $data = [];
+}
+
+$r = new ReportForth(new StringBuffer($s));
+$r->addWord('struct', function($stack, $buffer, &$env) {
+    $struct = new Struct();
+    $struct->name = $buffer->next();
+    $stack->push($struct);
+});
+$r->addWord('end', function($stack, $buffer, &$env) {
+    $item = $stack->pop();
+    if ($item instanceof Struct) {
+        if ($stack->count() > 0 && $stack->top() instanceof Struct) {
+            $parentstruct = $stack->pop();
+            $parentstruct->data[$item->name] = $item;
+            $stack->push($parentstruct);
+        } else {
+            $env[$item->name] = $item;
+        }
+    }
+});
+$datapropword = function($stack, $buffer, &$env) {
+    $struct = $stack->pop();
+    $struct->data['title'] = $buffer->next();
+    $stack->push($struct);
+};
+$r->addWord('title', $datapropword);
+$r->addWord('table', $datapropword);
+$env = $r->getQuery();
+var_dump($env);
