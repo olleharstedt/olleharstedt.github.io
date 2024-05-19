@@ -49,30 +49,6 @@ $json = <<<JAVASCRIPT
 }
 JAVASCRIPT;
 
-$f = <<<FORTH
-report struct
-    "Lagerrapport" title
-    "articles" table
-    join struct
-        "categories" table
-        "articles.cat_dn" "categories.dn" on
-    end
-    columns struct
-        column struct
-            "Art nr" title
-            "articles.article_id" select
-        end
-        column struct
-            "Diff" title
-            "right-align" css
-            "articles.article_selling_price" "articles.article_purchase_price" minus select
-            "diff" as
-        end
-    end
-end
-
-FORTH;
-
 //$sc = <<<SCHEME
 //(+ (- 1 2) (+ 2 3))
 //SCHEME;
@@ -254,6 +230,109 @@ class ReportSexpr extends SexprBase
     }
 }
 
+/*
 $report = new ReportSexpr();
 echo $report->getQuery($report->parse($sc));
 echo "\n";
+*/
+
+$f = <<<FORTH
+report struct
+    "Lagerrapport" title
+    "articles" table
+    join struct
+        "categories" table
+        "articles.cat_dn" "categories.dn" on
+    end
+    columns struct
+        column struct
+            "Art nr" title
+            "articles.article_id" select
+        end
+        column struct
+            "Diff" title
+            "right-align" css
+            "articles.article_selling_price" "articles.article_purchase_price" minus select
+            "diff" as
+        end
+    end
+end
+FORTH;
+
+class StringBuffer
+{
+    /** @var string */
+    private $buffer;
+
+    /** @var int */
+    private $pos = 0;
+
+    public function __construct(string $s)
+    {
+        // Normalize string
+        $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
+        $this->buffer = $s. ' ';
+    }
+
+    public function next()
+    {
+        $nextSpace = strpos($this->buffer, ' ', $this->pos);
+        $result = substr($this->buffer, $this->pos, $nextSpace - $this->pos);
+        $this->pos = $nextSpace + 1;
+        return $result;
+    }
+}
+
+class ReportForth
+{
+    /** @var StringBuffer */
+    private $buffer;
+
+    /** @var array<string, function> */
+    private $dict = [];
+
+    public function __construct(StringBuffer $b)
+    {
+        $this->buffer = $b;
+    }
+
+    public function getQuery()
+    {
+        $env = [];
+        $stack  = new SplStack();
+        while ($word = $this->buffer->next()) {
+            error_log($word);
+            if (trim($word, '"') !== $word) {
+                $stack->push($word);
+            } elseif (ctype_digit($word)) {
+                // todo floats
+                $stack->push($word);
+            } elseif ($this->dict[$word]) {
+                $fn = $this->dict[$word];
+                $fn($stack, $this->buffer);
+            } else {
+                throw new RuntimeException('Word is not a string, not a number, and not in dict: ' . $word);
+            }
+            // if word is symbol
+            // if word is number
+            // if word is string
+        }
+        var_dump($stack);
+        return $env;
+    }
+
+    public function addWord($word, $fn)
+    {
+        $this->dict[$word] = $fn;
+    }
+}
+
+$s = <<<FORTH
+1 2 3 + +
+FORTH;
+
+$r = new ReportForth(new StringBuffer($s));
+$r->addWord('+', function($stack, $buffer) {
+    $stack->push($stack->pop() + $stack->pop());
+});
+$r->getQuery();
