@@ -253,7 +253,9 @@ struct report
             title "Diff"
             as "diff"
             css "right-align"
-            "articles.article_selling_price" "articles.article_purchase_price" minus select
+            select (
+                "articles.article_selling_price" - "articles.article_purchase_price"
+            )
         end
     end
 end
@@ -267,6 +269,8 @@ class StringBuffer
     /** @var int */
     private $pos = 0;
 
+    private $inside_quote = 0;
+
     public function __construct(string $s)
     {
         // Normalize string
@@ -277,9 +281,22 @@ class StringBuffer
 
     public function next()
     {
-        $nextSpace = strpos($this->buffer, ' ', $this->pos);
-        $result = substr($this->buffer, $this->pos, $nextSpace - $this->pos);
-        $this->pos = $nextSpace + 1;
+        if ($this->buffer[$this->pos] === '"') {
+            $this->inside_quote = 1 - $this->inside_quote;
+        }
+        if ($this->inside_quote === 1) {
+            $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
+            error_log($this->pos);
+            error_log($nextQuote);
+            $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
+            error_log($result);
+            $this->pos = $nextQuote + 2;
+            $this->inside_quote = 0;
+        } else {
+            $nextSpace = strpos($this->buffer, ' ', $this->pos);
+            $result = substr($this->buffer, $this->pos, $nextSpace - $this->pos);
+            $this->pos = $nextSpace + 1;
+        }
         return $result;
     }
 }
@@ -341,9 +358,14 @@ $r->getQuery();
 
 $s = <<<FORTH
 struct report
-    title Lagerrapport
+    title: Lagerrapport
     struct join
-        table "categories"
+        table: "categories"
+    end
+    array columns
+        struct column
+            title: "Art nr"
+        end
     end
 end
 FORTH;
@@ -354,7 +376,18 @@ class Struct
     public $data = [];
 }
 
+class Array_ extends ArrayObject
+{
+    public $name;
+}
+
 $r = new ReportForth(new StringBuffer($s));
+// Array is always property?
+$r->addWord('array', function($stack, $buffer, &$env) {
+    $arr = new Array_();
+    $arr->name = $buffer->next();
+    $stack->push($arr);
+});
 $r->addWord('struct', function($stack, $buffer, &$env) {
     $struct = new Struct();
     $struct->name = $buffer->next();
@@ -363,12 +396,26 @@ $r->addWord('struct', function($stack, $buffer, &$env) {
 $r->addWord('end', function($stack, $buffer, &$env) {
     $item = $stack->pop();
     if ($item instanceof Struct) {
-        if ($stack->count() > 0 && $stack->top() instanceof Struct) {
-            $parentstruct = $stack->pop();
-            $parentstruct->data[$item->name] = $item;
-            $stack->push($parentstruct);
+        if ($stack->count() > 0) {
+            if ($stack->top() instanceof Struct) {
+                $parentstruct = $stack->pop();
+                $parentstruct->data[$item->name] = $item;
+                $stack->push($parentstruct);
+            } elseif ($stack->top() instanceof Array_) {
+                $parentarray = $stack->pop();
+                $parentarray[] = $item;
+                $stack->push($parentarray);
+            }
         } else {
             $env[$item->name] = $item;
+        }
+    } elseif ($item instanceof Array_) {
+        if ($stack->count() > 0) {
+            if ($stack->top() instanceof Struct) {
+                $parentstruct = $stack->pop();
+                $parentstruct->data[$item->name] = $item;
+                $stack->push($parentstruct);
+            }
         }
     }
 });
@@ -377,7 +424,7 @@ $datapropword = function($stack, $buffer, &$env) {
     $struct->data['title'] = $buffer->next();
     $stack->push($struct);
 };
-$r->addWord('title', $datapropword);
-$r->addWord('table', $datapropword);
+$r->addWord('title:', $datapropword);
+$r->addWord('table:', $datapropword);
 $env = $r->getQuery();
 var_dump($env);
