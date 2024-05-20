@@ -5,7 +5,8 @@
  *   - S-expression
  *   - Forth-like
  *   - JSON
- *   - PHP token_get_all + parser (hard?) SQL subset check? JSON based.
+ *   - JSON + safe SQL subset
+ *   - Report builder, no DSL but rather graphical tools
  */
 
 // ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
@@ -65,6 +66,7 @@ $json = <<<JAVASCRIPT
             "title": "Diff perc",
             "css": "right-align",
             // ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
+            "select": "ROUND((1 - (purchase_price / selling_price)) * 100, 2)",
             "select": {
                 "op": "round
                 "args": [
@@ -215,6 +217,9 @@ class ReportSexpr extends SexprBase
     {
         $sql = '';
         switch (gettype($top)) {
+            case 'int':
+                $sql .= $top;
+                break;
             case 'string':
                 $sql .= $top;
                 break;
@@ -222,8 +227,27 @@ class ReportSexpr extends SexprBase
                 $op = $top->bottom();
                 switch ($op) {
                     case '-':
-                        $sql .= '(' . $this->evalSelect($top->pop()) . ' - ' . $this->evalSelect($top->pop()) . ')';
+                        $a = $top->pop();
+                        $b = $top->pop();
+                        $sql .= '(' . $this->evalSelect($b) . ' - ' . $this->evalSelect($a) . ')';
                         break;
+                    case '*':
+                        $sql .= '(' . $this->evalSelect($top->pop()) . ' * ' . $this->evalSelect($top->pop()) . ')';
+                        break;
+                    case '/':
+                        $a = $top->pop();
+                        $b = $top->pop();
+                        $sql .= '(' . $this->evalSelect($b) . ' / ' . $this->evalSelect($a) . ')';
+                        break;
+                    case 'round':
+                        $a = $top->pop();
+                        $b = $top->pop();
+                        $sql .= 'ROUND('  
+                            . $this->evalSelect($b) . ', ' 
+                            . $this->evalSelect($a) . ')';
+                        break;
+                    default:
+                        throw new RuntimeException('Unknown op: ' . $op);
                 }
                 break;
         }
@@ -274,11 +298,10 @@ class ReportSexpr extends SexprBase
     }
 }
 
-/*
 $report = new ReportSexpr();
 echo $report->getQuery($report->parse($sc));
 echo "\n";
-*/
+die;
 
 $f = <<<FORTH
 struct report
@@ -419,18 +442,19 @@ $r->getQuery();
 $s = <<<FORTH
 struct report
     title: Lagerrapport
-    table: "articles"
+    table: articles
     struct join
-        table: "categories"
+        table: categories
+        on: articles.cat_id = categories.id
     end
     array columns
         struct column
             title: "Art nr"
-            select: "articles.id"
+            select: articles.id
         end
         struct column
-            title: "Margin"
-            as: "margin"
+            title: "Margin percentage"
+            as: margin_perc
             select: ( purchase_price selling_price / 1 - 100 * 2 round )
         end
     end
@@ -508,10 +532,24 @@ $r->addWord('select:', function($stack, $buffer, &$env, $word) {
 //$env = $r->getQuery();
 //var_dump($env);
 
+/**
+ * Throws exception if token is not allowed.
+ */
 function validate_token(string $token)
 {
+    $allowed_words = [
+        'ROUND',
+        'purchase_price',
+        'selling_price'
+    ];
     if (ctype_alnum(str_replace(['_'], '', $token))) {
-        // OK
+        if ((string) intval($token) === $token) {
+            // OK
+        } elseif (in_array($token, $allowed_words)) {
+            // OK
+        } else {
+            throw new RuntimeException('Token is not in whitelist: ' . json_encode($token));
+        }
     } elseif ($token === ')'
         || $token === '('
         || $token === '-'
