@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Four alternatives:
+ *   - S-expression
+ *   - Forth-like
+ *   - JSON
+ *   - PHP token_get_all + parser (hard?) SQL subset check? JSON based.
+ */
+
+// ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
+
 $sc = <<<SCHEME
 (report
     (title "Lagerrapport")
@@ -18,6 +28,12 @@ $sc = <<<SCHEME
             (css "right-align")
             (select (- "articles.article_selling_price" "articles.article_purchase_price"))
             (as "diff")
+        )
+        (column 
+            (title "Diff perc")
+            (css "right-align")
+            (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
+            (as "diff_perc")
         )
     )
 )
@@ -44,6 +60,34 @@ $json = <<<JAVASCRIPT
                 "args": ["aricles.selling_price", "articles.purchase_price"]
             },
             "as": "diff"
+        },
+        {
+            "title": "Diff perc",
+            "css": "right-align",
+            // ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
+            "select": {
+                "op": "round
+                "args": [
+                    {
+                        "op": "*",
+                        "args": [
+                            100,
+                            {
+                                "op": "-",
+                                "args": [
+                                    1,
+                                    {
+                                        "op": "/",
+                                        "args": ["purchase_price", "selling_price"]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    2
+                ]
+            },
+            "as": "diff_perc"
         }
     ]
 }
@@ -385,11 +429,9 @@ struct report
             select: "articles.id"
         end
         struct column
-            title: "Diff"
-            as: "diff"
-            select: (
-                "articles.selling_price" - "articles.purchase_price"
-            )
+            title: "Margin"
+            as: "margin"
+            select: ( purchase_price selling_price / 1 - 100 * 2 round )
         end
     end
 end
@@ -463,5 +505,41 @@ $r->addWord('select:', function($stack, $buffer, &$env, $word) {
         $stack->push($struct);
     }
 });
-$env = $r->getQuery();
-var_dump($env);
+//$env = $r->getQuery();
+//var_dump($env);
+
+function validate_token(string $token)
+{
+    if (ctype_alnum(str_replace(['_'], '', $token))) {
+        // OK
+    } elseif ($token === ')'
+        || $token === '('
+        || $token === '-'
+        || $token === '+'
+        || $token === '/'
+        || $token === ''
+        || $token === ','
+        || $token === '*') {
+        // OK
+    } else {
+        throw new RuntimeException('Invalid token: ' . json_encode($token));
+    }
+}
+
+$src = 'ROUND((1 - (purchase_price / selling_price)) * 100, 2)';
+$tokens = token_get_all('<?php ' . $src);
+$sql = '';
+foreach ($tokens as $token)
+{
+    if (is_string($token)) {
+        validate_token(trim($token));
+        $sql .= trim($token);
+    } elseif (is_array($token)) {
+        if ($token[1] === '<?php ') {
+        } else {
+            validate_token(trim($token[1]));
+            $sql .= trim($token[1]);
+        }
+    }
+}
+echo $sql . "\n";
