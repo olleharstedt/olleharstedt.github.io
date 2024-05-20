@@ -1,5 +1,27 @@
 <?php
 
+$s = <<<FORTH
+report:
+    title: "Lagerrapport"
+    table: "articles"
+    join:
+        table: "categories"
+        on: "articles.cat_id" = "categories.id"
+    end
+    columns:
+        column:
+            title: "Art nr"
+            select: "articles.id"
+        end
+        column:
+            title: "Margin percentage"
+            as: margin_perc
+            select: ( "purchase_price" "selling_price" / 1 - 100 * 2 round )
+        end
+    end
+end
+FORTH;
+
 class StringBuffer
 {
     /** @var string */
@@ -50,16 +72,24 @@ class ReportForth
         $this->buffer = $b;
     }
 
+    /**
+     * Parsing the string buffer populates the environment, which is returned.
+     */
     public function getEnvFromBuffer()
     {
         $env = [];
         $stack  = new SplStack();
         while ($word = $this->buffer->next()) {
+            echo ($word);
+            echo "\n";
+            // String
             if (trim($word, '"') !== $word) {
                 $stack->push($word);
+            // Digit
             } elseif (ctype_digit($word)) {
                 // todo floats
                 $stack->push($word);
+            // Dict word
             } elseif ($this->dict[$word]) {
                 $fn = $this->dict[$word];
                 // Execute word
@@ -99,9 +129,11 @@ class ReportForth
     }
 }
 
+/*
 $s = <<<FORTH
 1 2 3 + +
 FORTH;
+ */
 
 /*
 $r = new ReportForth(new StringBuffer($s));
@@ -110,29 +142,6 @@ $r->addWord('+', function($stack, $buffer) {
 });
 $r->getQuery();
  */
-
-
-$s = <<<FORTH
-report:
-    title: "Lagerrapport"
-    table: "articles"
-    join:
-        table: "categories"
-        on: "articles.cat_id" = "categories.id"
-    end
-    columns:
-        column:
-            title: "Art nr"
-            select: "articles.id"
-        end
-        column:
-            title: "Margin percentage"
-            as: margin_perc
-            select: ( "purchase_price" "selling_price" / 1 - 100 * 2 round )
-        end
-    end
-end
-FORTH;
 
 class Struct
 {
@@ -152,6 +161,11 @@ $r->addWord('array', function($stack, $buffer, &$env, $word) {
     $arr->name = $buffer->next();
     $stack->push($arr);
 });
+$r->addWord('columns:', function($stack, $buffer, &$env, $word) {
+    $arr = new Array_();
+    $arr->name = trim($word, ':');
+    $stack->push($arr);
+});
 $structword = function($stack, $buffer, &$env, $word) {
     $struct = new Struct();
     $struct->name = trim($word, ':');
@@ -159,6 +173,7 @@ $structword = function($stack, $buffer, &$env, $word) {
 };
 $r->addWord('report:', $structword);
 $r->addWord('join:', $structword);
+$r->addWord('column:', $structword);
 $r->addWord('struct', function($stack, $buffer, &$env, $word) {
     $struct = new Struct();
     $struct->name = $buffer->next();
@@ -198,6 +213,11 @@ $datapropword = function($stack, $buffer, &$env, $word) {
 $r->addWord('title:', $datapropword);
 $r->addWord('table:', $datapropword);
 $r->addWord('as:', $datapropword);
+$r->addWord('on:', function($stack, $buffer, &$env, $word) {
+    $struct = $stack->pop();
+    $struct->data[$word] = $buffer->next() . $buffer->next() . $buffer->next();
+    $stack->push($struct);
+});
 $r->addWord('select:', function($stack, $buffer, &$env, $word) {
     $next = $buffer->next();
     if ($next === '(') {
