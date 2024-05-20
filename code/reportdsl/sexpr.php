@@ -13,11 +13,12 @@
 
 $sc = <<<SCHEME
 (report
-    (title "Lagerrapport")
+    (title "Stock report")
     (table "articles")
     (join 
         (table "categories")
-        (on "articles.cat_dn" "categories.dn")
+        (type left)
+        (on "articles.cat_id" "categories.id")
     )
     (columns
         (column 
@@ -27,7 +28,7 @@ $sc = <<<SCHEME
         (column 
             (title "Diff")
             (css "right-align")
-            (select (- "articles.article_selling_price" "articles.article_purchase_price"))
+            (select (- "articles.selling_price" "articles.purchase_price"))
             (as "diff")
         )
         (column 
@@ -232,7 +233,9 @@ class ReportSexpr extends SexprBase
                         $sql .= '(' . $this->evalSelect($b) . ' - ' . $this->evalSelect($a) . ')';
                         break;
                     case '*':
-                        $sql .= '(' . $this->evalSelect($top->pop()) . ' * ' . $this->evalSelect($top->pop()) . ')';
+                        $a = $top->pop();
+                        $b = $top->pop();
+                        $sql .= '(' . $this->evalSelect($b) . ' * ' . $this->evalSelect($a) . ')';
                         break;
                     case '/':
                         $a = $top->pop();
@@ -327,210 +330,6 @@ struct report
     end
 end
 FORTH;
-
-class StringBuffer
-{
-    /** @var string */
-    private $buffer;
-
-    /** @var int */
-    private $pos = 0;
-
-    private $inside_quote = 0;
-
-    public function __construct(string $s)
-    {
-        // Normalize string
-        $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
-        // Two extra space for the while-loop to work
-        $this->buffer = $s. '  ';
-    }
-
-    public function next()
-    {
-        if ($this->buffer[$this->pos] === '"') {
-            $this->inside_quote = 1 - $this->inside_quote;
-        }
-        if ($this->inside_quote === 1) {
-            $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
-            $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
-            $this->pos = $nextQuote + 2;
-            $this->inside_quote = 0;
-        } else {
-            $nextSpace = strpos($this->buffer, ' ', $this->pos);
-            $result = substr($this->buffer, $this->pos, $nextSpace - $this->pos);
-            $this->pos = $nextSpace + 1;
-        }
-        return $result;
-    }
-}
-
-class ReportForth
-{
-    /** @var StringBuffer */
-    private $buffer;
-
-    /** @var array<string, function> */
-    private $dict = [];
-
-    public function __construct(StringBuffer $b)
-    {
-        $this->buffer = $b;
-    }
-
-    public function getEnvFromBuffer()
-    {
-        $env = [];
-        $stack  = new SplStack();
-        while ($word = $this->buffer->next()) {
-            if (trim($word, '"') !== $word) {
-                $stack->push($word);
-            } elseif (ctype_digit($word)) {
-                // todo floats
-                $stack->push($word);
-            } elseif ($this->dict[$word]) {
-                $fn = $this->dict[$word];
-                // Execute word
-                $fn($stack, $this->buffer, $env, $word);
-            } else {
-                throw new RuntimeException('Word is not a string, not a number, and not in dict: ' . $word);
-            }
-            // if word is symbol
-            // if word is number
-            // if word is string
-        }
-        return $env;
-    }
-
-    public function getSelectFromColumns(Array_ $cols)
-    {
-        $sql = '';
-        foreach ($cols as $col) {
-            $sql .= trim($col->data['select:'], '"') . ', ';
-        }
-        return trim(trim($sql), ',');
-    }
-
-    public function getQuery()
-    {
-        $env = $this->getEnvFromBuffer();
-        $report = $env['report'];
-        $select = $this->getSelectFromColumns($report->data['columns']);
-        $table = $report->data['table:'];
-        $sql  = "SELECT $select FROM $table";
-        return $sql;
-    }
-
-    public function addWord($word, $fn)
-    {
-        $this->dict[$word] = $fn;
-    }
-}
-
-$s = <<<FORTH
-1 2 3 + +
-FORTH;
-
-/*
-$r = new ReportForth(new StringBuffer($s));
-$r->addWord('+', function($stack, $buffer) {
-    $stack->push($stack->pop() + $stack->pop());
-});
-$r->getQuery();
- */
-
-$s = <<<FORTH
-struct report
-    title: Lagerrapport
-    table: articles
-    struct join
-        table: categories
-        on: articles.cat_id = categories.id
-    end
-    array columns
-        struct column
-            title: "Art nr"
-            select: articles.id
-        end
-        struct column
-            title: "Margin percentage"
-            as: margin_perc
-            select: ( purchase_price selling_price / 1 - 100 * 2 round )
-        end
-    end
-end
-FORTH;
-
-class Struct
-{
-    public $name;
-    public $data = [];
-}
-
-class Array_ extends ArrayObject
-{
-    public $name;
-}
-
-$r = new ReportForth(new StringBuffer($s));
-// Array is always property?
-$r->addWord('array', function($stack, $buffer, &$env, $word) {
-    $arr = new Array_();
-    $arr->name = $buffer->next();
-    $stack->push($arr);
-});
-$r->addWord('struct', function($stack, $buffer, &$env, $word) {
-    $struct = new Struct();
-    $struct->name = $buffer->next();
-    $stack->push($struct);
-});
-$r->addWord('end', function($stack, $buffer, &$env, $word) {
-    $item = $stack->pop();
-    if ($item instanceof Struct) {
-        if ($stack->count() > 0) {
-            if ($stack->top() instanceof Struct) {
-                $parentstruct = $stack->pop();
-                $parentstruct->data[$item->name] = $item;
-                $stack->push($parentstruct);
-            } elseif ($stack->top() instanceof Array_) {
-                $parentarray = $stack->pop();
-                $parentarray[] = $item;
-                $stack->push($parentarray);
-            }
-        } else {
-            $env[$item->name] = $item;
-        }
-    } elseif ($item instanceof Array_) {
-        if ($stack->count() > 0) {
-            if ($stack->top() instanceof Struct) {
-                $parentstruct = $stack->pop();
-                $parentstruct->data[$item->name] = $item;
-                $stack->push($parentstruct);
-            }
-        }
-    }
-});
-$datapropword = function($stack, $buffer, &$env, $word) {
-    $struct = $stack->pop();
-    $struct->data[$word] = $buffer->next();
-    $stack->push($struct);
-};
-$r->addWord('title:', $datapropword);
-$r->addWord('table:', $datapropword);
-$r->addWord('as:', $datapropword);
-$r->addWord('select:', function($stack, $buffer, &$env, $word) {
-    $next = $buffer->next();
-    if ($next === '(') {
-        while ($w = $buffer->next() !== ')') {
-        }
-    } else {
-        $struct = $stack->pop();
-        $struct->data[$word] = $next;
-        $stack->push($struct);
-    }
-});
-//$env = $r->getQuery();
-//var_dump($env);
 
 /**
  * Throws exception if token is not allowed.
