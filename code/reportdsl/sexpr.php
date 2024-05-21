@@ -41,8 +41,9 @@ $sc = <<<SCHEME
     (totals
         (total
             (title "Diff average")
+            (as "diff_average")
             (for "diff")
-            (do (/ (sum diff) rows))
+            (do (/ (sum diff) (count rows)))
         )
     )
 )
@@ -263,6 +264,19 @@ class ReportSexpr extends SexprBase
         }
         return $sql;
     }
+
+    /**
+     *
+     * (do (/ (sum diff) (count rows)))
+     */
+    public function evalTotal(SplStack $sexp, array $data): float
+    {
+        $result = 0;
+        $op = $sexp->top();
+
+        return $result;
+    }
+
     /**
      * @param SplStack<mixed> $columns
      */
@@ -288,7 +302,7 @@ class ReportSexpr extends SexprBase
     /**
      * @param SplStack<mixed> $sexp
      */
-    public function getQuery($sexp): string
+    public function getQuery(SplStack $sexp): string
     {
         $report = $this->findFirst($sexp, 'report');
         if ($report === null) {
@@ -306,37 +320,51 @@ class ReportSexpr extends SexprBase
         $sql  = "SELECT $select FROM {$table->pop()} ";
         return $sql;
     }
+
+    /**
+     *
+     */
+    public function getTotals(SplStack $sexp, array $data)
+    {
+        $totals = [];
+        $report = $this->findFirst($sexp, 'report');
+        if ($report) {
+            $totalsNode = $this->findFirst($report, 'totals');
+            if ($totalsNode) {
+                $totalsNode = $this->findAll($totalsNode, 'total');
+                foreach ($totalsNode as $total) {
+                    $as = $this->findFirst($total, 'as');
+                    if ($as) {
+                        $totals[$as->top()] = $this->evalTotal($this->findFirst($total, 'do'), $data);
+                    }
+                }
+            }
+        }
+        return $totals;
+    }
 }
 
 $report = new ReportSexpr();
-echo $report->getQuery($report->parse($sc));
+$parsed = $report->parse($sc);
+echo $report->getQuery($parsed);
+// todo Use query to get data
+$data = [
+    [
+        'diff' => 1,
+        'diff_perc' => 11
+    ],
+    [
+        'diff' => 2,
+        'diff_perc' => 12
+    ],
+    [
+        'diff' => 3,
+        'diff_perc' => 13
+    ]
+];
+var_dump($report->getTotals($parsed, $data));
 echo "\n";
 die;
-
-$f = <<<FORTH
-struct report
-    title "Lagerrapport"
-    table "articles"
-    struct join
-        table "categories"
-        on "articles.cat_dn" "categories.dn"
-    end
-    array columns
-        struct column
-            title "Art nr"
-            select "articles.article_id"
-        end
-        struct column
-            title "Diff"
-            as "diff"
-            css "right-align"
-            select (
-                "articles.article_selling_price" - "articles.article_purchase_price"
-            )
-        end
-    end
-end
-FORTH;
 
 /**
  * Throws exception if token is not allowed.
