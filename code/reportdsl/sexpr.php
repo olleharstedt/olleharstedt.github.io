@@ -38,6 +38,13 @@ $sc = <<<SCHEME
             (as "diff_perc")
         )
     )
+    (totals
+        (total
+            (title "Diff average")
+            (for "diff")
+            (do (/ (sum diff) rows))
+        )
+    )
 )
 SCHEME;
 
