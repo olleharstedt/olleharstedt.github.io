@@ -7,6 +7,9 @@
  *   - JSON
  *   - JSON + safe SQL subset
  *   - Report builder, no DSL but rather graphical tools
+ *
+ * Assuming there's only one SQL query per report? Might be multiple?
+ * Assuming GET params are always the same from the browser?
  */
 
 // ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
