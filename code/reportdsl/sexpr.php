@@ -48,6 +48,11 @@ $sc = <<<SCHEME
             (for "diff")
             (do (/ (sum diff) (count rows)))
         )
+        (total
+            (title "Diff average perc")
+            (as "diff_average_perc")
+            (do (/ (sum diff_perc) (count rows)))
+        )
     )
 )
 SCHEME;
@@ -269,15 +274,39 @@ class ReportSexpr extends SexprBase
     }
 
     /**
-     *
-     * (do (/ (sum diff) (count rows)))
+     * Recursive method to evaluate a total expression.
+     * 
+     * Example:
+     *   (do (/ (sum diff) (count rows)))
      */
     public function evalTotal(SplStack $sexp, array $data): float
     {
-        $result = 0;
-        $op = $sexp->top();
-
-        return $result;
+        $op = $sexp->bottom();
+        switch ($op) {
+            case '/':
+                $a = $sexp->pop();
+                $b = $sexp->pop();
+                return $this->evalTotal($b, $data) / $this->evalTotal($a, $data);
+                break;
+            case 'sum':
+                $variableName = $sexp->pop();
+                $sum = 0;
+                foreach ($data as $row) {
+                    $sum += $row[$variableName];
+                }
+                return $sum;
+                break;
+            case 'count':
+                $typeOfCount = $sexp->pop();
+                if ($typeOfCount === 'rows') {
+                    return count($data);
+                } else {
+                    throw new RuntimeException('Unsupported count type: ' . $typeOfCount);
+                }
+                break;
+            default:
+                throw new RuntimeException('Unknown function: ' . $op);
+        }
     }
 
     /**
@@ -338,7 +367,7 @@ class ReportSexpr extends SexprBase
                 foreach ($totalsNode as $total) {
                     $as = $this->findFirst($total, 'as');
                     if ($as) {
-                        $totals[$as->top()] = $this->evalTotal($this->findFirst($total, 'do'), $data);
+                        $totals[$as->top()] = $this->evalTotal($this->findFirst($total, 'do')->top(), $data);
                     }
                 }
             }
