@@ -45,7 +45,6 @@ $sc = <<<SCHEME
         (total
             (title "Diff average")
             (as "diff_average")
-            (for "diff")
             (do (/ (sum diff) (count rows)))
         )
         (total
