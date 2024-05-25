@@ -44,7 +44,7 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
     (columns
         (column
             (title "Article number")
-            (select "articles.article_id")
+            (select "article_id")
         )
         (column
             (title "Margin of profit")
@@ -67,7 +67,7 @@ report:
     columns:
         column:
             title: "Article number"
-            select: "articles.article_id"
+            select: "article_id"
         end
         column:
             title: "Margin of profit"
@@ -83,11 +83,11 @@ end
 {
     "title": "Lagerrapport",
     "table": "articles",
-    "join": {
-        "table": "categories",
-        "on": ["articles.cat_dn", "categories.dn"]
-    },
     "columns": [
+        {
+            "title": "Article number",
+            "select": "article_id"
+        },
         {
             "title": "Article number",
             "select": {
@@ -117,6 +117,6 @@ end
 }
 ```
 
-You easily see that the JSON format works excellt for structured data, does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
+You easily see that the JSON format works excellt for structured data, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
 
 The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
