@@ -117,7 +117,7 @@ end
 }
 ```
 
-You easily see that the JSON format works excellt for structured data, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
+You easily see that the JSON format works excellent for structured data, as it was designed to do, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
 
 The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
 
