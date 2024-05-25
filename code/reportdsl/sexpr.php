@@ -126,16 +126,15 @@ abstract class SexprBase
      */
     public function parse(string $sc)
     {
+        // Normalize string
         $sc = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $sc));
-        $len = strlen($sc);
         $current = new SplStack();
         $base = $current;
-        // TODO: Why needed?
         $prev = null;
         $history = new SplStack();
         $buffer = '';
         $inside_quote = 0;
-        for ($i = 0; $i < $len; $i++) {
+        for ($i = 0; $i < strlen($sc); $i++) {
             $char = $sc[$i];
             if ($char === '(') {
                 $prev = $current;

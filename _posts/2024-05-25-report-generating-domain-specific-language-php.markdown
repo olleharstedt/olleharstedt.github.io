@@ -122,3 +122,62 @@ You easily see that the JSON format works excellt for structured data, but does 
 The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
 
 _If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
+
+In all these cases, the lexer/parser code is kinda trivial.
+
+## Parse S-expression in PHP
+
+Parsing an S-expression is easy enough in any language - use a tree of stacks and push/pop words and new stacks on the stacks, depending on when you encounter ')' or '(' or space characters.
+
+The parser also has an `$inside_quote` state to be able to deal with quoted strings.
+
+```php
+function parse(string $sc)
+{
+    // Normalize string
+    $sc = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $sc));
+    $current = new SplStack();
+    $base = $current;
+    $prev = null;
+    $history = new SplStack();
+    $buffer = '';
+    $inside_quote = 0;
+    for ($i = 0; $i < strlen($sc); $i++) {
+        $char = $sc[$i];
+        if ($char === '(') {
+            $prev = $current;
+            $history->push($current);
+            $current = new SplStack();
+            $prev->push($current);
+        } elseif ($char === ')') {
+            if ($buffer) {
+                $current->push($buffer);
+                $buffer = '';
+            }
+            $current = $history->pop();
+        } elseif ($char === '"') {
+            $inside_quote = 1 - $inside_quote;
+        } elseif ($char === ' ' && !$inside_quote) {
+            if ($buffer !== '') {
+                $current->push($buffer);
+                $buffer = '';
+            }
+        } else {
+            $buffer .= $char;
+        }
+    } 
+    return $base;
+}
+```
+
+## Parse Forth-like in PHP
+
+Parsing a Forth-like stream of words is slightly different than parsing S-expressions.
+
+First, words ("functions") in Forth are executed as soon as they are read, so lexing/parsing happens at the same time as execution of the script (!).
+
+
+
+## Parse JSON in PHP
+
+I'll leave out JSON, since PHP already has a `json_decode` function.
