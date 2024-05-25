@@ -7,6 +7,23 @@ categories: programming php
 
 Why can't the customers write their own damn reports. Or the sales people. Or the technical support. They already know some basic SQL, right? How hard could it be to reate a safe subset of SQL, that also includes some HTML formatting capability? But the parser would have to be dirt simple. I don't want to en dup with a big pil eof code only I can maintain. Kind kind of languages work? S-expressions? Forth? JSON? It would have to be able to deal with complex calculations between database columns.
 
+Pros and cons.
+
+Pros:
+
+* You gather all related data and logic in one script
+* Semi-technical people can make changes, with some guidance
+* You can update reports without waiting for a new software release
+* Each customer can have their own custom-made reports
+
+Cons:
+
+* Inner-system trap TODO: Link
+* Might only be understood by me, in the end
+* The flexibility the DSL allows might not be needed in the end (e.g. all customers actually need the same reports)
+
+---
+
 The formats I considered:
 
 * S-expressions, because it can be lexed and parsed in a handful of lines
@@ -183,3 +200,15 @@ First, words ("functions") in Forth are executed as soon as they are read, so le
 ## Parse JSON in PHP
 
 I'll leave out JSON, since PHP already has a `json_decode` function.
+
+## Constructing a SQL query from the DSL
+
+todo
+
+## Summarizing totals using the DSL
+
+todo
+
+## Constructing an HTML table form the DSLo
+
+todo
