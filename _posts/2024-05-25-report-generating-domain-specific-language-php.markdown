@@ -79,6 +79,8 @@ report:
 end
 ```
 
+**JSON**
+
 ```json
 {
     "title": "Lagerrapport",
