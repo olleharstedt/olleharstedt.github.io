@@ -28,3 +28,95 @@ Use-case:
 * Includes calculation of margin of profit for each article
 * Includes totals
 * Includes extra options added by JavaScript for this report only
+
+## Trying out the DSL
+
+An outline of how the different alternatives would look like:
+
+**S-expression**
+
+Looks like a primitive version of Lisp, or Lisp without the macros.
+
+```scheme
+(report
+    (title "Stock report")
+    (table "articles")
+    (columns
+        (column
+            (title "Article number")
+            (select "articles.article_id")
+        )
+        (column
+            (title "Margin of profit")
+            (css "right-align")
+            (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
+            (as "margin")
+        )
+    )
+)
+```
+
+**Forth-like**
+
+Forth is a type of post-fix notation, like `1 2 +` equals `3`, but you can make the words (functions, in other languages) eat the next word from the stream, too.
+
+```forth
+report:
+    title: "Stock report"
+    table: "articles"
+    columns:
+        column:
+            title: "Article number"
+            select: "articles.article_id"
+        end
+        column:
+            title: "Margin of profit"
+            css: "right-align"
+            select: ( "purchase_price" "selling_price" / 1 - 100 * 2 round )
+            as "margin"
+        end
+    end
+end
+```
+
+```json
+{
+    "title": "Lagerrapport",
+    "table": "articles",
+    "join": {
+        "table": "categories",
+        "on": ["articles.cat_dn", "categories.dn"]
+    },
+    "columns": [
+        {
+            "title": "Article number",
+            "select": {
+                "op": "round
+                "args": [
+                    {
+                        "op": "*",
+                        "args": [
+                            100,
+                            {
+                                "op": "-",
+                                "args": [
+                                    1,
+                                    {
+                                        "op": "/",
+                                        "args": ["purchase_price", "selling_price"]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    2
+                ]
+            },
+        },
+    ]
+}
+```
+
+You easily see that the JSON format works excellt for structured data, does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
+
+The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
