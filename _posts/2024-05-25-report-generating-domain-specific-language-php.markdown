@@ -91,7 +91,7 @@ end
         {
             "title": "Article number",
             "select": {
-                "op": "round,
+                "op": "round",
                 "args": [
                     {
                         "op": "*",
