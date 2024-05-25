@@ -1,0 +1,6 @@
+---
+layout: post
+title:  Report generating domain-specific language
+date:   2024-05-25
+categories: programming php
+---
