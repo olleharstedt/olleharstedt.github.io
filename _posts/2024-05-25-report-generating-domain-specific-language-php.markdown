@@ -60,7 +60,7 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 Forth is a type of post-fix notation, like `1 2 +` equals `3`, but you can make the words (functions, in other languages) eat the next word from the stream, too.
 
-```forth
+```txt
 report:
     title: "Stock report"
     table: "articles"
@@ -91,7 +91,7 @@ end
         {
             "title": "Article number",
             "select": {
-                "op": "round
+                "op": "round,
                 "args": [
                     {
                         "op": "*",
