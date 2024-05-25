@@ -22,4 +22,9 @@ The end result DSL should be able to blend, seamlessly:
 * Structured data for HTML, CSS, SQL
 * Logic in SQL, PHP and possibly JavaScript
 
-Use-case: An article report
+Use-case:
+
+* An article report
+* Includes calculation of margin of profit for each article
+* Includes totals
+* Includes extra options added by JavaScript for this report only
