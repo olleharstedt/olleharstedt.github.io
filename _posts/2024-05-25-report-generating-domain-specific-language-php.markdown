@@ -60,7 +60,7 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 Forth is a type of post-fix notation, like `1 2 +` equals `3`, but you can make the words (functions, in other languages) eat the next word from the stream, too.
 
-```txt
+```text
 report:
     title: "Stock report"
     table: "articles"
@@ -119,7 +119,7 @@ end
 
 You easily see that the JSON format works excellent for structured data, as it was designed to do, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
 
-The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
+The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person to follow and reason about.
 
 _If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
 
