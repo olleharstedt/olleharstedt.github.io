@@ -120,3 +120,5 @@ end
 You easily see that the JSON format works excellt for structured data, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
 
 The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person.
+
+_If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
