@@ -36,7 +36,7 @@ class StringBuffer
     {
         // Normalize string
         $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
-        // Two extra space for the while-loop to work
+        // Two extra spaces for the while-loop to work
         $this->buffer = $s. '  ';
     }
 
