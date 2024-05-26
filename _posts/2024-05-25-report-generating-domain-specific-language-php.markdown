@@ -195,6 +195,49 @@ Parsing a Forth-like stream of words is slightly different than parsing S-expres
 
 First, words ("functions") in Forth are executed as soon as they are read, so lexing/parsing happens at the same time as execution of the script (!).
 
+The Forth-like implementation needs a string buffer that lets us get the next word in the stream:
+
+```php
+class StringBuffer
+{
+    /** @var string */
+    private $buffer;
+
+    /** @var int */
+    private $pos = 0;
+
+    private $inside_quote = 0;
+
+    public function __construct(string $s)
+    {
+        // Normalize string
+        $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
+        // Two extra spaces for the while-loop to work
+        $this->buffer = $s. '  ';
+    }
+
+    public function next()
+    {
+        if ($this->buffer[$this->pos] === '"') {
+            $this->inside_quote = 1 - $this->inside_quote;
+        }
+        if ($this->inside_quote === 1) {
+            $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
+            $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
+            $this->pos = $nextQuote + 2;
+            $this->inside_quote = 0;
+        } else {
+            $nextSpace = strpos($this->buffer, ' ', $this->pos);
+            $result = substr($this->buffer, $this->pos, $nextSpace - $this->pos);
+            $this->pos = $nextSpace + 1;
+        }
+        return $result;
+    }
+}
+```
+
+
+
 
 
 ## Parse JSON in PHP
@@ -212,3 +255,20 @@ todo
 ## Constructing an HTML table form the DSLo
 
 todo
+
+## Questions
+
+> Why not just use a syntax that they're familiar with?
+
+1. For office political reasons, I want the lexer/parser to be simple
+2. The DSL might include SQL, PHP and JavaScript, in which case the syntax has to be different anyway
+
+> From my experience of working with non-programmers, they are usually better off (and happier) using a GUI.
+
+That would be really cool, but I lack the resources to do a proper report generation interface, and the mega-enterprise third-party softwares available does not hook into our framework very well.
+
+## Previous work
+
+There are lots of DSLs out there, but I found nothing for PHP and report generation.
+
+There is one report DSL for Python that is not actively maintained anymore: https://github.com/kjosib/glowing-chainsaw

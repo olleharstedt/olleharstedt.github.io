@@ -59,89 +59,39 @@ class StringBuffer
     }
 }
 
-class ReportForth
+/**
+ * Main eval loop
+ */
+function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
-    /** @var StringBuffer */
-    private $buffer;
-
-    /** @var array<string, function> */
-    private $dict = [];
-
-    public function __construct(StringBuffer $b)
-    {
-        $this->buffer = $b;
-    }
-
-    /**
-     * Parsing the string buffer populates the environment, which is returned.
-     */
-    public function getEnvFromBuffer()
-    {
-        $env = [];
-        $stack  = new SplStack();
-        while ($word = $this->buffer->next()) {
-            echo ($word);
-            echo "\n";
-            // String
-            if (trim($word, '"') !== $word) {
-                $stack->push($word);
+    $stack  = new SplStack();
+    while ($word = $buffer->next()) {
+        echo ($word);
+        echo "\n";
+        // String
+        if (trim($word, '"') !== $word) {
+            $stack->push($word);
             // Digit
-            } elseif (ctype_digit($word)) {
-                // todo floats
-                $stack->push($word);
-            // Dict word
-            } elseif ($this->dict[$word]) {
-                $fn = $this->dict[$word];
-                // Execute word
-                $fn($stack, $this->buffer, $env, $word);
-            } else {
-                throw new RuntimeException('Word is not a string, not a number, and not in dict: ' . $word);
-            }
-            // if word is symbol
-            // if word is number
-            // if word is string
+        } elseif (ctype_digit($word)) {
+            $stack->push($word);
+            // Execute dict word
+        } elseif ($dict[$word]) {
+            $fn = $dict[$word];
+            $fn($stack, $buffer, $word);
+        } else {
+            throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
         }
-        return $env;
     }
-
-    public function getSelectFromColumns(Array_ $cols)
-    {
-        $sql = '';
-        foreach ($cols as $col) {
-            $sql .= trim($col->data['select:'], '"') . ', ';
-        }
-        return trim(trim($sql), ',');
-    }
-
-    public function getQuery()
-    {
-        $env = $this->getEnvFromBuffer();
-        $report = $env['report'];
-        $select = $this->getSelectFromColumns($report->data['columns']);
-        $table = $report->data['table:'];
-        $sql  = "SELECT $select FROM $table";
-        return $sql;
-    }
-
-    public function addWord($word, $fn)
-    {
-        $this->dict[$word] = $fn;
-    }
+    return $stack;
 }
 
-/*
-$s = <<<FORTH
-1 2 3 + +
-FORTH;
- */
-
-/*
-$r = new ReportForth(new StringBuffer($s));
-$r->addWord('+', function($stack, $buffer) {
-    $stack->push($stack->pop() + $stack->pop());
-});
-$r->getQuery();
- */
+class Dict extends ArrayObject
+{
+    public function addWord(string $word, callable $fn)
+    {
+        $this[$word] = $fn;
+    }
+}
 
 class Struct
 {
@@ -154,32 +104,71 @@ class Array_ extends ArrayObject
     public $name;
 }
 
-$r = new ReportForth(new StringBuffer($s));
+class ReportForth
+{
+    /** @var StringBuffer */
+    private $buffer;
+
+    /** @var Dict */
+    private $dict = [];
+
+    public function __construct(StringBuffer $b, Dict $d)
+    {
+        $this->buffer = $b;
+        $this->dict   = $d;
+    }
+
+    /**
+     * Parsing the string buffer populates the environment, which is returned.
+     */
+    public function getSelectFromColumns(Array_ $cols)
+    {
+        $sql = '';
+        foreach ($cols as $col) {
+            print_r($col->data);
+            $sql .= trim($col->data['select:'], '"') . ', ';
+        }
+        return trim(trim($sql), ',');
+    }
+
+    public function getQuery()
+    {
+        $stack = getStackFromBuffer($this->buffer, $this->dict);
+        $report = $stack->pop();
+        $select = $this->getSelectFromColumns($report->data['columns:']);
+        $table = $report->data['table:'];
+        $sql  = "SELECT $select FROM $table";
+        return $sql;
+    }
+}
+
+$mainDict = new Dict();
+
 // Array is always property?
-$r->addWord('array', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('array', function($stack, $buffer, $word) {
     $arr = new Array_();
     $arr->name = $buffer->next();
     $stack->push($arr);
 });
-$r->addWord('columns:', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('columns:', function($stack, $buffer, $word) {
     $arr = new Array_();
     $arr->name = trim($word, ':');
     $stack->push($arr);
 });
-$structword = function($stack, $buffer, &$env, $word) {
+$structword = function($stack, $buffer, $word) {
     $struct = new Struct();
     $struct->name = trim($word, ':');
     $stack->push($struct);
 };
-$r->addWord('report:', $structword);
-$r->addWord('join:', $structword);
-$r->addWord('column:', $structword);
-$r->addWord('struct', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('report:', $structword);
+$mainDict->addWord('join:', $structword);
+$mainDict->addWord('column:', $structword);
+$mainDict->addWord('struct', function($stack, $buffer, $word) {
     $struct = new Struct();
     $struct->name = $buffer->next();
     $stack->push($struct);
 });
-$r->addWord('end', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('end', function($stack, $buffer, $word) {
     $item = $stack->pop();
     if ($item instanceof Struct) {
         if ($stack->count() > 0) {
@@ -193,7 +182,7 @@ $r->addWord('end', function($stack, $buffer, &$env, $word) {
                 $stack->push($parentarray);
             }
         } else {
-            $env[$item->name] = $item;
+            $stack->push($item);
         }
     } elseif ($item instanceof Array_) {
         if ($stack->count() > 0) {
@@ -205,29 +194,33 @@ $r->addWord('end', function($stack, $buffer, &$env, $word) {
         }
     }
 });
-$datapropword = function($stack, $buffer, &$env, $word) {
+$datapropword = function($stack, $buffer, $word) {
     $struct = $stack->pop();
     $struct->data[$word] = $buffer->next();
     $stack->push($struct);
 };
-$r->addWord('title:', $datapropword);
-$r->addWord('table:', $datapropword);
-$r->addWord('as:', $datapropword);
-$r->addWord('on:', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('title:', $datapropword);
+$mainDict->addWord('table:', $datapropword);
+$mainDict->addWord('as:', $datapropword);
+$mainDict->addWord('on:', function($stack, $buffer, $word) {
     $struct = $stack->pop();
     $struct->data[$word] = $buffer->next() . $buffer->next() . $buffer->next();
     $stack->push($struct);
 });
-$r->addWord('select:', function($stack, $buffer, &$env, $word) {
+$mainDict->addWord('select:', function($stack, $buffer, $word) {
     $next = $buffer->next();
-    if ($next === '(') {
-        while ($w = $buffer->next() !== ')') {
-        }
-    } else {
-        $struct = $stack->pop();
-        $struct->data[$word] = $next;
-        $stack->push($struct);
+    $struct = $stack->pop();
+    $struct->data[$word] = $next;
+    $stack->push($struct);
+});
+$mainDict->addWord('(', function($stack, $buffer, $word) {
+    while ($next = $buffer->next() !== ')') {
+        error_log($next);
     }
 });
-$env = $r->getQuery();
-var_dump($env);
+
+$sqlDict = new Dict();
+
+$report = new ReportForth(new StringBuffer($s), $mainDict);
+$query = $report->getQuery();
+var_dump($query);
