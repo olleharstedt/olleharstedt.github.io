@@ -89,7 +89,7 @@ report:
         column:
             title: "Margin of profit"
             css: "right-align"
-            select: ( "purchase_price" "selling_price" / 1 - 100 * 2 round )
+            select: ( 100 1 "purchase_price" "selling_price" / - * 2 round )
             as "margin"
         end
     end
