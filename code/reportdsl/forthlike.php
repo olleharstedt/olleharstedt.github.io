@@ -16,7 +16,7 @@ report:
         column:
             title: "Margin percentage"
             as: margin_perc
-            select: ( "purchase_price" "selling_price" / 1 - 100 * 2 round )
+            select: ( 100 1 "purchase_price" "selling_price" / - * 2 round )
         end
     end
 end
@@ -135,12 +135,34 @@ class ReportForth
     {
         $stack = getStackFromBuffer($this->buffer, $this->dict);
         $report = $stack->pop();
-        $select = $this->getSelectFromColumns($report->data['columns:']);
+        $select = $this->getSelectFromColumns($report->data['columns']);
         $table = $report->data['table:'];
         $sql  = "SELECT $select FROM $table";
         return $sql;
     }
 }
+
+$sqlDict = new Dict();
+$sqlDict->addWord('/', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' / ' . $b . ')');
+});
+$sqlDict->addWord('-', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' - ' . $b . ')');
+});
+$sqlDict->addWord('*', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' * ' . $b . ')');
+});
+$sqlDict->addWord('round', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('round(' . $a . ', ' . $b . ')');
+});
 
 $mainDict = new Dict();
 
@@ -207,19 +229,24 @@ $mainDict->addWord('on:', function($stack, $buffer, $word) {
     $struct->data[$word] = $buffer->next() . $buffer->next() . $buffer->next();
     $stack->push($struct);
 });
-$mainDict->addWord('select:', function($stack, $buffer, $word) {
+$mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict) {
     $next = $buffer->next();
-    $struct = $stack->pop();
-    $struct->data[$word] = $next;
-    $stack->push($struct);
-});
-$mainDict->addWord('(', function($stack, $buffer, $word) {
-    while ($next = $buffer->next() !== ')') {
-        error_log($next);
+
+    if ($next === '(') {
+        $newBuffer = '';
+        while (($w = $buffer->next()) !== ')') {
+            $newBuffer .= ' ' . $w;
+        }
+        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $sqlDict);
+        $struct = $stack->pop();
+        $struct->data[$word] = $newStack->pop();
+        $stack->push($struct);
+    } else {
+        $struct = $stack->pop();
+        $struct->data[$word] = $next;
+        $stack->push($struct);
     }
 });
-
-$sqlDict = new Dict();
 
 $report = new ReportForth(new StringBuffer($s), $mainDict);
 $query = $report->getQuery();
