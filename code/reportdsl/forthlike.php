@@ -26,6 +26,23 @@ FORTH;
 // 17:11 < zelgomer> : compliment  1 swap - ;  : %  100 * 2 round ;  purchase selling / compliment %
 // TODO: Add `:` as a word?
 
+
+// https://termbin.com/jyyq
+/*
+: {     ['] DEPTH COMPILE,  ['] >R COMPILE, ;  IMMEDIATE
+: (})   2 + DEPTH <> ABORT" Unbalanced expression" ;
+: }     ['] R> COMPILE,  ['] (}) COMPILE, ;  IMMEDIATE
+
+: TEST
+    { 1 2 + } .
+    { 5 { 1 2 + } * } . ;
+
+.( TEST ) TEST CR
+
+: FAIL-TEST
+    { 1 2 3 + } ;
+*/
+
 class StringBuffer
 {
     /** @var string */
