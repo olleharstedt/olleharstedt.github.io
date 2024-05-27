@@ -22,6 +22,10 @@ report:
 end
 FORTH;
 
+// Factor out more words for clarity:
+// 17:11 < zelgomer> : compliment  1 swap - ;  : %  100 * 2 round ;  purchase selling / compliment %
+// TODO: Add `:` as a word?
+
 class StringBuffer
 {
     /** @var string */
