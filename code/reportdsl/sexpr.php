@@ -413,7 +413,8 @@ HTML;
 
 $report = new ReportSexpr();
 $sexp = $report->parse($sc);
-//echo $report->getQuery($sexp);
+echo $report->getQuery($sexp);
+echo "\n";
 // todo Use query to get data
 $data = [
     [
@@ -429,6 +430,7 @@ $data = [
         'diff_perc' => 13
     ]
 ];
-//var_dump($report->getTotals($parsed, $data));
+print_r($report->getTotals($sexp, $data));
+echo "\n";
 echo $report->getHtml($sexp, $data);
 echo "\n";
