@@ -353,6 +353,19 @@ class ReportSexpr extends SexprBase
         return $sql;
     }
 
+    public function getHeaders(SplStack $sexp)
+    {
+        $headers = [];
+        $report = $this->findFirst($sexp, 'report');
+        $columns = $this->findFirst($report, 'columns');
+        $columns = $this->findAll($columns, 'column');
+        foreach ($columns as $column) {
+            $title = $this->findFirst($column, 'title');
+            $headers[] = $title->top();
+        }
+        return $headers;
+    }
+
     /**
      *
      */
@@ -374,11 +387,33 @@ class ReportSexpr extends SexprBase
         }
         return $totals;
     }
+
+    public function getTableHeader(array $titles)
+    {
+        return array_reduce(
+            $titles,
+            function($html, $title) {
+                return <<<HTML
+<tr> <th> {$title} </th> </tr>
+HTML
+                . $html;
+            }
+        );
+    }
+
+    public function getHtml(SplStack $sexp, array $data): string
+    {
+        return <<<HTML
+<table>
+{$this->getTableHeader($this->getHeaders($sexp))}
+</table>
+HTML;
+    }
 }
 
 $report = new ReportSexpr();
-$parsed = $report->parse($sc);
-echo $report->getQuery($parsed);
+$sexp = $report->parse($sc);
+//echo $report->getQuery($sexp);
 // todo Use query to get data
 $data = [
     [
@@ -394,5 +429,6 @@ $data = [
         'diff_perc' => 13
     ]
 ];
-var_dump($report->getTotals($parsed, $data));
+//var_dump($report->getTotals($parsed, $data));
+echo $report->getHtml($sexp, $data);
 echo "\n";
