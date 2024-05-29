@@ -27,6 +27,7 @@ $sc = <<<SCHEME
         (column 
             (title "Art nr")
             (select "articles.article_id")
+            (as "id")
         )   
         (column 
             (title "Diff")
@@ -42,16 +43,13 @@ $sc = <<<SCHEME
         )
     )
     (totals
+        (title "Average")
         (total
-            (title "Diff average")
-            (as "diff_average")
-            (for "Diff")
+            (for "diff")
             (do (/ (sum diff) (count rows)))
         )
         (total
-            (title "Diff average perc")
-            (as "diff_average_perc")
-            (for "Diff perc")
+            (for "diff_perc")
             (do (/ (sum diff_perc) (count rows)))
         )
     )
@@ -283,6 +281,9 @@ class ReportSexpr extends SexprBase
     {
         $op = $sexp->bottom();
         switch ($op) {
+            // case '+'
+            // case '-'
+            // case '*'
             case '/':
                 $a = $sexp->pop();
                 $b = $sexp->pop();
@@ -381,9 +382,9 @@ class ReportSexpr extends SexprBase
             if ($totalsNode) {
                 $totalsNode = $this->findAll($totalsNode, 'total');
                 foreach ($totalsNode as $total) {
-                    $as = $this->findFirst($total, 'as');
-                    if ($as) {
-                        $totals[$as->top()] = $this->evalTotal($this->findFirst($total, 'do')->top(), $data);
+                    $for = $this->findFirst($total, 'for');
+                    if ($for) {
+                        $totals[$for->top()] = $this->evalTotal($this->findFirst($total, 'do')->top(), $data['rows']);
                     }
                 }
             }
@@ -393,32 +394,60 @@ class ReportSexpr extends SexprBase
 
     public function getTableHeader(array $titles)
     {
-        return array_reduce(
+        return "<tr>" . array_reduce(
             $titles,
             function($html, $title) {
                 return <<<HTML
-<tr> <th> {$title} </th> </tr>
+<th>{$title}</th>
 HTML
                 . $html;
             }
-        );
+        ) . "</tr>\n";
     }
 
     public function getTableRows(SplStack $sexp, array $data)
     {
-        $html = '<tr>';
-        foreach ($data as $row) {
+        $html = '';
+        foreach ($data['rows'] as $row) {
+            $html .= '<tr>';
+            foreach ($row as $cell) {
+                $html .= "<td>$cell</td>";
+            }
+            $html .= "</tr>\n";
         }
-        $html .= '</tr>';
+        return $html;
+    }
+
+    /**
+     *
+     */
+    public function getTotalRows(SplStack $sexp, array $data, array $totals): string
+    {
+        $html = '';
+        $html .= '<tr>';
+        foreach ($data['rows'] as $row) {
+            foreach ($row as $key => $_) {
+                if (isset($totals[$key])) {
+                    $html .= "<td>{$totals[$key]}</td>";
+                } else {
+                    $html .= "<td></td>";
+                }
+            }
+            break;
+        }
+        $html .= "</tr>\n";
         return $html;
     }
 
     public function getHtml(SplStack $sexp, array $data): string
     {
+        $totals = $this->getTotals($sexp, $data);
+
         return <<<HTML
 <table>
 {$this->getTableHeader($this->getHeaders($sexp))}
-{$this->getTableRows($data)}
+{$this->getTableRows($sexp, $data)}
+{$this->getTotalRows($sexp, $data, $totals)}
 </table>
 HTML;
     }
@@ -430,20 +459,25 @@ echo $report->getQuery($sexp);
 echo "\n";
 // todo Use query to get data
 $data = [
-    [
-        'diff' => 1,
-        'diff_perc' => 11
-    ],
-    [
-        'diff' => 2,
-        'diff_perc' => 12
-    ],
-    [
-        'diff' => 3,
-        'diff_perc' => 13
+    'rows' => [
+        [
+            'id' => 1,
+            'diff' => 2,
+            'diff_perc' => 11
+        ],
+        [
+            'id' => 2,
+            'diff' => 4,
+            'diff_perc' => 12
+        ],
+        [
+            'id' => 3,
+            'diff' => 6,
+            'diff_perc' => 13
+        ]
     ]
 ];
-print_r($report->getTotals($sexp, $data));
+//print_r($report->getTotals($sexp, $data));
 echo "\n";
 echo $report->getHtml($sexp, $data);
 echo "\n";
