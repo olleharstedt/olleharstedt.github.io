@@ -353,6 +353,9 @@ class ReportSexpr extends SexprBase
         return $sql;
     }
 
+    /**
+     * @todo Move to SplStack?
+     */
     public function getHeaders(SplStack $sexp)
     {
         $headers = [];
@@ -401,11 +404,21 @@ HTML
         );
     }
 
+    public function getTableRows(SplStack $sexp, array $data)
+    {
+        $html = '<tr>';
+        foreach ($data as $row) {
+        }
+        $html .= '</tr>';
+        return $html;
+    }
+
     public function getHtml(SplStack $sexp, array $data): string
     {
         return <<<HTML
 <table>
 {$this->getTableHeader($this->getHeaders($sexp))}
+{$this->getTableRows($data)}
 </table>
 HTML;
     }
