@@ -30,7 +30,7 @@ The formats I considered:
 
 * S-expressions, because it can be lexed and parsed in a handful of lines
 * Forth-like, for the same reason
-* JSON, because it's common in web
+* JSON, because it's common in web and fairly easy to read (with some syntax highlight)
 
 There are no good lexer/parser libs to PHP that are actively maintained, sadly.
 
@@ -70,6 +70,12 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
             (css "right-align")
             (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
             (as "margin")
+        )
+    )
+    (totals
+        (total
+            (for "margin")
+            (do (/ (sum "margin") (count rows)))
         )
     )
 )
