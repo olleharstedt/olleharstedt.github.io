@@ -115,12 +115,6 @@ $json = <<<JAVASCRIPT
 }
 JAVASCRIPT;
 
-//$sc = <<<SCHEME
-//(+ (- 1 2) (+ 2 3))
-//SCHEME;
-
-// Explode by ()?
-
 abstract class SexprBase
 {
     /**

@@ -246,7 +246,59 @@ I'll leave out JSON, since PHP already has a `json_decode` function.
 
 ## Constructing a SQL query from the DSL
 
-todo
+Since S-expressions can be used for both structured data and logic, we can use it to mix SQL snippets in the data, as done to calculate the profit margin of a product:
+
+    (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
+
+To build a SQL from an S-expression, it's a basic recursive evaluation:
+
+```php
+/**
+ * @param SplStack<mixed>|string $top
+ */
+public function evalSelect($top): string
+{
+    $sql = '';
+    switch (gettype($top)) {
+        case 'int':
+            $sql .= $top;
+            break;
+        case 'string':
+            $sql .= $top;
+            break;
+        case 'object':
+            $op = $top->bottom();
+            switch ($op) {
+                case '-':
+                    $a = $top->pop();
+                    $b = $top->pop();
+                    $sql .= '(' . $this->evalSelect($b) . ' - ' . $this->evalSelect($a) . ')';
+                    break;
+                case '*':
+                    $a = $top->pop();
+                    $b = $top->pop();
+                    $sql .= '(' . $this->evalSelect($b) . ' * ' . $this->evalSelect($a) . ')';
+                    break;
+                case '/':
+                    $a = $top->pop();
+                    $b = $top->pop();
+                    $sql .= '(' . $this->evalSelect($b) . ' / ' . $this->evalSelect($a) . ')';
+                    break;
+                case 'round':
+                    $a = $top->pop();
+                    $b = $top->pop();
+                    $sql .= 'ROUND('  
+                        . $this->evalSelect($b) . ', ' 
+                        . $this->evalSelect($a) . ')';
+                    break;
+                default:
+                    throw new RuntimeException('Unknown op: ' . $op);
+            }
+            break;
+    }
+    return $sql;
+}
+```
 
 ## Summarizing totals using the DSL
 
