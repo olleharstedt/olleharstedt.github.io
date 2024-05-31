@@ -17,12 +17,14 @@
 $sc = <<<SCHEME
 (report
     (title "Stock report")
-    (table "articles")
+    ; Main table to fetch from
+    (table  "articles")
     (join 
         (table "categories")
         (type left)
         (on "articles.cat_id" "categories.id")
     )
+    ; List of columns to show in the report
     (columns
         (column 
             (title "Art nr")
@@ -38,10 +40,12 @@ $sc = <<<SCHEME
         (column 
             (title "Diff perc")
             (css "right-align")
+            ; Inline SQL
             (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
             (as "diff_perc")
         )
     )
+    ; Sums and totals
     (totals
         (title "Average")
         (total
@@ -124,6 +128,8 @@ abstract class SexprBase
      */
     public function parse(string $sc)
     {
+        // Remove comments
+        $sc = preg_replace('/;.*$/m', '', $sc);
         // Normalize string
         $sc = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $sc));
         $current = new SplStack();
