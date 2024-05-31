@@ -5,7 +5,11 @@ date:   2024-05-25
 categories: programming php
 ---
 
-Why can't the customers write their own damn reports. Or the sales people. Or the technical support. They already know some basic SQL, right? How hard could it be to reate a safe subset of SQL, that also includes some HTML formatting capability? But the parser would have to be dirt simple. I don't want to en dup with a big pil eof code only I can maintain. Kind kind of languages work? S-expressions? Forth? JSON? It would have to be able to deal with complex calculations between database columns.
+Why can't the customers write their own damn reports? Or the sales people. Or the technical support. They already know some basic SQL, right? How hard could it be to create a safe subset of SQL, that also includes some HTML formatting capability? But the parser would have to be dirt simple. I don't want to end up with a big pile of code only I can maintain. What kind of language would work best? S-expressions? Forth? JSON? It would have to be able to deal with complex calculations between database columns, joins, perhaps some summarizing calculations after the fetch. And CSS information, too.
+
+## Intro
+
+A domain-specific language is a pretty neat **design pattern**, written extensively about by Martin Fowler [link].
 
 Pros and cons.
 
@@ -21,8 +25,6 @@ Cons:
 * Inner-system trap TODO: Link
 * Might only be understood by me, in the end
 * The flexibility the DSL allows might not be needed in the end (e.g. all customers actually need the same reports)
-
----
 
 The formats I considered:
 
