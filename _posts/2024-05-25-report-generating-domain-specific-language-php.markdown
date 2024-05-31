@@ -302,9 +302,11 @@ public function evalSelect($top): string
 
 ## Summarizing totals using the DSL
 
-todo
+Calculating totals is different than the SQL evaluation, because the end-result is a calculation, not a string.
 
-## Constructing an HTML table form the DSLo
+
+
+## Constructing an HTML table form the DSL
 
 todo
 
