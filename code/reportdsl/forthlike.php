@@ -87,8 +87,8 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
-        echo ($word);
-        echo "\n";
+        //echo ($word);
+        //echo "\n";
         // String
         if (trim($word, '"') !== $word) {
             $stack->push($word);
@@ -186,6 +186,45 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
 });
 
 $mainDict = new Dict();
+$mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
+    $wordsToRun = [];
+    while (($w = $buffer->next()) !== ';') {
+        $wordsToRun[] = $w;
+    }
+
+    $name = $wordsToRun[0];
+    unset($wordsToRun[0]);
+
+    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($wordsToRun) {
+        foreach ($wordsToRun as $word) {
+            // TODO: Add support for string
+            if (ctype_digit($word)) {
+                $stack->push($word);
+            } else {
+                $fn = $dict[$word];
+                $fn($stack, $buffer, $word);
+            }
+        }
+    });
+});
+
+$mainDict->addWord('swap', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    $b = $stack->pop();
+    $stack->push($a);
+    $stack->push($b);
+});
+
+$mainDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    print_r($a);
+});
+
+$mainDict->addWord('+', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    $b = $stack->pop();
+    $stack->push($a + $b);
+});
 
 // Array is always property?
 $mainDict->addWord('array', function($stack, $buffer, $word) {
@@ -270,5 +309,6 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict) {
 });
 
 $report = new ReportForth(new StringBuffer($s), $mainDict);
-$query = $report->getQuery();
-var_dump($query);
+//$query = $report->getQuery();
+
+getStackFromBuffer(new StringBuffer('1 2 + .'), $mainDict);
