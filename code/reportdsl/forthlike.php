@@ -83,7 +83,7 @@ class StringBuffer
 /**
  * Main eval loop
  */
-function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
+function getStackFromBuffer(StringBuffer $buffer, array $dicts): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
@@ -96,8 +96,11 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
         } elseif (ctype_digit($word)) {
             $stack->push($word);
             // Execute dict word
-        } elseif ($dict[$word]) {
-            $fn = $dict[$word];
+        } elseif ($dicts[0][$word]) {
+            $fn = $dicts[0][$word];
+            $fn($stack, $buffer, $word);
+        } elseif (isset($dicts[1]) && $dicts[1][$word]) {
+            $fn = $dicts[1][$word];
             $fn($stack, $buffer, $word);
         } else {
             throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
@@ -154,7 +157,7 @@ class ReportForth
 
     public function getQuery()
     {
-        $stack = getStackFromBuffer($this->buffer, $this->dict);
+        $stack = getStackFromBuffer($this->buffer, [$this->dict]);
         $report = $stack->pop();
         $select = $this->getSelectFromColumns($report->data['columns']);
         $table = $report->data['table:'];
@@ -185,6 +188,7 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
     $stack->push('round(' . $a . ', ' . $b . ')');
 });
 
+// Word to create new words.
 $mainDict = new Dict();
 $mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
     $wordsToRun = [];
@@ -195,13 +199,13 @@ $mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
     $name = $wordsToRun[0];
     unset($wordsToRun[0]);
 
-    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($wordsToRun) {
+    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun) {
         foreach ($wordsToRun as $word) {
             // TODO: Add support for string
             if (ctype_digit($word)) {
                 $stack->push($word);
             } else {
-                $fn = $dict[$word];
+                $fn = $mainDict[$word];
                 $fn($stack, $buffer, $word);
             }
         }
@@ -213,6 +217,11 @@ $mainDict->addWord('swap', function ($stack, $buffer, $word) use ($mainDict) {
     $b = $stack->pop();
     $stack->push($a);
     $stack->push($b);
+});
+$mainDict->addWord('dup', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    $stack->push(clone $a);
+    $stack->push(clone $a);
 });
 
 $mainDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
@@ -289,7 +298,7 @@ $mainDict->addWord('on:', function($stack, $buffer, $word) {
     $struct->data[$word] = $buffer->next() . $buffer->next() . $buffer->next();
     $stack->push($struct);
 });
-$mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict) {
+$mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $mainDict) {
     $next = $buffer->next();
 
     if ($next === '(') {
@@ -297,7 +306,7 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict) {
         while (($w = $buffer->next()) !== ')') {
             $newBuffer .= ' ' . $w;
         }
-        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $sqlDict);
+        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), [$sqlDict, $mainDict]);
         $struct = $stack->pop();
         $struct->data[$word] = $newStack->pop();
         $stack->push($struct);
@@ -309,6 +318,4 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict) {
 });
 
 $report = new ReportForth(new StringBuffer($s), $mainDict);
-//$query = $report->getQuery();
-
-getStackFromBuffer(new StringBuffer('1 2 + .'), $mainDict);
+$query = $report->getQuery();
