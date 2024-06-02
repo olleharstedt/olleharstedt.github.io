@@ -9,24 +9,24 @@ Why can't the customers write their own damn reports? Or the sales people. Or th
 
 ## Intro
 
-A domain-specific language is a pretty neat **design pattern**, written extensively about by Martin Fowler [link].
+A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) is a pretty neat **design pattern**, written extensively about by Martin Fowler in his [book](https://www.martinfowler.com/dslCatalog/).
 
 Pros and cons.
 
 Pros:
 
-* You gather all related data and logic in one script
-* Semi-technical people can make changes, with some guidance
-* You can update reports without waiting for a new software release
+* You can add new reports without waiting for a new software release
+* Semi-technical people can make changes to the DSL scripts
 * Each customer can have their own custom-made reports
+* You gather all related data and logic in one place instead of spreading it out
 
 Cons:
 
-* Inner-system trap TODO: Link
+* [Inner-platform effect](https://en.wikipedia.org/wiki/Inner-platform_effect)
 * Might only be understood by me, in the end
 * The flexibility the DSL allows might not be needed in the end (e.g. all customers actually need the same reports)
 
-The formats I considered:
+The formats I considered simple enough to try out:
 
 * S-expressions, because it can be lexed and parsed in a handful of lines
 * Forth-like, for the same reason
@@ -34,21 +34,18 @@ The formats I considered:
 
 There are no good lexer/parser libs to PHP that are actively maintained, sadly.
 
-To be able to sell the solution to colleagues, the base system would have to be really simple.
-
-The end result DSL should be able to blend, seamlessly:
+The DSL should be able to seamlessly blend:
 
 * Structured data for HTML, CSS, SQL
 * Logic in SQL, PHP and possibly JavaScript
 
-Use-case:
+Use-case: An article report
 
-* An article report
 * Includes calculation of margin of profit for each article
 * Includes totals
 * Includes extra options added by JavaScript for this report only
 
-## Trying out the DSL
+## Trying out the DSL design
 
 An outline of how the different alternatives would look like:
 
@@ -164,9 +161,9 @@ function parse(string $sc)
     // Normalize string
     $sc = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $sc));
     $current = new SplStack();
+    $history = new SplStack();
     $base = $current;
     $prev = null;
-    $history = new SplStack();
     $buffer = '';
     $inside_quote = 0;
     for ($i = 0; $i < strlen($sc); $i++) {
@@ -244,10 +241,6 @@ class StringBuffer
 }
 ```
 
-
-
-
-
 ## Parse JSON in PHP
 
 I'll leave out JSON, since PHP already has a `json_decode` function.
@@ -305,6 +298,32 @@ public function evalSelect($top): string
             break;
     }
     return $sql;
+}
+```
+
+The Forth-like DSL is a bit different, since each word is response for how to progress the string stream.
+
+The eval loop assumes a dictionary with word definitions, and a string buffer to loop on.
+
+```text
+function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
+{
+    $stack  = new SplStack();
+    while ($word = $buffer->next()) {
+        if (trim($word, '"') !== $word) {
+            $stack->push($word);
+            // Digit
+        } elseif (ctype_digit($word)) {
+            $stack->push($word);
+            // Execute dict word
+        } elseif ($dict[$word]) {
+            $fn = $dict[$word];
+            $fn($stack, $buffer, $word);
+        } else {
+            throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
+        }
+    }
+    return $stack;
 }
 ```
 

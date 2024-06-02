@@ -85,24 +85,18 @@ class StringBuffer
 /**
  * Main eval loop
  */
-function getStackFromBuffer(StringBuffer $buffer, array $dicts): SplStack
+function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
-        //echo ($word);
-        //echo "\n";
-        // String
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
         } elseif (ctype_digit($word)) {
             $stack->push($word);
             // Execute dict word
-        } elseif ($dicts[0][$word]) {
-            $fn = $dicts[0][$word];
-            $fn($stack, $buffer, $word);
-        } elseif (isset($dicts[1]) && $dicts[1][$word]) {
-            $fn = $dicts[1][$word];
+        } elseif ($dict[$word]) {
+            $fn = $dict[$word];
             $fn($stack, $buffer, $word);
         } else {
             throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
@@ -319,5 +313,17 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $m
     }
 });
 
-$report = new ReportForth(new StringBuffer($s), $mainDict);
-$query = $report->getQuery();
+//$report = new ReportForth(new StringBuffer($s), $mainDict);
+//$query = $report->getQuery();
+
+$mathDict = new Dict();
+$mathDict->addWord('+', function($stack, $buffer, $word) {
+    $a = $stack->pop();
+    $b = $stack->pop();
+    $stack->push($a + $b);
+});
+$mathDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    echo $a;
+});
+$stack = getStackFromBuffer(new StringBuffer('1 2 + .'), [$mathDict]);
