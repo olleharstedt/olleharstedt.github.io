@@ -153,7 +153,7 @@ class ReportForth
 
     public function getQuery()
     {
-        $stack = getStackFromBuffer($this->buffer, [$this->dict]);
+        $stack = getStackFromBuffer($this->buffer, $this->dict);
         $report = $stack->pop();
         $select = $this->getSelectFromColumns($report->data['columns']);
         $table = $report->data['table:'];
@@ -302,7 +302,7 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $m
         while (($w = $buffer->next()) !== ')') {
             $newBuffer .= ' ' . $w;
         }
-        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), [$sqlDict, $mainDict]);
+        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $sqlDict);
         $struct = $stack->pop();
         $struct->data[$word] = $newStack->pop();
         $stack->push($struct);
@@ -316,6 +316,7 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $m
 //$report = new ReportForth(new StringBuffer($s), $mainDict);
 //$query = $report->getQuery();
 
+/*
 $mathDict = new Dict();
 $mathDict->addWord('+', function($stack, $buffer, $word) {
     $a = $stack->pop();
@@ -327,3 +328,42 @@ $mathDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
     echo $a;
 });
 $stack = getStackFromBuffer(new StringBuffer('1 2 + .'), [$mathDict]);
+*/
+
+$sqlDict->addWord(':', function ($stack, $buffer, $word) use ($sqlDict) {
+    $wordsToRun = [];
+    while (($w = $buffer->next()) !== ';') {
+        $wordsToRun[] = $w;
+    }
+
+    $name = $wordsToRun[0];
+    unset($wordsToRun[0]);
+
+    $sqlDict->addWord($name, function ($stack, $buffer, $_word) use ($sqlDict, $wordsToRun) {
+        foreach ($wordsToRun as $word) {
+            // TODO: Add support for string
+            if (ctype_digit($word)) {
+                $stack->push($word);
+            } else {
+                $fn = $sqlDict[$word];
+                $fn($stack, $buffer, $word);
+            }
+        }
+    });
+});
+$sqlDict->addWord('swap', function ($stack, $buffer, $word) use ($sqlDict) {
+    $a = $stack->pop();
+    $b = $stack->pop();
+    $stack->push($a);
+    $stack->push($b);
+});
+
+$s = <<<FORTH
+: compliment 1 swap - ;
+: % 100 swap * 2 round ;
+"purchase_price" "selling_price" / compliment %
+FORTH;
+
+$stack = getStackFromBuffer(new StringBuffer($s), $sqlDict);
+echo $stack->pop();
+echo "\n";

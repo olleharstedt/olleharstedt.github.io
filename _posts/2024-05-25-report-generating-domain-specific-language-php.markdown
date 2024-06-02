@@ -28,11 +28,11 @@ Cons:
 
 The formats I considered simple enough to try out:
 
-* S-expressions, because it can be lexed and parsed in a handful of lines
-* Forth-like, for the same reason
+* [S-expressions](https://en.wikipedia.org/wiki/S-expression), because it can be lexed and parsed in a handful of lines
+* [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language))-like, for the same reason
 * JSON, because it's common in web and fairly easy to read (with some syntax highlight)
 
-There are no good lexer/parser libs to PHP that are actively maintained, sadly.
+I found no good lexer/parser libs to PHP that are actively maintained, sadly.
 
 The DSL should be able to seamlessly blend:
 
@@ -326,6 +326,62 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
     return $stack;
 }
 ```
+
+An example dictionary for a math DSL:
+
+```text
+$mathDict = new Dict();
+// Add the plus word
+$mathDict->addWord('+', function($stack, $buffer, $word) {
+    // The plus word pops the two words from the stack
+    $a = $stack->pop();
+    $b = $stack->pop();
+    // Push the result on the stack
+    $stack->push($a + $b);
+});
+// Add the dot word
+$mathDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
+    $a = $stack->pop();
+    echo $a;
+});
+$stack = getStackFromBuffer(new StringBuffer('1 2 + .'), [$mathDict]);
+```
+
+In the case of a SQL SELECT statement, we need words to build a string instead.
+
+```text
+$sqlDict = new Dict();
+$sqlDict->addWord('/', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' / ' . $b . ')');
+});
+$sqlDict->addWord('-', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' - ' . $b . ')');
+});
+$sqlDict->addWord('*', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('(' . $a . ' * ' . $b . ')');
+});
+$sqlDict->addWord('round', function($stack, $buffer, $word) {
+    $b = $stack->pop();
+    $a = $stack->pop();
+    $stack->push('round(' . $a . ', ' . $b . ')');
+});
+```
+
+Using this, you get
+
+```text
+$stack = getStackFromBuffer(new StringBuffer('100 1 "purchase_price" "selling_price" / - * 2 round'), $sqlDict);
+// Shows "round((100 * (1 - ("purchase_price" / "selling_price"))), 2)"
+echo $stack->pop();
+```
+
+The main problem here being that `100 1 "purchase_price" "selling_price" / - * 2 round` is utterly unreadable for anyone. Translating from SQL to this formatting is also pretty challenging, regardless if it's easy to read or not.
 
 ## Summarizing totals using the DSL
 
