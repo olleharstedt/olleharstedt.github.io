@@ -1,6 +1,7 @@
 <?php
 
 $s = <<<FORTH
+: compliment 1 swap - ;
 report:
     title: "Lagerrapport"
     table: "articles"
@@ -25,6 +26,7 @@ FORTH;
 // Factor out more words for clarity:
 // 17:11 < zelgomer> : compliment  1 swap - ;  : %  100 * 2 round ;  purchase selling / compliment %
 // TODO: Add `:` as a word?
+// TODO: select: words evaluate to string, other words do not :(
 
 
 // https://termbin.com/jyyq
