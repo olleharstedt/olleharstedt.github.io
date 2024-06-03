@@ -305,7 +305,7 @@ The Forth-like DSL is a bit different, since each word is response for how to pr
 
 The eval loop assumes a dictionary with word definitions, and a string buffer to loop on.
 
-```text
+```php
 function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
     $stack  = new SplStack();
@@ -329,7 +329,7 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 
 An example dictionary for a math DSL:
 
-```text
+```php
 $mathDict = new Dict();
 // Add the plus word
 $mathDict->addWord('+', function($stack, $buffer, $word) {
@@ -349,7 +349,7 @@ $stack = getStackFromBuffer(new StringBuffer('1 2 + .'), [$mathDict]);
 
 In the case of a SQL SELECT statement, we need words to build a string instead.
 
-```text
+```php
 $sqlDict = new Dict();
 $sqlDict->addWord('/', function($stack, $buffer, $word) {
     $b = $stack->pop();
@@ -375,7 +375,7 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
 
 Using this, you get
 
-```text
+```php
 $stack = getStackFromBuffer(new StringBuffer('100 1 "purchase_price" "selling_price" / - * 2 round'), $sqlDict);
 // Shows "round((100 * (1 - ("purchase_price" / "selling_price"))), 2)"
 echo $stack->pop();
