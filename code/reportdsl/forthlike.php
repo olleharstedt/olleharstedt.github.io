@@ -20,6 +20,13 @@ report:
             select: ( 100 1 "purchase_price" "selling_price" / - * 2 round )
         end
     end
+    totals:
+        title: "Average"
+        total:
+            for: "diff"
+            do: ( count rows sum diff / )
+        end
+    end
 end
 FORTH;
 
@@ -27,7 +34,7 @@ FORTH;
 // 17:11 < zelgomer> : compliment  1 swap - ;  : %  100 * 2 round ;  purchase selling / compliment %
 // TODO: Add `:` as a word?
 // TODO: select: words evaluate to string, other words do not :(
-
+// TODO: [ and ] immediate words?
 
 // https://termbin.com/jyyq
 /*
@@ -242,6 +249,11 @@ $mainDict->addWord('columns:', function($stack, $buffer, $word) {
     $arr->name = trim($word, ':');
     $stack->push($arr);
 });
+$mainDict->addWord('totals:', function($stack, $buffer, $word) {
+    $arr = new Array_();
+    $arr->name = trim($word, ':');
+    $stack->push($arr);
+});
 $structword = function($stack, $buffer, $word) {
     $struct = new Struct();
     $struct->name = trim($word, ':');
@@ -250,6 +262,7 @@ $structword = function($stack, $buffer, $word) {
 $mainDict->addWord('report:', $structword);
 $mainDict->addWord('join:', $structword);
 $mainDict->addWord('column:', $structword);
+$mainDict->addWord('total:', $structword);
 $mainDict->addWord('struct', function($stack, $buffer, $word) {
     $struct = new Struct();
     $struct->name = $buffer->next();
@@ -288,6 +301,7 @@ $datapropword = function($stack, $buffer, $word) {
 };
 $mainDict->addWord('title:', $datapropword);
 $mainDict->addWord('table:', $datapropword);
+$mainDict->addWord('for:', $datapropword);
 $mainDict->addWord('as:', $datapropword);
 $mainDict->addWord('on:', function($stack, $buffer, $word) {
     $struct = $stack->pop();
@@ -310,6 +324,28 @@ $mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $m
         $struct = $stack->pop();
         $struct->data[$word] = $next;
         $stack->push($struct);
+    }
+});
+
+// TODO: How to give data here?
+$doDict = new Dict();
+$doDict->addWord('count', function($stack, $buffer, $word) {
+    $next = $buffer->next();
+});
+$mainDict->addWord('do:', function($stack, $buffer, $word) use ($doDict, $mainDict) {
+    $next = $buffer->next();
+
+    if ($next === '(') {
+        $newBuffer = '';
+        while (($w = $buffer->next()) !== ')') {
+            $newBuffer .= ' ' . $w;
+        }
+        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $doDict);
+        $struct = $stack->pop();
+        $struct->data[$word] = $newStack->pop();
+        $stack->push($struct);
+    } else {
+        throw new RuntimeException('The do-word requires an expression within ()');
     }
 });
 
@@ -358,12 +394,13 @@ $sqlDict->addWord('swap', function ($stack, $buffer, $word) use ($sqlDict) {
     $stack->push($b);
 });
 
+/*
 $s = <<<FORTH
 : compliment 1 swap - ;
 : % 100 swap * 2 round ;
 "purchase_price" "selling_price" / compliment %
 FORTH;
-
-$stack = getStackFromBuffer(new StringBuffer($s), $sqlDict);
+*/
+$stack = getStackFromBuffer(new StringBuffer($s), $mainDict);
 echo $stack->pop();
 echo "\n";

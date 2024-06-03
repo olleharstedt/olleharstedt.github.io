@@ -281,9 +281,6 @@ class ReportSexpr extends SexprBase
     {
         $op = $sexp->bottom();
         switch ($op) {
-            // case '+'
-            // case '-'
-            // case '*'
             case '/':
                 $a = $sexp->pop();
                 $b = $sexp->pop();

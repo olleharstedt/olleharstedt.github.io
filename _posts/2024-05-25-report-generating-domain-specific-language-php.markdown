@@ -387,6 +387,43 @@ The main problem here being that `100 1 "purchase_price" "selling_price" / - * 2
 
 Calculating totals is different than the SQL evaluation, because the end-result is a calculation, not a string.
 
+**PHP**
+
+```php
+public function evalTotal(SplStack $sexp, array $data): float
+{
+    $op = $sexp->bottom();
+    switch ($op) {
+        case '/':
+            $a = $sexp->pop();
+            $b = $sexp->pop();
+            return $this->evalTotal($b, $data) / $this->evalTotal($a, $data);
+            break;
+        case 'sum':
+            $variableName = $sexp->pop();
+            $sum = 0;
+            foreach ($data as $row) {
+                $sum += $row[$variableName];
+            }
+            return $sum;
+            break;
+        case 'count':
+            $typeOfCount = $sexp->pop();
+            if ($typeOfCount === 'rows') {
+                return count($data);
+            } else {
+                throw new RuntimeException('Unsupported count type: ' . $typeOfCount);
+            }
+            break;
+        default:
+            throw new RuntimeException('Unknown function: ' . $op);
+    }
+}
+```
+
+**Forth-like**
+
+
 
 
 ## Constructing an HTML table form the DSL
