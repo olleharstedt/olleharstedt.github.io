@@ -8,6 +8,10 @@ a @ .
 "bar" a !
 a @ .
 b .
+var t
+new table t !
+t @ 10 set foo
+t @ "moo" set bar
 FORTH;
 
 // var a 
@@ -342,6 +346,36 @@ $mainDict->addWord('const', function($stack, $buffer, $word) use ($mainDict) {
         $stack->push($value);
     });
 });
+$mainDict->addWord('new', function($stack, $buffer, $word) {
+    $type = $buffer->next();
+    switch ($type) {
+        case 'table':
+            // Fallthru
+        case 'array':
+            $stack->push(new ArrayObject());
+            break;
+        case 'stack':
+            $stack->push(new SplStack());
+            break;
+        default:
+            throw new RuntimeException('Unknown type: ' . $type);
+    }
+});
+$mainDict->addWord('push', function($stack, $buffer, $word) use ($mainDict) {
+    $value = $stack->pop();
+    $s = $stack->pop();
+    $s->push($value);
+});
+$mainDict->addWord('pop', function($stack, $buffer, $word) use ($mainDict) {
+    $s   = $stack->pop();
+    $stack->push($s->pop());
+});
+$mainDict->addWord('set', function($stack, $buffer, $word) use ($mainDict) {
+    $value = $stack->pop();
+    $table = $stack->pop();
+    $key   = $buffer->next();
+    $table[$key] = $value;
+});
 
 // TODO: How to give data here?
 $doDict = new Dict();
@@ -403,4 +437,4 @@ FORTH;
 $stack = getStackFromBuffer(new StringBuffer($s), $mainDict);
 //echo $stack->pop();
 //echo "\n";
-//print_r($mem);
+print_r($mem);
