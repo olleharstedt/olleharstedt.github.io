@@ -20,6 +20,7 @@ report:
             select: ( 100 1 "purchase_price" "selling_price" / - * 2 round )
         end
     end
+    run-query
     totals:
         title: "Average"
         total:
@@ -112,6 +113,21 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
     return $stack;
 }
 
+/**
+ * Parsing the string buffer populates the environment, which is returned.
+ *
+ * @return string
+ */
+function getSelectFromColumns(Array_ $cols)
+{
+    $sql = '';
+    foreach ($cols as $col) {
+        $sql .= trim($col->data['select:'], '"') . ', ';
+    }
+    return trim(trim($sql), ',');
+}
+
+
 class Dict extends ArrayObject
 {
     public function addWord(string $word, callable $fn)
@@ -145,24 +161,11 @@ class ReportForth
         $this->dict   = $d;
     }
 
-    /**
-     * Parsing the string buffer populates the environment, which is returned.
-     */
-    public function getSelectFromColumns(Array_ $cols)
-    {
-        $sql = '';
-        foreach ($cols as $col) {
-            print_r($col->data);
-            $sql .= trim($col->data['select:'], '"') . ', ';
-        }
-        return trim(trim($sql), ',');
-    }
-
     public function getQuery()
     {
         $stack = getStackFromBuffer($this->buffer, $this->dict);
         $report = $stack->pop();
-        $select = $this->getSelectFromColumns($report->data['columns']);
+        $select = getSelectFromColumns($report->data['columns']);
         $table = $report->data['table:'];
         $sql  = "SELECT $select FROM $table";
         return $sql;
@@ -229,7 +232,7 @@ $mainDict->addWord('dup', function ($stack, $buffer, $word) use ($mainDict) {
 
 $mainDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
     $a = $stack->pop();
-    print_r($a);
+    echo $a;
 });
 
 $mainDict->addWord('+', function ($stack, $buffer, $word) use ($mainDict) {
@@ -249,7 +252,34 @@ $mainDict->addWord('columns:', function($stack, $buffer, $word) {
     $arr->name = trim($word, ':');
     $stack->push($arr);
 });
+$mainDict->addWord('run-query', function($stack, $buffer, $word) {
+    $report = $stack->top();
+    $select = getSelectFromColumns($report->data['columns']);
+    $table = $report->data['table:'];
+    $sql  = "SELECT $select FROM $table";
+    $data = [
+        'rows' => [
+            [
+                'id' => 1,
+                'diff' => 2,
+                'diff_perc' => 11
+            ],
+            [
+                'id' => 2,
+                'diff' => 4,
+                'diff_perc' => 12
+            ],
+            [
+                'id' => 3,
+                'diff' => 6,
+                'diff_perc' => 13
+            ]
+        ]
+    ];
+    $stack->push($data);
+});
 $mainDict->addWord('totals:', function($stack, $buffer, $word) {
+
     $arr = new Array_();
     $arr->name = trim($word, ':');
     $stack->push($arr);

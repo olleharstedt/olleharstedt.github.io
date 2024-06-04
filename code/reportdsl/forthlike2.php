@@ -2,8 +2,12 @@
 
 $s = <<<FORTH
 var a
-"asd" a !
+100 const b
+"foo" a !
 a @ .
+"bar" a !
+a @ .
+b .
 FORTH;
 
 class StringBuffer
@@ -325,6 +329,13 @@ $mainDict->addWord('var', function($stack, $buffer, $word) use ($mem, $mainDict)
     $varName = $buffer->next();
     $mainDict->addWord($varName, function($stack, $buffer, $word) use ($mem) {
         $stack->push($word);
+    });
+});
+$mainDict->addWord('const', function($stack, $buffer, $word) use ($mainDict) {
+    $value = $stack->pop();
+    $name = $buffer->next();
+    $mainDict->addWord($name, function($stack, $buffer, $word) use ($value) {
+        $stack->push($value);
     });
 });
 
