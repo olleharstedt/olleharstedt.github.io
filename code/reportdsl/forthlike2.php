@@ -10,6 +10,10 @@ a @ .
 b .
 FORTH;
 
+// var a 
+// new array a !
+// "asd" a push
+
 class StringBuffer
 {
     /** @var string */
