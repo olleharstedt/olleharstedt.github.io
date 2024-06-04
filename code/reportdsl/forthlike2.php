@@ -1,6 +1,27 @@
 <?php
 
 $s = <<<FORTH
+: new-report var report new table report ! ;
+var report
+new table report !
+report @ "Lagerrapport" set title
+report @ "articles" set table
+var joins
+new stack joins !
+var join
+new table join !
+join @ "categories" set table
+join @ "articles.cat_id = categories.id" set on
+joins @ join @ push
+report @ joins @ set joins
+unset joins
+unset join
+FORTH;
+
+// var a 
+// new array a !
+// "asd" a push
+/*
 var a
 100 const b
 "foo" a !
@@ -12,11 +33,7 @@ var t
 new table t !
 t @ 10 set foo
 t @ "moo" set bar
-FORTH;
-
-// var a 
-// new array a !
-// "asd" a push
+*/
 
 class StringBuffer
 {
@@ -98,6 +115,11 @@ class Dict extends ArrayObject
     public function addWord(string $word, callable $fn)
     {
         $this[$word] = $fn;
+    }
+
+    public function removeWord(string $word)
+    {
+        unset($this[$word]);
     }
 }
 
@@ -339,6 +361,10 @@ $mainDict->addWord('var', function($stack, $buffer, $word) use ($mem, $mainDict)
         $stack->push($word);
     });
 });
+$mainDict->addWord('unset', function($stack, $buffer, $word) use ($mem, $mainDict) {
+    $varName = $buffer->next();
+    unset($mem[$varName]);
+});
 $mainDict->addWord('const', function($stack, $buffer, $word) use ($mainDict) {
     $value = $stack->pop();
     $name = $buffer->next();
@@ -358,7 +384,7 @@ $mainDict->addWord('new', function($stack, $buffer, $word) {
             $stack->push(new SplStack());
             break;
         default:
-            throw new RuntimeException('Unknown type: ' . $type);
+            throw new RuntimeException('Unknown type for new: ' . $type);
     }
 });
 $mainDict->addWord('push', function($stack, $buffer, $word) use ($mainDict) {
@@ -437,4 +463,4 @@ FORTH;
 $stack = getStackFromBuffer(new StringBuffer($s), $mainDict);
 //echo $stack->pop();
 //echo "\n";
-print_r($mem);
+print_r($mem['report']['joins'][0]['table']);
