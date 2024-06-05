@@ -2,6 +2,14 @@
 
 $s = <<<FORTH
 : new-report var report new table report ! ;
+new-report
+FORTH;
+
+// var a 
+// new array a !
+// "asd" a push
+/*
+
 var report
 new table report !
 report @ "Lagerrapport" set title
@@ -16,12 +24,8 @@ joins @ join @ push
 report @ joins @ set joins
 unset joins
 unset join
-FORTH;
 
-// var a 
-// new array a !
-// "asd" a push
-/*
+
 var a
 100 const b
 "foo" a !
@@ -79,6 +83,7 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
+        error_log($word);
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
@@ -186,28 +191,6 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
 
 // Word to create new words.
 $mainDict = new Dict();
-$mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
-    $wordsToRun = [];
-    while (($w = $buffer->next()) !== ';') {
-        $wordsToRun[] = $w;
-    }
-
-    $name = $wordsToRun[0];
-    unset($wordsToRun[0]);
-
-    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun) {
-        foreach ($wordsToRun as $word) {
-            // TODO: Add support for string
-            if (ctype_digit($word)) {
-                $stack->push($word);
-            } else {
-                $fn = $mainDict[$word];
-                $fn($stack, $buffer, $word);
-            }
-        }
-    });
-});
-
 $mainDict->addWord('swap', function ($stack, $buffer, $word) use ($mainDict) {
     $a = $stack->pop();
     $b = $stack->pop();
@@ -402,6 +385,31 @@ $mainDict->addWord('set', function($stack, $buffer, $word) use ($mainDict) {
     $key   = $buffer->next();
     $table[$key] = $value;
 });
+$mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
+    $wordsToRun = [];
+    while (($w = $buffer->next()) !== ';') {
+        $wordsToRun[] = $w;
+    }
+
+    $name = $wordsToRun[0];
+    unset($wordsToRun[0]);
+    $buff = new StringBuffer(implode(' ', $wordsToRun));
+
+    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun, $buff) {
+        $b = $buff;
+        while ($word = $b->next()) {
+            error_log(' ' . $word);
+            // TODO: Add support for string
+            if (ctype_digit($word)) {
+                $stack->push($word);
+            } else {
+                $fn = $mainDict[$word];
+                $fn($stack, $buff, $word);
+            }
+        }
+    });
+});
+
 
 // TODO: How to give data here?
 $doDict = new Dict();
@@ -463,4 +471,5 @@ FORTH;
 $stack = getStackFromBuffer(new StringBuffer($s), $mainDict);
 //echo $stack->pop();
 //echo "\n";
-print_r($mem['report']['joins'][0]['table']);
+print_r($mem);
+//print_r($mem['report']['joins'][0]['table']);
