@@ -1,15 +1,21 @@
 <?php
 
+/*
 $s = <<<FORTH
 : new-report var report new table report ! ;
+: set-title report @ swap set title ;
+: set-table report @ swap set table ;
 new-report
+"Lagerrapport" set-title
+"articles" set-table
 FORTH;
+*/
 
 // var a 
 // new array a !
 // "asd" a push
-/*
 
+$s = <<<FORTH
 var report
 new table report !
 report @ "Lagerrapport" set title
@@ -25,7 +31,22 @@ report @ joins @ set joins
 unset joins
 unset join
 
+var columns
+new stack columns !
 
+var column
+new table column !
+column @ "Artnr" set title
+column @ "article_id" set select
+columns @ column @ push
+
+report @ columns @ set columns
+unset columns
+unset column
+
+FORTH;
+
+/*
 var a
 100 const b
 "foo" a !
@@ -83,7 +104,6 @@ function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
-        error_log($word);
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
@@ -393,18 +413,16 @@ $mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
 
     $name = $wordsToRun[0];
     unset($wordsToRun[0]);
-    $buff = new StringBuffer(implode(' ', $wordsToRun));
 
-    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun, $buff) {
-        $b = $buff;
+    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun) {
+        $b = new StringBuffer(implode(' ', $wordsToRun));
         while ($word = $b->next()) {
-            error_log(' ' . $word);
             // TODO: Add support for string
             if (ctype_digit($word)) {
                 $stack->push($word);
             } else {
                 $fn = $mainDict[$word];
-                $fn($stack, $buff, $word);
+                $fn($stack, $b, $word);
             }
         }
     });
@@ -443,13 +461,16 @@ $sqlDict->addWord(':', function ($stack, $buffer, $word) use ($sqlDict) {
     unset($wordsToRun[0]);
 
     $sqlDict->addWord($name, function ($stack, $buffer, $_word) use ($sqlDict, $wordsToRun) {
-        foreach ($wordsToRun as $word) {
+        $b = new StringBuffer(implode(' ', $wordsToRun));
+        while ($word = $buffer->next()) {
+        //while (($w = $b->next()) !== ';') {
+        //foreach ($wordsToRun as $word) {
             // TODO: Add support for string
             if (ctype_digit($word)) {
                 $stack->push($word);
             } else {
                 $fn = $sqlDict[$word];
-                $fn($stack, $buffer, $word);
+                $fn($stack, $b, $word);
             }
         }
     });
