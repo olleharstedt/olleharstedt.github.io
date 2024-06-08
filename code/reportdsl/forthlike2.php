@@ -40,11 +40,17 @@ column @ "Artnr" set title
 column @ "article_id" set select
 columns @ column @ push
 
+new table column !
+column @ "Diff" set title
+column @ "diff" set as
+columns @ column @ push
+
 report @ columns @ set columns
 unset columns
 unset column
-
 FORTH;
+
+// column @ ( 100 1 "purchase_price" "selling_price" / - * 2 round ) set select
 
 /*
 var a
@@ -100,10 +106,11 @@ class StringBuffer
 /**
  * Main eval loop
  */
-function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
+function getStackFromBuffer(StringBuffer $buffer, Dicts $dicts): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
+        $dict = $dicts->getCurrentDict();
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
@@ -148,10 +155,25 @@ class Dict extends ArrayObject
     }
 }
 
-class Struct
+class Dicts
 {
-    public $name;
-    public $data = [];
+    public $dicts = [];
+    public $currentDict = 'main';
+
+    public function addDict(string $name, Dict $d)
+    {
+        $this->dicts[$name] = $d;
+    }
+
+    public function setCurrent(string $name)
+    {
+        $this->currentDict = $name;
+    }
+
+    public function getCurrentDict()
+    {
+        return $this->dicts[$this->currentDict];
+    }
 }
 
 class Array_ extends ArrayObject
@@ -159,33 +181,9 @@ class Array_ extends ArrayObject
     public $name;
 }
 
-class ReportForth
-{
-    /** @var StringBuffer */
-    private $buffer;
-
-    /** @var Dict */
-    private $dict = [];
-
-    public function __construct(StringBuffer $b, Dict $d)
-    {
-        $this->buffer = $b;
-        $this->dict   = $d;
-    }
-
-    public function getQuery()
-    {
-        $stack = getStackFromBuffer($this->buffer, $this->dict);
-        $report = $stack->pop();
-        $select = getSelectFromColumns($report->data['columns']);
-        $table = $report->data['table:'];
-        $sql  = "SELECT $select FROM $table";
-        return $sql;
-    }
-}
-
 // Memory to save variables etc in
 $mem = new ArrayObject();
+$dicts = new Dicts();
 
 $sqlDict = new Dict();
 $sqlDict->addWord('/', function($stack, $buffer, $word) {
@@ -208,43 +206,38 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
     $a = $stack->pop();
     $stack->push('round(' . $a . ', ' . $b . ')');
 });
+$dicts->addDict('sql', $sqlDict);
 
-// Word to create new words.
+$rootDict = new Dict();
+$rootDict->addWord('only', function ($stack, $buffer, $word) {
+    $dictname = $buffer->next();
+});
+$dicts->addDict('root', $rootDict);
+
 $mainDict = new Dict();
-$mainDict->addWord('swap', function ($stack, $buffer, $word) use ($mainDict) {
+$mainDict->addWord('swap', function ($stack, $buffer, $word) {
     $a = $stack->pop();
     $b = $stack->pop();
     $stack->push($a);
     $stack->push($b);
 });
-$mainDict->addWord('dup', function ($stack, $buffer, $word) use ($mainDict) {
+$mainDict->addWord('dup', function ($stack, $buffer, $word) {
     $a = $stack->pop();
     $stack->push(clone $a);
     $stack->push(clone $a);
 });
 
-$mainDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
+$mainDict->addWord('.', function ($stack, $buffer, $word) {
     $a = $stack->pop();
     echo $a;
 });
 
-$mainDict->addWord('+', function ($stack, $buffer, $word) use ($mainDict) {
+$mainDict->addWord('+', function ($stack, $buffer, $word) {
     $a = $stack->pop();
     $b = $stack->pop();
     $stack->push($a + $b);
 });
 
-// Array is always property?
-$mainDict->addWord('array', function($stack, $buffer, $word) {
-    $arr = new Array_();
-    $arr->name = $buffer->next();
-    $stack->push($arr);
-});
-$mainDict->addWord('columns:', function($stack, $buffer, $word) {
-    $arr = new Array_();
-    $arr->name = trim($word, ':');
-    $stack->push($arr);
-});
 $mainDict->addWord('run-query', function($stack, $buffer, $word) {
     $report = $stack->top();
     $select = getSelectFromColumns($report->data['columns']);
@@ -271,84 +264,6 @@ $mainDict->addWord('run-query', function($stack, $buffer, $word) {
     ];
     $stack->push($data);
 });
-$mainDict->addWord('totals:', function($stack, $buffer, $word) {
-
-    $arr = new Array_();
-    $arr->name = trim($word, ':');
-    $stack->push($arr);
-});
-$structword = function($stack, $buffer, $word) {
-    $struct = new Struct();
-    $struct->name = trim($word, ':');
-    $stack->push($struct);
-};
-$mainDict->addWord('report:', $structword);
-$mainDict->addWord('join:', $structword);
-$mainDict->addWord('column:', $structword);
-$mainDict->addWord('total:', $structword);
-$mainDict->addWord('struct', function($stack, $buffer, $word) {
-    $struct = new Struct();
-    $struct->name = $buffer->next();
-    $stack->push($struct);
-});
-$mainDict->addWord('end', function($stack, $buffer, $word) {
-    $item = $stack->pop();
-    if ($item instanceof Struct) {
-        if ($stack->count() > 0) {
-            if ($stack->top() instanceof Struct) {
-                $parentstruct = $stack->pop();
-                $parentstruct->data[$item->name] = $item;
-                $stack->push($parentstruct);
-            } elseif ($stack->top() instanceof Array_) {
-                $parentarray = $stack->pop();
-                $parentarray[] = $item;
-                $stack->push($parentarray);
-            }
-        } else {
-            $stack->push($item);
-        }
-    } elseif ($item instanceof Array_) {
-        if ($stack->count() > 0) {
-            if ($stack->top() instanceof Struct) {
-                $parentstruct = $stack->pop();
-                $parentstruct->data[$item->name] = $item;
-                $stack->push($parentstruct);
-            }
-        }
-    }
-});
-$datapropword = function($stack, $buffer, $word) {
-    $struct = $stack->pop();
-    $struct->data[$word] = $buffer->next();
-    $stack->push($struct);
-};
-$mainDict->addWord('title:', $datapropword);
-$mainDict->addWord('table:', $datapropword);
-$mainDict->addWord('for:', $datapropword);
-$mainDict->addWord('as:', $datapropword);
-$mainDict->addWord('on:', function($stack, $buffer, $word) {
-    $struct = $stack->pop();
-    $struct->data[$word] = $buffer->next() . $buffer->next() . $buffer->next();
-    $stack->push($struct);
-});
-$mainDict->addWord('select:', function($stack, $buffer, $word) use ($sqlDict, $mainDict) {
-    $next = $buffer->next();
-
-    if ($next === '(') {
-        $newBuffer = '';
-        while (($w = $buffer->next()) !== ')') {
-            $newBuffer .= ' ' . $w;
-        }
-        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $sqlDict);
-        $struct = $stack->pop();
-        $struct->data[$word] = $newStack->pop();
-        $stack->push($struct);
-    } else {
-        $struct = $stack->pop();
-        $struct->data[$word] = $next;
-        $stack->push($struct);
-    }
-});
 $mainDict->addWord('!', function($stack, $buffer, $word) use ($mem) {
     $name = $stack->pop();
     $value = $stack->pop();
@@ -364,10 +279,13 @@ $mainDict->addWord('var', function($stack, $buffer, $word) use ($mem, $mainDict)
         $stack->push($word);
     });
 });
+
+// Remove variable from memory
 $mainDict->addWord('unset', function($stack, $buffer, $word) use ($mem, $mainDict) {
     $varName = $buffer->next();
     unset($mem[$varName]);
 });
+
 $mainDict->addWord('const', function($stack, $buffer, $word) use ($mainDict) {
     $value = $stack->pop();
     $name = $buffer->next();
@@ -427,28 +345,12 @@ $mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
         }
     });
 });
+$dicts->addDict('main', $mainDict);
 
-
-// TODO: How to give data here?
-$doDict = new Dict();
-$doDict->addWord('count', function($stack, $buffer, $word) {
+$phpDict = new Dict();
+$phpDict->addWord('count', function($stack, $buffer, $word) {
     $next = $buffer->next();
-});
-$mainDict->addWord('do:', function($stack, $buffer, $word) use ($doDict, $mainDict) {
-    $next = $buffer->next();
-
-    if ($next === '(') {
-        $newBuffer = '';
-        while (($w = $buffer->next()) !== ')') {
-            $newBuffer .= ' ' . $w;
-        }
-        $newStack = getStackFromBuffer(new StringBuffer($newBuffer), $doDict);
-        $struct = $stack->pop();
-        $struct->data[$word] = $newStack->pop();
-        $stack->push($struct);
-    } else {
-        throw new RuntimeException('The do-word requires an expression within ()');
-    }
+    // todo
 });
 
 $sqlDict->addWord(':', function ($stack, $buffer, $word) use ($sqlDict) {
@@ -489,7 +391,7 @@ $s = <<<FORTH
 "purchase_price" "selling_price" / compliment %
 FORTH;
 */
-$stack = getStackFromBuffer(new StringBuffer($s), $mainDict);
+$stack = getStackFromBuffer(new StringBuffer($s), $dicts);
 //echo $stack->pop();
 //echo "\n";
 print_r($mem);
