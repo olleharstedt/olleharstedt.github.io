@@ -16,14 +16,16 @@ FORTH;
 // "asd" a push
 
 $s = <<<FORTH
-var report
-new table report !
+: set-sql only sql ;
+: end-sql only main ;
+: compliment 1 swap - ;
+: % 100 swap * 2 round ;
+
+var report new table report !
 report @ "Lagerrapport" set title
 report @ "articles" set table
-var joins
-new stack joins !
-var join
-new table join !
+var joins new stack joins !
+var join new table join !
 join @ "categories" set table
 join @ "articles.cat_id = categories.id" set on
 joins @ join @ push
@@ -31,11 +33,9 @@ report @ joins @ set joins
 unset joins
 unset join
 
-var columns
-new stack columns !
+var columns new stack columns !
 
-var column
-new table column !
+var column new table column !
 column @ "Artnr" set title
 column @ "article_id" set select
 columns @ column @ push
@@ -43,6 +43,9 @@ columns @ column @ push
 new table column !
 column @ "Diff" set title
 column @ "diff" set as
+column @ set-sql 
+    "purchase_price" "selling_price" / compliment %
+end-sql set select
 columns @ column @ push
 
 report @ columns @ set columns
@@ -50,7 +53,6 @@ unset columns
 unset column
 FORTH;
 
-// column @ ( 100 1 "purchase_price" "selling_price" / - * 2 round ) set select
 
 /*
 var a
@@ -110,15 +112,14 @@ function getStackFromBuffer(StringBuffer $buffer, Dicts $dicts): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
-        $dict = $dicts->getCurrentDict();
+        $fn = $dicts->getWord($word);
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
         } elseif (ctype_digit($word)) {
             $stack->push($word);
             // Execute dict word
-        } elseif ($dict[$word]) {
-            $fn = $dict[$word];
+        } elseif ($fn) {
             $fn($stack, $buffer, $word);
         } else {
             throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
@@ -174,6 +175,22 @@ class Dicts
     {
         return $this->dicts[$this->currentDict];
     }
+
+    /**
+     * @return ?string
+     */
+    public function getWord(string $word)
+    {
+        $dict = $this->getCurrentDict();
+        if (isset($dict[$word])) {
+            return $dict[$word];
+        }
+        $dict = $this->dicts['root'];
+        if (isset($dict[$word])) {
+            return $dict[$word];
+        }
+        return null;
+    }
 }
 
 class Array_ extends ArrayObject
@@ -210,7 +227,9 @@ $dicts->addDict('sql', $sqlDict);
 
 $rootDict = new Dict();
 $rootDict->addWord('only', function ($stack, $buffer, $word) {
+    global $dicts;
     $dictname = $buffer->next();
+    $dicts->setCurrent($dictname);
 });
 $dicts->addDict('root', $rootDict);
 
@@ -323,7 +342,7 @@ $mainDict->addWord('set', function($stack, $buffer, $word) use ($mainDict) {
     $key   = $buffer->next();
     $table[$key] = $value;
 });
-$mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
+$rootDict->addWord(':', function ($stack, $buffer, $word) use ($rootDict) {
     $wordsToRun = [];
     while (($w = $buffer->next()) !== ';') {
         $wordsToRun[] = $w;
@@ -332,15 +351,20 @@ $mainDict->addWord(':', function ($stack, $buffer, $word) use ($mainDict) {
     $name = $wordsToRun[0];
     unset($wordsToRun[0]);
 
-    $mainDict->addWord($name, function ($stack, $buffer, $_word) use ($mainDict, $wordsToRun) {
+    $rootDict->addWord($name, function ($stack, $buffer, $_word) use ($wordsToRun) {
+        global $dicts;
         $b = new StringBuffer(implode(' ', $wordsToRun));
         while ($word = $b->next()) {
             // TODO: Add support for string
             if (ctype_digit($word)) {
                 $stack->push($word);
             } else {
-                $fn = $mainDict[$word];
-                $fn($stack, $b, $word);
+                $fn = $dicts->getWord($word);
+                if ($fn) {
+                    $fn($stack, $b, $word);
+                } else {
+                    throw new RuntimeException('Found no word inside : def: ' . $word);
+                }
             }
         }
     });
