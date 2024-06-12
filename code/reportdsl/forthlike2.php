@@ -307,6 +307,12 @@ $rootDict->addWord('.', function ($stack, $buffer, $word) {
 $rootDict->addWord('drop', function ($stack, $buffer, $word) {
     $stack->pop();
 });
+$rootDict->addWord('swap', function ($stack, $buffer, $word) use ($sqlDict) {
+    $a = $stack->pop();
+    $b = $stack->pop();
+    $stack->push($a);
+    $stack->push($b);
+});
 $dicts->addDict('root', $rootDict);
 
 // Main, default dictionary
@@ -441,37 +447,6 @@ $rootDict->addWord(':', function ($stack, $buffer, $word) use ($rootDict) {
     });
 });
 $dicts->addDict('main', $mainDict);
-
-$sqlDict->addWord(':', function ($stack, $buffer, $word) use ($sqlDict) {
-    $wordsToRun = [];
-    while (($w = $buffer->next()) !== ';') {
-        $wordsToRun[] = $w;
-    }
-
-    $name = $wordsToRun[0];
-    unset($wordsToRun[0]);
-
-    $sqlDict->addWord($name, function ($stack, $buffer, $_word) use ($sqlDict, $wordsToRun) {
-        $b = new StringBuffer(implode(' ', $wordsToRun));
-        while ($word = $buffer->next()) {
-        //while (($w = $b->next()) !== ';') {
-        //foreach ($wordsToRun as $word) {
-            // TODO: Add support for string
-            if (ctype_digit($word)) {
-                $stack->push($word);
-            } else {
-                $fn = $sqlDict[$word];
-                $fn($stack, $b, $word);
-            }
-        }
-    });
-});
-$sqlDict->addWord('swap', function ($stack, $buffer, $word) use ($sqlDict) {
-    $a = $stack->pop();
-    $b = $stack->pop();
-    $stack->push($a);
-    $stack->push($b);
-});
 
 /*
 $s = <<<FORTH
