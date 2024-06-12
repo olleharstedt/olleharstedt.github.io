@@ -60,61 +60,6 @@ $sc = <<<SCHEME
 )
 SCHEME;
 
-$json = <<<JAVASCRIPT
-{
-    "title": "Lagerrapport",
-    "table": "articles",
-    "join": {
-        "table": "categories",
-        "on": ["articles.cat_dn", "categories.dn"]
-    },
-    "columns": [
-        {
-            "title": "Art nr",
-            "select": "articles.id",
-        },
-        {
-            "title": "Diff",
-            "css": "right-align",
-            "select": {
-                "op": "-",
-                "args": ["aricles.selling_price", "articles.purchase_price"]
-            },
-            "as": "diff"
-        },
-        {
-            "title": "Diff perc",
-            "css": "right-align",
-            // ROUND((1 - (purchase_price / selling_price)) * 100, 2) AS margin_percent
-            "select": "ROUND((1 - (purchase_price / selling_price)) * 100, 2)",
-            "select": {
-                "op": "round
-                "args": [
-                    {
-                        "op": "*",
-                        "args": [
-                            100,
-                            {
-                                "op": "-",
-                                "args": [
-                                    1,
-                                    {
-                                        "op": "/",
-                                        "args": ["purchase_price", "selling_price"]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    2
-                ]
-            },
-            "as": "diff_perc"
-        }
-    ]
-}
-JAVASCRIPT;
-
 abstract class SexprBase
 {
     /**
