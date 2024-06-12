@@ -18,6 +18,8 @@ FORTH;
 $s = <<<FORTH
 : set-sql only sql ;
 : end-sql only main ;
+: set-php only php ;
+: end-php only main ;
 : compliment 1 swap - ;
 : % 100 swap * 2 round ;
 
@@ -51,22 +53,37 @@ columns @ column @ push
 report @ columns @ set columns
 unset columns
 unset column
+
+var rows
+run-query rows !
+report @ rows @ set rows
+
+var totals
+new stack totals !
+
+var total
+new table total !
+total @ "diff" set for
+total @ set-php
+    rows @ sum diff 
+    count rows
+    /
+end-php set result
+totals @ total @ push
+
+new table total !
+total @ "diff_perc" set for
+total @ set-php
+    rows @ sum diff_perc
+    count rows
+    /
+end-php set result
+
+totals @ total @ push
+report @ totals @ set totals
+unset totals
+unset total
 FORTH;
-
-
-/*
-var a
-100 const b
-"foo" a !
-a @ .
-"bar" a !
-a @ .
-b .
-var t
-new table t !
-t @ 10 set foo
-t @ "moo" set bar
-*/
 
 class StringBuffer
 {
@@ -90,6 +107,11 @@ class StringBuffer
     {
         if ($this->buffer[$this->pos] === '"') {
             $this->inside_quote = 1 - $this->inside_quote;
+        }
+        if ($this->buffer[$this->pos] === '(' && $this->inside_quote === 0) {
+            $nextQuote = strpos($this->buffer, ')', $this->pos + 1);
+            $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
+            $this->pos = $nextQuote + 2;
         }
         if ($this->inside_quote === 1) {
             $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
@@ -133,11 +155,11 @@ function getStackFromBuffer(StringBuffer $buffer, Dicts $dicts): SplStack
  *
  * @return string
  */
-function getSelectFromColumns(Array_ $cols)
+function getSelectFromColumns(SplStack $cols)
 {
     $sql = '';
     foreach ($cols as $col) {
-        $sql .= trim($col->data['select:'], '"') . ', ';
+        $sql .= trim($col['select'], '"') . ', ';
     }
     return trim(trim($sql), ',');
 }
@@ -202,6 +224,7 @@ class Array_ extends ArrayObject
 $mem = new ArrayObject();
 $dicts = new Dicts();
 
+// SQL dictionary
 $sqlDict = new Dict();
 $sqlDict->addWord('/', function($stack, $buffer, $word) {
     $b = $stack->pop();
@@ -225,14 +248,54 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
 });
 $dicts->addDict('sql', $sqlDict);
 
+// PHP dictionary
+$phpDict = new Dict();
+$phpDict->addWord('count', function ($stack, $buffer, $word) use ($mem) {
+    $varName = $buffer->next();
+    $var = $mem[$varName];
+    $stack->push(count($var));
+});
+// TODO: Hard-coded variable?
+$phpDict->addWord('rows', function ($stack, $buffer, $word) use ($mem) {
+    $stack->push($word);
+});
+$phpDict->addWord('sum', function ($stack, $buffer, $word) use ($mem) {
+    $fieldName = $buffer->next();
+    $data = $stack->pop();
+    $sum = 0;
+    foreach ($data as $row) {
+        $sum += $row[$fieldName];
+    }
+    $stack->push($sum);
+});
+$phpDict->addWord('/', function($stack, $buffer, $word) {
+    $a = (float) $stack->pop();
+    $b = (float) $stack->pop();
+    $stack->push($b / $a);
+});
+$dicts->addDict('php', $phpDict);
+
+// Root words, available from all dictionaries
 $rootDict = new Dict();
 $rootDict->addWord('only', function ($stack, $buffer, $word) {
     global $dicts;
     $dictname = $buffer->next();
     $dicts->setCurrent($dictname);
 });
+$rootDict->addWord('@', function($stack, $buffer, $word) use ($mem) {
+    $varname = $stack->pop();
+    $stack->push($mem[$varname]);
+});
+$rootDict->addWord('.', function ($stack, $buffer, $word) {
+    $a = $stack->pop();
+    echo $a;
+});
+$rootDict->addWord('drop', function ($stack, $buffer, $word) {
+    $stack->pop();
+});
 $dicts->addDict('root', $rootDict);
 
+// Main, default dictionary
 $mainDict = new Dict();
 $mainDict->addWord('swap', function ($stack, $buffer, $word) {
     $a = $stack->pop();
@@ -246,39 +309,35 @@ $mainDict->addWord('dup', function ($stack, $buffer, $word) {
     $stack->push(clone $a);
 });
 
-$mainDict->addWord('.', function ($stack, $buffer, $word) {
-    $a = $stack->pop();
-    echo $a;
-});
-
 $mainDict->addWord('+', function ($stack, $buffer, $word) {
     $a = $stack->pop();
     $b = $stack->pop();
     $stack->push($a + $b);
 });
 
-$mainDict->addWord('run-query', function($stack, $buffer, $word) {
-    $report = $stack->top();
-    $select = getSelectFromColumns($report->data['columns']);
-    $table = $report->data['table:'];
+$mainDict->addWord('run-query', function($stack, $buffer, $word) use ($mem) {
+    $report = $mem['report'];
+    //var_dump($report);die;
+    $select = getSelectFromColumns($report['columns']);
+    $table = $report['table'];
+    $joins = $report['joins'];
     $sql  = "SELECT $select FROM $table";
+    // todo: run query here
     $data = [
-        'rows' => [
-            [
-                'id' => 1,
-                'diff' => 2,
-                'diff_perc' => 11
-            ],
-            [
-                'id' => 2,
-                'diff' => 4,
-                'diff_perc' => 12
-            ],
-            [
-                'id' => 3,
-                'diff' => 6,
-                'diff_perc' => 13
-            ]
+        [
+            'id' => 1,
+            'diff' => 2,
+            'diff_perc' => 11
+        ],
+        [
+            'id' => 2,
+            'diff' => 4,
+            'diff_perc' => 12
+        ],
+        [
+            'id' => 3,
+            'diff' => 6,
+            'diff_perc' => 13
         ]
     ];
     $stack->push($data);
@@ -287,10 +346,6 @@ $mainDict->addWord('!', function($stack, $buffer, $word) use ($mem) {
     $name = $stack->pop();
     $value = $stack->pop();
     $mem[$name] = $value;
-});
-$mainDict->addWord('@', function($stack, $buffer, $word) use ($mem) {
-    $varname = $stack->pop();
-    $stack->push($mem[$varname]);
 });
 $mainDict->addWord('var', function($stack, $buffer, $word) use ($mem, $mainDict) {
     $varName = $buffer->next();
@@ -371,12 +426,6 @@ $rootDict->addWord(':', function ($stack, $buffer, $word) use ($rootDict) {
 });
 $dicts->addDict('main', $mainDict);
 
-$phpDict = new Dict();
-$phpDict->addWord('count', function($stack, $buffer, $word) {
-    $next = $buffer->next();
-    // todo
-});
-
 $sqlDict->addWord(':', function ($stack, $buffer, $word) use ($sqlDict) {
     $wordsToRun = [];
     while (($w = $buffer->next()) !== ';') {
@@ -418,5 +467,5 @@ FORTH;
 $stack = getStackFromBuffer(new StringBuffer($s), $dicts);
 //echo $stack->pop();
 //echo "\n";
-print_r($mem);
-//print_r($mem['report']['joins'][0]['table']);
+//print_r($mem['totals']);
+print_r($mem['report']);
