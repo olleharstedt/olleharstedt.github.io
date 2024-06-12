@@ -16,6 +16,7 @@ FORTH;
 // "asd" a push
 
 $s = <<<FORTH
+( Pre-defined words )
 : set-sql only sql ;
 : end-sql only main ;
 : set-php only php ;
@@ -23,21 +24,33 @@ $s = <<<FORTH
 : compliment 1 swap - ;
 : % 100 swap * 2 round ;
 
-var report new table report !
+( Create new variable called report )
+var report
+( Save a new table data structure to report variable )
+new table report !
+( Report title )
 report @ "Lagerrapport" set title
+( Main report SQL table )
 report @ "articles" set table
-var joins new stack joins !
-var join new table join !
+
+( New variable for a list of SQL joins )
+var joins
+new list joins !
+var join
+new table join !
 join @ "categories" set table
 join @ "articles.cat_id = categories.id" set on
+( Push join to list of joins )
 joins @ join @ push
 report @ joins @ set joins
 unset joins
 unset join
 
-var columns new stack columns !
+var columns
+new list columns !
 
-var column new table column !
+var column
+new table column !
 column @ "Artnr" set title
 column @ "article_id" set select
 columns @ column @ push
@@ -59,7 +72,7 @@ run-query rows !
 report @ rows @ set rows
 
 var totals
-new stack totals !
+new list totals !
 
 var total
 new table total !
@@ -109,9 +122,10 @@ class StringBuffer
             $this->inside_quote = 1 - $this->inside_quote;
         }
         if ($this->buffer[$this->pos] === '(' && $this->inside_quote === 0) {
-            $nextQuote = strpos($this->buffer, ')', $this->pos + 1);
-            $result = substr($this->buffer, $this->pos, $nextQuote - $this->pos + 1);
-            $this->pos = $nextQuote + 2;
+            $endComment = strpos($this->buffer, ')', $this->pos + 1);
+            // TODO: What if result is a new comment?
+            $result = substr($this->buffer, $this->pos, $endComment - $this->pos + 1);
+            $this->pos = $endComment + 2;
         }
         if ($this->inside_quote === 1) {
             $nextQuote = strpos($this->buffer, '"', $this->pos + 1);
@@ -375,6 +389,8 @@ $mainDict->addWord('new', function($stack, $buffer, $word) {
         case 'array':
             $stack->push(new ArrayObject());
             break;
+        case 'list':
+            // Fallthru
         case 'stack':
             $stack->push(new SplStack());
             break;
