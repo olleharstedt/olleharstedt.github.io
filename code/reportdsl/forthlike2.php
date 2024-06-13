@@ -46,9 +46,11 @@ report @ joins @ set joins
 unset joins
 unset join
 
+( Create a new list for column definitions )
 var columns
 new list columns !
 
+( Each column is a table with data )
 var column
 new table column !
 column @ "Artnr" set title

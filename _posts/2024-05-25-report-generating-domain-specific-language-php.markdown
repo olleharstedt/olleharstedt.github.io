@@ -45,6 +45,17 @@ Use-case: An article report
 
 ## Trying out the DSL design
 
+Originally, fetching data from a database, calculating some totals and formatting the result, would include logic in three different formats - PHP, SQL, and HTML [^1]. Something like:
+
+```php
+$sql = "SELECT `article_id`, round((100 * (1 - (`purchase_price` / `selling_price`))), 2) AS margin FROM `articles`";
+$data = execute_query($sql);
+$totals = calculate_totals($data);    // Loops data
+echo generate_report($data, $totals); // HTML template
+```
+
+A report is a pretty isolated and well-defined domain, so 
+
 An outline of how the different alternatives would look like:
 
 **S-expression**
@@ -80,23 +91,53 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 Forth is a type of post-fix notation, like `1 2 +` equals `3`, but you can make the words (functions, in other languages) eat the next word from the stream, too.
 
+In Forth, comments are inside parenthesis.
+
+Need to know about `!` and `@`.
+
 ```text
-report:
-    title: "Stock report"
-    table: "articles"
-    columns:
-        column:
-            title: "Article number"
-            select: "article_id"
-        end
-        column:
-            title: "Margin of profit"
-            css: "right-align"
-            select: ( 100 1 "purchase_price" "selling_price" / - * 2 round )
-            as "margin"
-        end
-    end
-end
+( Create new variable called report )
+var report
+( Save a new table data structure to report variable )
+new table report !
+( Report title )
+report @ "Lagerrapport" set title
+( Main report SQL table )
+report @ "articles" set table
+
+( Create a new list for column definitions )
+var columns
+new list columns !
+
+( Each column is a table with data )
+var column
+new table column !
+column @ "Artnr" set title
+column @ "article_id" set select
+columns @ column @ push
+
+new table column !
+column @ "Diff" set title
+column @ "diff" set as
+column @ set-sql 
+    100 1 "purchase_price" "selling_price" / - * 2 round
+end-sql set select
+columns @ column @ push
+report @ columns @ set columns
+
+var totals
+new list totals !
+
+var total
+new table total !
+total @ "diff" set for
+total @ set-php
+    rows @ sum diff 
+    count rows
+    /
+end-php set result
+totals @ total @ push
+report @ totals @ set totals
 ```
 
 **JSON**
@@ -111,7 +152,7 @@ end
             "select": "article_id"
         },
         {
-            "title": "Article number",
+            "title": "Margin",
             "select": {
                 "op": "round",
                 "args": [
@@ -444,3 +485,7 @@ That would be really cool, but I lack the resources to do a proper report genera
 There are lots of DSLs out there, but I found nothing for PHP and report generation.
 
 There is one report DSL for Python that is not actively maintained anymore: https://github.com/kjosib/glowing-chainsaw
+
+---
+
+[^1]: Note that an ORM will not work here - for report data you need custom written SQL, anything else would be too slow.
