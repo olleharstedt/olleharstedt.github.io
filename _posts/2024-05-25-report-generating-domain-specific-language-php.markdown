@@ -1,38 +1,37 @@
 ---
 layout: post
 title:  Report generating domain-specific language
+subtitle: Forth-like and S-expression with PHP
 date:   2024-05-25
-categories: programming php
+categories: programming php dsl
 ---
 
 Why can't the customers write their own damn reports? Or the sales people. Or the technical support. They already know some basic SQL, right? How hard could it be to create a safe subset of SQL, that also includes some HTML formatting capability? But the parser would have to be dirt simple. I don't want to end up with a big pile of code only I can maintain. What kind of language would work best? S-expressions? Forth? JSON? It would have to be able to deal with complex calculations between database columns, joins, perhaps some summarizing calculations after the fetch. And CSS information, too.
 
 ## Intro
 
-A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) is a pretty neat **design pattern**, written extensively about by Martin Fowler in his [book](https://www.martinfowler.com/dslCatalog/).
+A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL) is a pretty neat **design pattern**, written extensively about by Martin Fowler in his [book](https://www.martinfowler.com/dslCatalog/).
 
-Pros and cons.
+For my use-case, writing a text-based report generator, there are some pros and cons.
 
-Pros:
+**Pros**:
 
 * You can add new reports without waiting for a new software release
 * Semi-technical people can make changes to the DSL scripts
 * Each customer can have their own custom-made reports
-* You gather all related data and logic in one place instead of spreading it out
+* You gather all related data and logic in one place instead of spreading it out between SQL, PHP, CSS, JavaScript
 
-Cons:
+**Cons**:
 
 * [Inner-platform effect](https://en.wikipedia.org/wiki/Inner-platform_effect)
 * Might only be understood by me, in the end
-* The flexibility the DSL allows might not be needed in the end (e.g. all customers actually need the same reports)
+* The flexibility that the DSL allows might not be needed in the end (e.g. all customers actually need the same reports)
 
 The formats I considered simple enough to try out:
 
 * [S-expressions](https://en.wikipedia.org/wiki/S-expression), because it can be lexed and parsed in a handful of lines
 * [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language))-like, for the same reason
 * JSON, because it's common in web and fairly easy to read (with some syntax highlight)
-
-I found no good lexer/parser libs to PHP that are actively maintained, sadly.
 
 The DSL should be able to seamlessly blend:
 
@@ -43,7 +42,6 @@ Use-case: An article report
 
 * Includes calculation of margin of profit for each article
 * Includes totals
-* Includes extra options added by JavaScript for this report only
 
 ## Trying out the DSL design
 
