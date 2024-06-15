@@ -109,12 +109,14 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 Example to add two numbers and show the result:
 
-```
-1   \ Put number 1 on top of stack
-2   \ Put number 2 on top of stack, pushing number 1 down
-+   \ This is a word! It adds the two top stack elements and pushes the result on the stack
-.   \ The dot-word shows the content of the stack, in this case "3"
-```
+<div class="highlight">
+<pre class="highlight">
+<code><span class="mi">1</span>   <span class="c1">\ Put number 1 on top of stack</span>
+<span class="mi">2</span>   <span class="c1">\ Put number 2 on top of stack, pushing number 1 down</span>
++   <span class="c1">\ This is a word! It adds the two top stack elements and pushes the result on the stack</span>
+.   <span class="c1">\ The dot-word shows the content of the stack, in this case "3"</span></code>
+</pre>
+</div>
 
 This can also be written as:
 
@@ -128,20 +130,24 @@ The word `variable` takes the next word in the input stream, and creates a space
 
 Example:
 
-```text
-variable a   \ Create variable a
-```
+<div class="highlight">
+<pre class="highlight">
+<code><span class="k">variable</span> a   <span class="c1">\ Create variable a</span></code>
+</pre>
+</div>
 
 The words `!` and `@` are used to store and fetch content from variables.
 
 Example:
 
-```text
-variable a   \ Create variable a
-10 a !       \ Push 10 on top of stack, and store it in variable a
-a @          \ Fetch content of variable a and push it on top of stack
-.            \ Show top of stack, in this case "10"
-```
+<div class="highlight">
+<pre class="highlight">
+<code><span class="k">variable</span> a   <span class="c1">\ Create variable a</span>
+<span class="mi">10</span> a <span class="">!</span>       <span class="c1">\ Push 10 on top of stack, and store it in variable a</span>
+a <span class="">@</span>          <span class="c1">\ Fetch content of variable a and push it on top of stack</span>
+.            <span class="c1">\ Show top of stack, in this case "10"</span></code>
+</pre>
+</div>
 
 With this very short introduction, it should be possible to understand a Forth-like report generating DSL:
 

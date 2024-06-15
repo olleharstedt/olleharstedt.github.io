@@ -16,7 +16,7 @@ FORTH;
 // "asd" a push
 
 $s = <<<FORTH
-( Pre-defined words )
+( Pre-defined helper words )
 : set-sql only sql ;
 : end-sql only main ;
 : set-php only php ;
@@ -24,33 +24,25 @@ $s = <<<FORTH
 : compliment 1 swap - ;
 : % 100 swap * 2 round ;
 
-( Create new variable called report )
-var report
-( Save a new table data structure to report variable )
-new table report !
-( Report title )
+var report          \ Create variable report
+new table report !  \ Save table data structure to new variable
 report @ "Lagerrapport" set title
-( Main report SQL table )
 report @ "articles" set table
 
-( New variable for a list of SQL joins )
-var joins
+var joins           \ New variable for SQL joins
 new list joins !
 var join
 new table join !
 join @ "categories" set table
 join @ "articles.cat_id = categories.id" set on
-( Push join to list of joins )
 joins @ join @ push
 report @ joins @ set joins
 unset joins
 unset join
 
-( Create a new list for column definitions )
-var columns
-new list columns !
+var columns         \ New variable for report columns
+new list columns !  \ Create list
 
-( Each column is a table with data )
 var column
 new table column !
 column @ "Artnr" set title
@@ -112,6 +104,8 @@ class StringBuffer
 
     public function __construct(string $s)
     {
+        // Remove comments
+        $s = preg_replace('/\\\.*$/m', '', $s);
         // Normalize string
         $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
         // Two extra spaces for the while-loop to work
