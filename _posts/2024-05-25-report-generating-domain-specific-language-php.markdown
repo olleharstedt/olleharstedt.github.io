@@ -42,6 +42,7 @@ Use-case: An article report
 
 * Includes calculation of margin of profit for each article
 * Includes totals
+* Includes labels for the different columns
 
 ## Trying out the DSL design
 
@@ -96,18 +97,19 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 **Ultra-short introduction to Forth**
 
-* Forth uses as implicit stack.
-* Forth uses _words_ instead of functions
+* Forth uses as implicit **stack**.
+* Forth uses **words** instead of functions
 * Words are space-separated, and can consist of any characters, like `2>` or `+` or `if`
 * Words can consume the content of stack
 * Words can push results on top of the stack
+* Words are collected in **dictionaries**
 * Numbers are put on top of the stack when evaluated
 * Everything that's not a number is executed immediately
 * Comments are inside parenthesis, and line-comments are after backslash
 
 Example to add two numbers and show the result:
 
-```text
+```
 1   \ Put number 1 on top of stack
 2   \ Put number 2 on top of stack, pushing number 1 down
 +   \ This is a word! It adds the two top stack elements and pushes the result on the stack
@@ -116,7 +118,7 @@ Example to add two numbers and show the result:
 
 This can also be written as:
 
-```text
+```
 1 2 + .
 ```
 
@@ -135,7 +137,13 @@ The words `!` and `@` are used to store and fetch content from variables.
 Example:
 
 ```text
+variable a   \ Create variable a
+10 a !       \ Push 10 on top of stack, and store it in variable a
+a @          \ Fetch content of variable a and push it on top of stack
+.            \ Show top of stack, in this case "10"
 ```
+
+With this very short introduction, it should be possible to understand a Forth-like report generating DSL:
 
 ```text
 ( Create new variable called report )
@@ -182,7 +190,7 @@ totals @ total @ push
 report @ totals @ set totals
 ```
 
-**JSON**
+### JSON
 
 ```json
 {
