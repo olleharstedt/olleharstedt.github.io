@@ -140,7 +140,7 @@ class StringBuffer
 /**
  * Main eval loop
  */
-function getStackFromBuffer(StringBuffer $buffer, Dicts $dicts): SplStack
+function eval_buffer(StringBuffer $buffer, Dicts $dicts): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
@@ -451,7 +451,7 @@ $s = <<<FORTH
 "purchase_price" "selling_price" / compliment %
 FORTH;
 */
-$stack = getStackFromBuffer(new StringBuffer($s), $dicts);
+$stack = eval_buffer(new StringBuffer($s), $dicts);
 //echo $stack->pop();
 //echo "\n";
 //print_r($mem['totals']);

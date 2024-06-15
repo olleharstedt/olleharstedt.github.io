@@ -121,7 +121,7 @@ Example to add two numbers and show the result:
 <pre class="highlight">
 <code><span class="mi">1</span>   <span class="c1">\ Put number 1 on top of stack</span>
 <span class="mi">2</span>   <span class="c1">\ Put number 2 on top of stack, pushing number 1 down</span>
-+   <span class="c1">\ This is a word! It adds the two top stack elements and pushes the result on the stack</span>
+<span class="o">+</span>   <span class="c1">\ This is a word! It adds the two top stack elements and pushes the result on the stack</span>
 .   <span class="c1">\ The dot-word shows the content of the stack, in this case "3"</span></code>
 </pre>
 </div>
@@ -151,8 +151,8 @@ Example:
 <div class="highlight">
 <pre class="highlight">
 <code><span class="k">variable</span> a   <span class="c1">\ Create variable a</span>
-<span class="mi">10</span> a <span class="">!</span>       <span class="c1">\ Push 10 on top of stack, and store it in variable a</span>
-a <span class="">@</span>          <span class="c1">\ Fetch content of variable a and push it on top of stack</span>
+<span class="mi">10</span> a <span class="o">!</span>       <span class="c1">\ Push 10 on top of stack, and store it in variable a</span>
+a <span class="o">@</span>          <span class="c1">\ Fetch content of variable a and push it on top of stack</span>
 .            <span class="c1">\ Show top of stack, in this case "10"</span></code>
 </pre>
 </div>
@@ -163,23 +163,23 @@ With this very short introduction, it should be possible to understand a Forth-l
 <pre class="highlight">
 <code><span class="k">var</span> report          <span class="c1">\ Create variable report</span>
 <span class="k">new</span> table report !  <span class="c1">\ Save table data structure to new variable</span>
-report @ "Article report" set title   <span class="c1">\ report.title = "Article report"</span>
-report @ "articles" set table
+report @ <span class="s">"Article report"</span> set title   <span class="c1">\ report.title = "Article report"</span>
+report @ <span class="s">"articles"</span> set table
 
 <span class="k">var</span> columns         <span class="c1">\ New variable for report columns</span>
 <span class="k">new</span> list columns !  <span class="c1">\ Create list</span>
 
 <span class="k">var</span> column          <span class="c1">\ Each column is a table of data</span>
 <span class="k">new</span> table column !
-column @ "Artnr" set title
-column @ "article_id" set select
+column @ <span class="s">"Artnr"</span> set title
+column @ <span class="s">"article_id"</span> set select
 columns @ column @ push     <span class="c1">\ Push column to columns list</span>
 
 <span class="k">new</span> table column !
-column @ "Diff" set title
-column @ "diff" set as
+column @ <span class="s">"Diff"</span> set title
+column @ <span class="s">"diff"</span> set as
 column @ set-sql    <span class="c1">\ Switching to the SQL dictionary</span>
-    <span class="mi">100</span> <span class="mi">1</span> "purchase_price" "selling_price" / - * <span class="mi">2</span> round
+    <span class="mi">100</span> <span class="mi">1</span> <span class="s">"purchase_price"</span> <span class="s">"selling_price"</span> / - * <span class="mi">2</span> round
 end-sql set select  <span class="c1">\ Switching back to main dictionary</span>
 columns @ column @ push
 report @ columns @ set columns      <span class="c1">\ Store all columns in the report table</span>
@@ -193,7 +193,7 @@ report @ rows @ set rows
 
 <span class="k">var</span> total
 <span class="k">new</span> table total !
-total @ "diff" set for
+total @ <span class="s">"diff"</span> set for
 total @ set-php     <span class="c1">\ Switching to the PHP dictionary</span>
     rows @ sum diff 
     count rows
@@ -362,7 +362,9 @@ I'll leave out JSON, since PHP already has a `json_decode` function.
 
 Since S-expressions can be used for both structured data and logic, we can use it to mix SQL snippets in the data, as done to calculate the profit margin of a product:
 
-    (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
+```scheme
+(select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
+```
 
 To build a SQL string from an S-expression, it's a basic recursive evaluation:
 
@@ -414,23 +416,23 @@ public function evalSelect($top): string
 }
 ```
 
-The Forth-like DSL is a bit different, since each word is response for how to progress the string stream.
+The Forth-like DSL is a bit different, since each word has access to the string stream.
 
-The eval loop assumes a dictionary with word definitions, and a string buffer to loop on.
+The eval loop assumes a chain of dictionaries, and a string buffer to loop on. The resulting stack is returned.
 
 ```php
-function getStackFromBuffer(StringBuffer $buffer, Dict $dict): SplStack
+function eval_buffer(StringBuffer $buffer, Dicts $dict): SplStack
 {
     $stack  = new SplStack();
     while ($word = $buffer->next()) {
+        $fn = $dicts->getWord($word);
         if (trim($word, '"') !== $word) {
             $stack->push($word);
             // Digit
         } elseif (ctype_digit($word)) {
             $stack->push($word);
             // Execute dict word
-        } elseif ($dict[$word]) {
-            $fn = $dict[$word];
+        } elseif ($fn) {
             $fn($stack, $buffer, $word);
         } else {
             throw new RuntimeException('Word is not a string, not a number, and not in dictionary: ' . $word);
