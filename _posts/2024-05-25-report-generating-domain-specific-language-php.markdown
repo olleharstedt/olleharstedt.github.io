@@ -100,10 +100,11 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 * Forth uses as implicit **stack**.
 * Forth uses **words** instead of functions
 * Words are space-separated, and can consist of any characters, like `2>` or `+` or `if`
-* Words can consume the content of stack
+* Words can consume the content of the stack
 * Words can push results on top of the stack
 * Words are collected in **dictionaries**
-* Numbers are put on top of the stack when evaluated
+* The currently active dictionary can be swapped
+* **Numbers** are put on top of the stack when evaluated
 * Everything that's not a number is executed immediately
 * Comments are inside parenthesis, and line-comments are after backslash
 
@@ -151,41 +152,37 @@ a <span class="">@</span>          <span class="c1">\ Fetch content of variable 
 
 With this very short introduction, it should be possible to understand a Forth-like report generating DSL:
 
-```text
-( Create new variable called report )
-var report
-( Save a new table data structure to report variable )
-new table report !
-( Report title )
+<div class="highlight">
+<pre class="highlight">
+<code>
+<span class="k">var</span> report          <span class="c1">\ Create variable report</span>
+<span class="k">new</span> table report !  <span class="c1">\ Save table data structure to new variable</span>
 report @ "Lagerrapport" set title
-( Main report SQL table )
 report @ "articles" set table
 
-( Create a new list for column definitions )
-var columns
-new list columns !
+<span class="k">var</span> columns         <span class="c1">\ New variable for report columns</span>
+<span class="k">new</span> list columns !  <span class="c1">\ Create list</span>
 
-( Each column is a table with data )
-var column
-new table column !
+<span class="k">var</span> column          <span class="c1">\ Each column is a table of data</span>
+<span class="k">new</span> table column !
 column @ "Artnr" set title
 column @ "article_id" set select
-columns @ column @ push
+columns @ column @ push     <span class="c1">\ Push column to columns list</span>
 
-new table column !
+<span class="k">new</span> table column !
 column @ "Diff" set title
 column @ "diff" set as
-column @ set-sql 
-    100 1 "purchase_price" "selling_price" / - * 2 round
+column @ set-sql    <span class="c1">\ Switching to the SQL dictionary</span>
+    <span class="mi">100</span> <span class="mi">1</span> "purchase_price" "selling_price" / - * <span class="mi">2</span> round
 end-sql set select
 columns @ column @ push
 report @ columns @ set columns
 
-var totals
-new list totals !
+<span class="k">var</span> totals
+<span class="k">new</span> list totals !
 
-var total
-new table total !
+<span class="k">var</span> total
+<span class="k">new</span> table total !
 total @ "diff" set for
 total @ set-php
     rows @ sum diff 
@@ -194,7 +191,9 @@ total @ set-php
 end-php set result
 totals @ total @ push
 report @ totals @ set totals
-```
+</code>
+</pre>
+</div>
 
 ### JSON
 
