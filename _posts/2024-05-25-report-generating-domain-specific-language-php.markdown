@@ -45,7 +45,7 @@ Use-case: An article report
 
 ## Trying out the DSL design
 
-Originally, fetching data from a database, calculating some totals and formatting the result, would include logic in three different formats - PHP, SQL, and HTML [^1]. Something like:
+Originally, fetching data from a database, calculating some totals and formatting the result, would include logic in three different languages - PHP, SQL, and HTML [^1]. Something like:
 
 ```php
 $sql = <<<SQL
