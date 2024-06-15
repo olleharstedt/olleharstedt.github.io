@@ -67,7 +67,13 @@ An outline of how the different alternatives would look like:
 
 ### S-expression
 
-Looks like a primitive version of Lisp, or Lisp without the macros.
+S-expressions is a way to express list-based tree-structures, both for logic and data, in a pre-fix manner. Most basic example:
+
+```scheme
+(+ 1 2)
+```
+
+For the DSL, we'll define our own keywords. Most of it is key-value pairs.
 
 ```scheme
 (report
@@ -174,9 +180,13 @@ column @ "Diff" set title
 column @ "diff" set as
 column @ set-sql    <span class="c1">\ Switching to the SQL dictionary</span>
     <span class="mi">100</span> <span class="mi">1</span> "purchase_price" "selling_price" / - * <span class="mi">2</span> round
-end-sql set select
+end-sql set select  <span class="c1">\ Switching back to main dictionary</span>
 columns @ column @ push
-report @ columns @ set columns
+report @ columns @ set columns      <span class="c1">\ Store all columns in the report table</span>
+
+<span class="k">var</span> rows
+run-query rows !    <span class="c1">\ "run-query" will construct the query and run it, populating the rows variable</span>
+report @ rows @ set rows
 
 <span class="k">var</span> totals
 <span class="k">new</span> list totals !
@@ -184,7 +194,7 @@ report @ columns @ set columns
 <span class="k">var</span> total
 <span class="k">new</span> table total !
 total @ "diff" set for
-total @ set-php
+total @ set-php     <span class="c1">\ Switching to the PHP dictionary</span>
     rows @ sum diff 
     count rows
     /
@@ -246,12 +256,6 @@ You can squeeze the SQL expression a little more, for example:
 ```
 
 The JSON format works excellent for structured data, as it was designed to do, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway, or give up on any security or sandboxing).
-
-The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person to follow and reason about.
-
-_If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
-
-In all these cases, the lexer/parser code is kinda trivial.
 
 ## Parse S-expression in PHP
 
@@ -360,7 +364,7 @@ Since S-expressions can be used for both structured data and logic, we can use i
 
     (select (round (* 100 (- 1 (/ purchase_price selling_price))) 2))
 
-To build a SQL from an S-expression, it's a basic recursive evaluation:
+To build a SQL string from an S-expression, it's a basic recursive evaluation:
 
 ```php
 /**
@@ -555,6 +559,14 @@ That would be really cool, but I lack the resources to do a proper report genera
 There are lots of DSLs out there, but I found nothing for PHP and report generation.
 
 There is one report DSL for Python that is not actively maintained anymore: https://github.com/kjosib/glowing-chainsaw
+
+## Notes
+
+The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person to follow and reason about.
+
+_If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
+
+In all these cases, the lexer/parser code is kinda trivial.
 
 ---
 
