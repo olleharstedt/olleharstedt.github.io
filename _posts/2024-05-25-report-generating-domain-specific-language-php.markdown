@@ -48,17 +48,22 @@ Use-case: An article report
 Originally, fetching data from a database, calculating some totals and formatting the result, would include logic in three different formats - PHP, SQL, and HTML [^1]. Something like:
 
 ```php
-$sql = "SELECT `article_id`, round((100 * (1 - (`purchase_price` / `selling_price`))), 2) AS margin FROM `articles`";
+$sql = <<<SQL
+SELECT
+    `article_id`,
+    round((100 * (1 - (`purchase_price` / `selling_price`))), 2) AS margin
+FROM `articles`";
+SQL;
 $data = execute_query($sql);
-$totals = calculate_totals($data);    // Loops data
-echo generate_report($data, $totals); // HTML template
+$totals = calculate_totals($data);    // Loops data with PHP
+echo generate_report($data, $totals); // HTML template including labels and styling
 ```
 
 A report is a pretty isolated and well-defined domain, so 
 
 An outline of how the different alternatives would look like:
 
-**S-expression**
+### S-expression
 
 Looks like a primitive version of Lisp, or Lisp without the macros.
 
@@ -87,13 +92,50 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 )
 ```
 
-**Forth-like**
+### Forth-like
 
-Forth is a type of post-fix notation, like `1 2 +` equals `3`, but you can make the words (functions, in other languages) eat the next word from the stream, too.
+**Ultra-short introduction to Forth**
 
-In Forth, comments are inside parenthesis.
+* Forth uses as implicit stack.
+* Forth uses _words_ instead of functions
+* Words are space-separated, and can consist of any characters, like `2>` or `+` or `if`
+* Words can consume the content of stack
+* Words can push results on top of the stack
+* Numbers are put on top of the stack when evaluated
+* Everything that's not a number is executed immediately
+* Comments are inside parenthesis, and line-comments are after backslash
 
-Need to know about `!` and `@`.
+Example to add two numbers and show the result:
+
+```text
+1   \ Put number 1 on top of stack
+2   \ Put number 2 on top of stack, pushing number 1 down
++   \ This is a word! It adds the two top stack elements and pushes the result on the stack
+.   \ The dot-word shows the content of the stack, in this case "3"
+```
+
+This can also be written as:
+
+```text
+1 2 + .
+```
+
+**Variables in Forth**
+
+The word `variable` takes the next word in the input stream, and creates a space in memory for it.
+
+Example:
+
+```text
+variable a   \ Create variable a
+```
+
+The words `!` and `@` are used to store and fetch content from variables.
+
+Example:
+
+```text
+```
 
 ```text
 ( Create new variable called report )
