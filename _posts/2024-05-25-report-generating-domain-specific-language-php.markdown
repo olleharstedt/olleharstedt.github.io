@@ -20,6 +20,7 @@ For my use-case, writing a text-based report generator, there are some pros and 
 * Semi-technical people can make changes to the DSL scripts
 * Each customer can have their own custom-made reports
 * You gather all related data and logic in one place instead of spreading it out between SQL, PHP, CSS, JavaScript
+* Sandboxed and safe
 
 **Cons**:
 
@@ -70,7 +71,7 @@ Looks like a primitive version of Lisp, or Lisp without the macros.
 
 ```scheme
 (report
-    (title "Stock report")
+    (title "Article report")
     (table "articles")
     (columns
         (column
@@ -150,14 +151,13 @@ a <span class="">@</span>          <span class="c1">\ Fetch content of variable 
 </pre>
 </div>
 
-With this very short introduction, it should be possible to understand a Forth-like report generating DSL:
+With this very short introduction, it should be possible to understand a Forth-like report generating DSL (same use-case as the S-expression above):
 
 <div class="highlight">
 <pre class="highlight">
-<code>
-<span class="k">var</span> report          <span class="c1">\ Create variable report</span>
+<code><span class="k">var</span> report          <span class="c1">\ Create variable report</span>
 <span class="k">new</span> table report !  <span class="c1">\ Save table data structure to new variable</span>
-report @ "Lagerrapport" set title
+report @ "Article report" set title   <span class="c1">\ report.title = "Article report"</span>
 report @ "articles" set table
 
 <span class="k">var</span> columns         <span class="c1">\ New variable for report columns</span>
@@ -195,11 +195,13 @@ report @ totals @ set totals
 </pre>
 </div>
 
+The translation from SQL to Forth-like post-fix notation looks quite awkward, but it can be improved with some custom words, see below.
+
 ### JSON
 
 ```json
 {
-    "title": "Lagerrapport",
+    "title": "Article report",
     "table": "articles",
     "columns": [
         {
@@ -235,7 +237,15 @@ report @ totals @ set totals
 }
 ```
 
-You easily see that the JSON format works excellent for structured data, as it was designed to do, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway).
+You can squeeze the SQL expression a little more, for example:
+
+```json
+"select": [
+    "round", [[ "*", [100, ["-", [1, ["/", ["purchase_price", "selling_price"]]]]]], 2]
+]
+```
+
+The JSON format works excellent for structured data, as it was designed to do, but does not scale well for logical expressions (unless you want to write expressions as a string, in which case you need another lexer/parser anyway, or give up on any security or sandboxing).
 
 The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person to follow and reason about.
 
@@ -309,12 +319,17 @@ class StringBuffer
 
     public function __construct(string $s)
     {
+        // Remove comments
+        $s = preg_replace('/\\\.*$/m', '', $s);
         // Normalize string
         $s = trim((string) preg_replace('/[\t\n\r\s]+/', ' ', $s));
         // Two extra spaces for the while-loop to work
         $this->buffer = $s. '  ';
     }
 
+    /**
+     * Get the next word in the buffer.
+     */
     public function next()
     {
         if ($this->buffer[$this->pos] === '"') {

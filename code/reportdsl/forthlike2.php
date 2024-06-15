@@ -26,7 +26,7 @@ $s = <<<FORTH
 
 var report          \ Create variable report
 new table report !  \ Save table data structure to new variable
-report @ "Lagerrapport" set title
+report @ "Article report" set title
 report @ "articles" set table
 
 var joins           \ New variable for SQL joins
