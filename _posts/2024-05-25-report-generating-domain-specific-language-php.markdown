@@ -102,7 +102,7 @@ For the DSL, we'll define our own keywords. Most of it is key-value pairs.
 
 **Ultra-short introduction to Forth**
 
-* Forth uses as implicit **stack**.
+* Forth uses an implicit **stack**.
 * Forth uses **words** instead of functions
 * Words are space-separated, and can consist of any characters, like `2>` or `+` or `if`
 * Words can consume the content of the stack
