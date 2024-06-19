@@ -498,7 +498,7 @@ echo $stack->pop();
 
 The main problem here being that `100 1 "purchase_price" "selling_price" / - * 2 round` is utterly unreadable for anyone. Translating from SQL to this formatting is also pretty challenging, regardless if it's easy to read or not.
 
-You can use the same technique to build up HTML, calculate totals fetched from database, and other things.
+You can use the same technique to build up HTML, calculate totals fetched from database, and so on.
 
 The full demo code for S-expression DSL can be found [here](https://github.com/olleharstedt/olleharstedt.github.io/blob/master/code/reportdsl/sexpr.php), and the Forth-like can be found [here](https://github.com/olleharstedt/olleharstedt.github.io/blob/master/code/reportdsl/forthlike2.php).
 
