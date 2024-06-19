@@ -511,6 +511,8 @@ The full demo code for S-expression DSL can be found [here](https://github.com/o
 
 That would be really cool, but I lack the resources to do a proper report generation interface, and the mega-enterprise third-party softwares available does not hook into our framework very well.
 
+Some more discussion can be found in [this](https://old.reddit.com/r/ProgrammingLanguages/comments/1cwd5vm/creating_a_report_generating_dsl_understandable/) Reddit thread.
+
 ## Previous work
 
 There are lots of DSLs out there, but I found nothing for PHP and report generation.
