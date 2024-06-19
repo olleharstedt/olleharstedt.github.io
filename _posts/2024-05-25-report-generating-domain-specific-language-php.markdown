@@ -155,6 +155,8 @@ a <span class="o">@</span>          <span class="c1">\ Fetch content of variable
 </pre>
 </div>
 
+All variables are saved in a PHP associative array `$mem`.
+
 With this very short introduction, it should be possible to understand a Forth-like report generating DSL (same use-case as the S-expression above):
 
 <div class="highlight">
