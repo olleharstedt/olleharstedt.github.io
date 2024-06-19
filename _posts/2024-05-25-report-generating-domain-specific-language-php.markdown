@@ -61,9 +61,7 @@ $totals = calculate_totals($data);    // Loops data with PHP
 echo generate_report($data, $totals); // HTML template including labels and styling
 ```
 
-A report is a pretty isolated and well-defined domain, so 
-
-An outline of how the different alternatives would look like:
+This logic will have to be rewritten for each new report, and each new export type.
 
 ### S-expression
 
