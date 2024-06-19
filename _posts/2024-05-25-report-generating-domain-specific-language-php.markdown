@@ -416,7 +416,7 @@ public function evalSelect($top): string
 }
 ```
 
-The Forth-like DSL is a bit different, since each word has access to the string stream.
+The Forth-like DSL is quite a different beast.
 
 The eval loop assumes a chain of dictionaries, and a string buffer to loop on. The resulting stack is returned.
 
