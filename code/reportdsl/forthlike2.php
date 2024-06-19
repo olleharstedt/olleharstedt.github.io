@@ -1,20 +1,5 @@
 <?php
 
-/*
-$s = <<<FORTH
-: new-report var report new table report ! ;
-: set-title report @ swap set title ;
-: set-table report @ swap set table ;
-new-report
-"Lagerrapport" set-title
-"articles" set-table
-FORTH;
-*/
-
-// var a 
-// new array a !
-// "asd" a push
-
 $s = <<<FORTH
 ( Pre-defined helper words )
 : set-sql only sql ;
@@ -443,16 +428,5 @@ $rootDict->addWord(':', function ($stack, $buffer, $word) use ($rootDict) {
     });
 });
 $dicts->addDict('main', $mainDict);
-
-/*
-$s = <<<FORTH
-: compliment 1 swap - ;
-: % 100 swap * 2 round ;
-"purchase_price" "selling_price" / compliment %
-FORTH;
-*/
 $stack = eval_buffer(new StringBuffer($s), $dicts);
-//echo $stack->pop();
-//echo "\n";
-//print_r($mem['totals']);
 print_r($mem['report']);

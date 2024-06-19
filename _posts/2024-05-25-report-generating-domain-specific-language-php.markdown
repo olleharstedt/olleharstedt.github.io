@@ -459,7 +459,7 @@ $mathDict->addWord('.', function ($stack, $buffer, $word) use ($mainDict) {
     $a = $stack->pop();
     echo $a;
 });
-$stack = getStackFromBuffer(new StringBuffer('1 2 + .'), [$mathDict]);
+$stack = eval_buffer(new StringBuffer('1 2 + .'), [$mathDict]);
 ```
 
 In the case of a SQL SELECT statement, we need words to build a string instead.
@@ -491,65 +491,22 @@ $sqlDict->addWord('round', function($stack, $buffer, $word) {
 Using this, you get
 
 ```php
-$stack = getStackFromBuffer(new StringBuffer('100 1 "purchase_price" "selling_price" / - * 2 round'), $sqlDict);
+$stack = eval_buffer(new StringBuffer('100 1 "purchase_price" "selling_price" / - * 2 round'), $sqlDict);
 // Shows "round((100 * (1 - ("purchase_price" / "selling_price"))), 2)"
 echo $stack->pop();
 ```
 
 The main problem here being that `100 1 "purchase_price" "selling_price" / - * 2 round` is utterly unreadable for anyone. Translating from SQL to this formatting is also pretty challenging, regardless if it's easy to read or not.
 
-## Summarizing totals using the DSL
+You can use the same technique to build up HTML, calculate totals fetched from database, and other things.
 
-Calculating totals is different than the SQL evaluation, because the end-result is a calculation, not a string.
-
-**PHP**
-
-```php
-public function evalTotal(SplStack $sexp, array $data): float
-{
-    $op = $sexp->bottom();
-    switch ($op) {
-        case '/':
-            $a = $sexp->pop();
-            $b = $sexp->pop();
-            return $this->evalTotal($b, $data) / $this->evalTotal($a, $data);
-            break;
-        case 'sum':
-            $variableName = $sexp->pop();
-            $sum = 0;
-            foreach ($data as $row) {
-                $sum += $row[$variableName];
-            }
-            return $sum;
-            break;
-        case 'count':
-            $typeOfCount = $sexp->pop();
-            if ($typeOfCount === 'rows') {
-                return count($data);
-            } else {
-                throw new RuntimeException('Unsupported count type: ' . $typeOfCount);
-            }
-            break;
-        default:
-            throw new RuntimeException('Unknown function: ' . $op);
-    }
-}
-```
-
-**Forth-like**
-
-
-
-
-## Constructing an HTML table form the DSL
-
-todo
+The full demo code for S-expression DSL can be found [here](https://github.com/olleharstedt/olleharstedt.github.io/blob/master/code/reportdsl/sexpr.php), and the Forth-like can be found [here](https://github.com/olleharstedt/olleharstedt.github.io/blob/master/code/reportdsl/forthlike2.php).
 
 ## Questions
 
 > Why not just use a syntax that they're familiar with?
 
-1. For office political reasons, I want the lexer/parser to be simple
+1. For office political reasons, I want the lexer/parser to be simple; intuitive syntax often requires complicated lexer and parser systems
 2. The DSL might include SQL, PHP and JavaScript, in which case the syntax has to be different anyway
 
 > From my experience of working with non-programmers, they are usually better off (and happier) using a GUI.
@@ -560,15 +517,7 @@ That would be really cool, but I lack the resources to do a proper report genera
 
 There are lots of DSLs out there, but I found nothing for PHP and report generation.
 
-There is one report DSL for Python that is not actively maintained anymore: https://github.com/kjosib/glowing-chainsaw
-
-## Notes
-
-The Forth-like is tempting, but I think the post-fix notation is just too confusing for any non-technical (and technical...) person to follow and reason about.
-
-_If_ I had access to a proper lexer/parser lib, I would consider a BASIC-format DSL, too. _And_ if BASIC had proper primitives for structured data...
-
-In all these cases, the lexer/parser code is kinda trivial.
+There is one report DSL for Python that is not actively maintained anymore: [glowing-chainsaw](https://github.com/kjosib/glowing-chainsaw).
 
 ---
 
