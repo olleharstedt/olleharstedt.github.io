@@ -1,7 +1,7 @@
 <?php
 
 $sc = <<<SCHEME
-(define p (+ 1 2))
+(define p (+ 1 4))
 (php printf p)
 SCHEME;
 
@@ -56,20 +56,19 @@ class Sexpr extends SexprBase
 
     public function eval($sexpr)
     {
-        //print_r($sexpr);
-        if (is_string($sexpr)) {
+        if ((string) intval($sexpr) === $sexpr) {
             return intval($sexpr);
+        }
+        if (isset($this->env[$sexpr])) {
+            $thing = $this->env[$sexpr];
+            if ($thing instanceof Fun) {
+                return $this->eval($thing->body);
+            }
         }
         $result = 0;
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
             return $this->eval($op);
-        }
-        if (isset($this->env[$op])) {
-            $thing = $this->env[$op];
-            if ($thing instanceof Fun) {
-                return $this->eval($thing->body);
-            }
         }
         switch ($op) {
             case "php":
@@ -103,4 +102,9 @@ class Fun
 
 $s = new Sexpr();
 $sexp = $s->parse($sc);
-$s->eval($sexp);
+while ($sex = $sexp->shift()) {
+    $s->eval($sex);
+    if (count($sexp) === 0) {
+        break;
+    }
+}
