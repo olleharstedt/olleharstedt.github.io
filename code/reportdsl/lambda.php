@@ -337,7 +337,12 @@ HTML
 </table>
 HTML;
     }
+
+    public function eval($top): string
+    {
+    }
 }
 
 $report = new ReportSexpr();
 $sexp = $report->parse($sc);
+$report->eval($sexp);
