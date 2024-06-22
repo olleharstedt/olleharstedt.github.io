@@ -2,7 +2,7 @@
 
 $sc = <<<SCHEME
 (define p (+ 1 2))
-(php printf (+ 1 1))
+(php printf p)
 SCHEME;
 
 abstract class SexprBase
@@ -50,42 +50,13 @@ abstract class SexprBase
     }
 }
 
-class MathSexpr extends SexprBase
-{
-    /**
-     * @param SplStack<mixed>|string $sexpr
-     */
-    public function mathEval($sexpr): int
-    {
-        if (is_string($sexpr)) {
-            return intval($sexpr);
-        }
-        $result = 0;
-        $op = $sexpr->shift();
-        if ($op instanceof SplStack) {
-            return $this->mathEval($op);
-        }
-        switch ($op) {
-            case '+':
-                $arg1 = $sexpr->shift();
-                $arg2 = $sexpr->shift();
-                return $this->mathEval($arg1) + $this->mathEval($arg2);
-            case '-':
-                $arg1 = $sexpr->shift();
-                $arg2 = $sexpr->shift();
-                return $this->mathEval($arg1) - $this->mathEval($arg2);
-            default:
-                return intval($op);
-        }
-    }
-}
-
 class Sexpr extends SexprBase
 {
     public $env = [];
 
     public function eval($sexpr)
     {
+        //print_r($sexpr);
         if (is_string($sexpr)) {
             return intval($sexpr);
         }
@@ -93,6 +64,12 @@ class Sexpr extends SexprBase
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
             return $this->eval($op);
+        }
+        if (isset($this->env[$op])) {
+            $thing = $this->env[$op];
+            if ($thing instanceof Fun) {
+                return $this->eval($thing->body);
+            }
         }
         switch ($op) {
             case "php":
@@ -115,10 +92,15 @@ class Sexpr extends SexprBase
 
 class Fun
 {
+    public $name;
     public $body;
+    public function __construct($n, $b)
+    {
+        $this->name = $n;
+        $this->body = $b;
+    }
 }
 
 $s = new Sexpr();
-$s->env['echo'] = new Fun();
 $sexp = $s->parse($sc);
 $s->eval($sexp);
