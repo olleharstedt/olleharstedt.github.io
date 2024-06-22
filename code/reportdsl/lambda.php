@@ -1,7 +1,8 @@
 <?php
 
 $sc = <<<SCHEME
-(lambda (x) (+ 1 2))
+(define p (+ 1 2))
+(php printf (+ 1 1))
 SCHEME;
 
 abstract class SexprBase
@@ -79,270 +80,45 @@ class MathSexpr extends SexprBase
     }
 }
 
-class ReportSexpr extends SexprBase
+class Sexpr extends SexprBase
 {
-    /**
-     * @param SplStack<mixed> $sexp
-     * @return ?SplStack<mixed>
-     */
-    public function findFirst(SplStack $sexp, string $symbol): ?SplStack
-    {
-        foreach ($sexp as $s) {
-            if ($s instanceof SplStack) {
-                if ($s->bottom() === $symbol) {
-                    return $s;
-                }
-            }
-        }
-        return null;
-    }
+    public $env = [];
 
-    /**
-     * @param SplStack<mixed> $sexp
-     * @return array<mixed>
-     */
-    public function findAll(SplStack $sexp, string $symbol): array
+    public function eval($sexpr)
     {
-        $result = [];
-        foreach ($sexp as $s) {
-            if ($s instanceof SplStack) {
-                if ($s->bottom() === $symbol) {
-                    $result[] = $s;
-                }
-            }
+        if (is_string($sexpr)) {
+            return intval($sexpr);
         }
-        return $result;
-    }
-
-    /**
-     * @param SplStack<mixed>|string $top
-     */
-    public function evalSelect($top): string
-    {
-        $sql = '';
-        switch (gettype($top)) {
-            case 'int':
-                $sql .= $top;
-                break;
-            case 'string':
-                $sql .= $top;
-                break;
-            case 'object':
-                $op = $top->bottom();
-                switch ($op) {
-                    case '-':
-                        $a = $top->pop();
-                        $b = $top->pop();
-                        $sql .= '(' . $this->evalSelect($b) . ' - ' . $this->evalSelect($a) . ')';
-                        break;
-                    case '*':
-                        $a = $top->pop();
-                        $b = $top->pop();
-                        $sql .= '(' . $this->evalSelect($b) . ' * ' . $this->evalSelect($a) . ')';
-                        break;
-                    case '/':
-                        $a = $top->pop();
-                        $b = $top->pop();
-                        $sql .= '(' . $this->evalSelect($b) . ' / ' . $this->evalSelect($a) . ')';
-                        break;
-                    case 'round':
-                        $a = $top->pop();
-                        $b = $top->pop();
-                        $sql .= 'ROUND('  
-                            . $this->evalSelect($b) . ', ' 
-                            . $this->evalSelect($a) . ')';
-                        break;
-                    default:
-                        throw new RuntimeException('Unknown op: ' . $op);
-                }
-                break;
+        $result = 0;
+        $op = $sexpr->shift();
+        if ($op instanceof SplStack) {
+            return $this->eval($op);
         }
-        return $sql;
-    }
-
-    /**
-     * Recursive method to evaluate a total expression.
-     * 
-     * Example:
-     *   (do (/ (sum diff) (count rows)))
-     */
-    public function evalTotal(SplStack $sexp, array $data): float
-    {
-        $op = $sexp->bottom();
         switch ($op) {
-            case '/':
-                $a = $sexp->pop();
-                $b = $sexp->pop();
-                return $this->evalTotal($b, $data) / $this->evalTotal($a, $data);
+            case "php":
+                $fn = $sexpr->shift();
+                $arg = $this->eval($sexpr->shift());
+                call_user_func($fn, $arg);
                 break;
-            case 'sum':
-                $variableName = $sexp->pop();
-                $sum = 0;
-                foreach ($data as $row) {
-                    $sum += $row[$variableName];
-                }
-                return $sum;
+            case "+":
+                $arg1 = $sexpr->shift();
+                $arg2 = $sexpr->shift();
+                return $this->eval($arg1) + $this->eval($arg2);
+            case "define":
+                $fnName = $sexpr->shift();
+                $body = $sexpr->shift();
+                $this->env[$fnName] = new Fun($fnName, $body);
                 break;
-            case 'count':
-                $typeOfCount = $sexp->pop();
-                if ($typeOfCount === 'rows') {
-                    return count($data);
-                } else {
-                    throw new RuntimeException('Unsupported count type: ' . $typeOfCount);
-                }
-                break;
-            default:
-                throw new RuntimeException('Unknown function: ' . $op);
         }
-    }
-
-    /**
-     * @param SplStack<mixed> $columns
-     */
-    public function getSelect($columns): string
-    {
-        $columns = $this->findAll($columns, 'column');
-        $sql = '';
-        foreach ($columns as $column) {
-            $select = $this->findFirst($column, 'select');
-            if ($select === null) {
-                throw new RuntimeException('Found no select');
-            }
-            $sql .= $this->evalSelect($select->top());
-            $as = $this->findFirst($column, 'as');
-            if ($as) {
-                $sql .= ' AS ' . $as->top();
-            }
-            $sql .= ', ';
-        }
-        return trim(trim($sql), ',');
-    }
-
-    /**
-     * @param SplStack<mixed> $sexp
-     */
-    public function getQuery(SplStack $sexp): string
-    {
-        $report = $this->findFirst($sexp, 'report');
-        if ($report === null) {
-            throw new RuntimeException('Found no report');
-        }
-        $table = $this->findFirst($report, 'table');
-        if ($table === null) {
-            throw new RuntimeException('Found no table');
-        }
-        $columns = $this->findFirst($report, 'columns');
-        if ($columns === null) {
-            throw new RuntimeException('Found no columns');
-        }
-        $select = $this->getSelect($columns);
-        $sql  = "SELECT $select FROM {$table->pop()} ";
-        return $sql;
-    }
-
-    /**
-     * @todo Move to SplStack?
-     */
-    public function getHeaders(SplStack $sexp)
-    {
-        $headers = [];
-        $report = $this->findFirst($sexp, 'report');
-        $columns = $this->findFirst($report, 'columns');
-        $columns = $this->findAll($columns, 'column');
-        foreach ($columns as $column) {
-            $title = $this->findFirst($column, 'title');
-            $headers[] = $title->top();
-        }
-        return $headers;
-    }
-
-    /**
-     *
-     */
-    public function getTotals(SplStack $sexp, array $data)
-    {
-        $totals = [];
-        $report = $this->findFirst($sexp, 'report');
-        if ($report) {
-            $totalsNode = $this->findFirst($report, 'totals');
-            if ($totalsNode) {
-                $totalsNode = $this->findAll($totalsNode, 'total');
-                foreach ($totalsNode as $total) {
-                    $for = $this->findFirst($total, 'for');
-                    if ($for) {
-                        $totals[$for->top()] = $this->evalTotal($this->findFirst($total, 'do')->top(), $data['rows']);
-                    }
-                }
-            }
-        }
-        return $totals;
-    }
-
-    public function getTableHeader(array $titles)
-    {
-        return "<tr>" . array_reduce(
-            $titles,
-            function($html, $title) {
-                return <<<HTML
-<th>{$title}</th>
-HTML
-                . $html;
-            }
-        ) . "</tr>\n";
-    }
-
-    public function getTableRows(SplStack $sexp, array $data)
-    {
-        $html = '';
-        foreach ($data['rows'] as $row) {
-            $html .= '<tr>';
-            foreach ($row as $cell) {
-                $html .= "<td>$cell</td>";
-            }
-            $html .= "</tr>\n";
-        }
-        return $html;
-    }
-
-    /**
-     *
-     */
-    public function getTotalRows(SplStack $sexp, array $data, array $totals): string
-    {
-        $html = '';
-        $html .= '<tr>';
-        foreach ($data['rows'] as $row) {
-            foreach ($row as $key => $_) {
-                if (isset($totals[$key])) {
-                    $html .= "<td>{$totals[$key]}</td>";
-                } else {
-                    $html .= "<td></td>";
-                }
-            }
-            break;
-        }
-        $html .= "</tr>\n";
-        return $html;
-    }
-
-    public function getHtml(SplStack $sexp, array $data): string
-    {
-        $totals = $this->getTotals($sexp, $data);
-
-        return <<<HTML
-<table>
-{$this->getTableHeader($this->getHeaders($sexp))}
-{$this->getTableRows($sexp, $data)}
-{$this->getTotalRows($sexp, $data, $totals)}
-</table>
-HTML;
-    }
-
-    public function eval($top): string
-    {
     }
 }
 
-$report = new ReportSexpr();
-$sexp = $report->parse($sc);
-$report->eval($sexp);
+class Fun
+{
+    public $body;
+}
+
+$s = new Sexpr();
+$s->env['echo'] = new Fun();
+$sexp = $s->parse($sc);
+$s->eval($sexp);
