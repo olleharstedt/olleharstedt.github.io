@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * defmacro
+ * quote, backquote, antiquote
+ * defmacro accepts forms
+ */
+
 $sc = <<<SCHEME
 (define p (+ 1 4))
 (php printf p)
@@ -56,13 +62,15 @@ class Sexpr extends SexprBase
 
     public function eval($sexpr)
     {
-        if ((string) intval($sexpr) === $sexpr) {
-            return intval($sexpr);
-        }
-        if (isset($this->env[$sexpr])) {
-            $thing = $this->env[$sexpr];
-            if ($thing instanceof Fun) {
-                return $this->eval($thing->body);
+        if (!is_object($sexpr)) {
+            if ((string) intval($sexpr) === $sexpr) {
+                return intval($sexpr);
+            }
+            if (isset($this->env[$sexpr])) {
+                $thing = $this->env[$sexpr];
+                if ($thing instanceof Fun) {
+                    return $this->eval($thing->body);
+                }
             }
         }
         $result = 0;
