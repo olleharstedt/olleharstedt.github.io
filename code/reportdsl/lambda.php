@@ -4,11 +4,16 @@
  * defmacro
  * quote, backquote, antiquote
  * defmacro accepts forms
+ *
+ * ELISP:
+ * (symbol-function 'foo)
+ * cl-loop
  */
 
 $sc = <<<SCHEME
-(define p (+ 1 4))
-(php printf p)
+; (defun p (+ 1 4))
+; (php printf p)
+(map (quote +) (quote (1 2 3)))
 SCHEME;
 
 abstract class SexprBase
@@ -88,11 +93,25 @@ class Sexpr extends SexprBase
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
                 return $this->eval($arg1) + $this->eval($arg2);
-            case "define":
+            case "defun":
                 $fnName = $sexpr->shift();
                 $body = $sexpr->shift();
                 $this->env[$fnName] = new Fun($fnName, $body);
                 break;
+            case "map":
+                $fn   = $this->eval($sexpr->shift());
+                $list = $this->eval($sexpr->shift());
+                foreach ($list->body as $elem) {
+                    var_dump($elem);
+                }
+                break;
+            case "quote":
+            case "'":
+                $body = $sexpr->shift();
+                return new Quote($body);
+                break;
+            default:
+                throw new RuntimeException('Unsupported operation: ' . $op);
         }
     }
 }
@@ -108,10 +127,25 @@ class Fun
     }
 }
 
+class Macro
+{
+    public $name;
+}
+
+class Quote
+{
+    public $body;
+    public function __construct($b)
+    {
+        $this->body = $b;
+    }
+}
+
 $s = new Sexpr();
 $sexp = $s->parse($sc);
 while ($sex = $sexp->shift()) {
-    $s->eval($sex);
+    $result = $s->eval($sex);
+    var_dump($result);
     if (count($sexp) === 0) {
         break;
     }
