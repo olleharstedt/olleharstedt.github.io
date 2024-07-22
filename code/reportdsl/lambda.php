@@ -11,9 +11,10 @@
  */
 
 $sc = <<<SCHEME
-; (defun p (+ 1 4))
+(defun p (a) (+ 1 a))
+(p 2)
 ; (php printf p)
-(map (quote +) (quote (1 2 3)))
+; (map (quote +) (quote (1 2 3)))
 SCHEME;
 
 abstract class SexprBase
@@ -79,6 +80,9 @@ class Sexpr extends SexprBase
             }
         }
         $result = 0;
+        if (is_string($sexpr)) {
+            throw new Exception($sexpr);
+        }
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
             return $this->eval($op);
@@ -95,8 +99,9 @@ class Sexpr extends SexprBase
                 return $this->eval($arg1) + $this->eval($arg2);
             case "defun":
                 $fnName = $sexpr->shift();
+                $args = $sexpr->shift();
                 $body = $sexpr->shift();
-                $this->env[$fnName] = new Fun($fnName, $body);
+                $this->env[$fnName] = new Fun($fnName, $args, $body);
                 break;
             case "map":
                 $fn   = $this->eval($sexpr->shift());
@@ -111,19 +116,49 @@ class Sexpr extends SexprBase
                 return new Quote($body);
                 break;
             default:
-                throw new RuntimeException('Unsupported operation: ' . $op);
+                if (isset($this->env[$op])) {
+                    $fn = $this->env[$op];
+                    $body = $this->replaceArg($fn->args, $sexpr->shift(), clone $fn->body);
+                    var_dump($fn->body);
+                    return $this->eval($fn->body);
+                } else {
+                    var_dump($op);
+                    throw new RuntimeException('Unsupported operation: ' . $op);
+                }
+                break;
         }
+    }
+
+    public function replaceArg($args, $replaceWith, $body)
+    {
+        var_dump($body);
+        foreach ($args as $arg) {
+            foreach ($body as $key => $node) {
+                var_dump($key);
+                var_dump($node);
+                var_dump($arg);
+                if ($node === $arg) {
+                    $body->offsetSet($key, $replaceWith);
+                }
+            }
+        }
+        var_dump($body);
     }
 }
 
 class Fun
 {
     public $name;
+    public $args;
     public $body;
-    public function __construct($n, $b)
+    public function __construct($n, $args, $b)
     {
         $this->name = $n;
+        $this->args = $args;
         $this->body = $b;
+    }
+    public function run()
+    {
     }
 }
 
