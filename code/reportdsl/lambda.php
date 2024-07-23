@@ -13,7 +13,11 @@
 $sc = <<<SCHEME
 (defun times (a b) (* a b))
 (defun f (a b) (times b (+ 1 a)))
-(f 2 3)
+(if 
+    (= (+ 1 1) 2)
+    (f 1 2)
+    "nooo nop nop"
+)
 ; (php printf p)
 ; (map (quote +) (quote (1 2 3)))
 SCHEME;
@@ -50,6 +54,10 @@ abstract class SexprBase
                 $current = $history->pop();
             } elseif ($char === '"') {
                 $inside_quote = 1 - $inside_quote;
+                if (!$inside_quote) {
+                    $current->push(new Str($buffer));
+                    $buffer = '';
+                }
             } elseif ($char === ' ' && !$inside_quote) {
                 if ($buffer !== '') {
                     $current->push($buffer);
@@ -80,10 +88,13 @@ class Sexpr extends SexprBase
                 }
             }
         }
-        $result = 0;
+        if ($sexpr instanceof Str) {
+            return $sexpr->s;
+        }
         if (is_string($sexpr)) {
             throw new Exception($sexpr);
         }
+        $result = 0;
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
             return $this->eval($op);
@@ -94,6 +105,35 @@ class Sexpr extends SexprBase
                 $arg = $this->eval($sexpr->shift());
                 call_user_func($fn, $arg);
                 break;
+            case "=":
+                $branch2 = $sexpr->pop();
+                $branch1 = $sexpr->pop();
+                return ($this->eval($branch1) === $this->eval($branch2));
+            case "!=":
+                $branch2 = $sexpr->pop();
+                $branch1 = $sexpr->pop();
+                return ($this->eval($branch1) !== $this->eval($branch2));
+            case "and":
+                $branch2 = $sexpr->pop();
+                $branch1 = $sexpr->pop();
+                return ($this->eval($branch1) && $this->eval($branch2));
+            case "or":
+                $branch2 = $sexpr->pop();
+                $branch1 = $sexpr->pop();
+                return ($this->eval($branch1) || $this->eval($branch2));
+            case "true":
+                return 1;
+            case "false":
+                return 0;
+            case "if":
+                $branch2 = $sexpr->pop();
+                $branch1 = $sexpr->pop();
+                $cond = $sexpr->pop();
+                if ($this->eval($cond)) {
+                    return $this->eval($branch1);
+                } else {
+                    return $this->eval($branch2);
+                }
             case "+":
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
@@ -148,6 +188,15 @@ class Sexpr extends SexprBase
                 $this->replaceArg($arg, $replaceWith, $node);
             }
         }
+    }
+}
+
+class Str
+{
+    public $s;
+    public function __construct($s)
+    {
+        $this->s = $s;
     }
 }
 
