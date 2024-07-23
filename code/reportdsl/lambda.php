@@ -11,7 +11,7 @@
  */
 
 $sc = <<<SCHEME
-(defun p (a) (+ 1 a))
+(defun p (a b) (+ b a))
 (p 2)
 ; (php printf p)
 ; (map (quote +) (quote (1 2 3)))
@@ -107,7 +107,6 @@ class Sexpr extends SexprBase
                 $fn   = $this->eval($sexpr->shift());
                 $list = $this->eval($sexpr->shift());
                 foreach ($list->body as $elem) {
-                    var_dump($elem);
                 }
                 break;
             case "quote":
@@ -116,13 +115,12 @@ class Sexpr extends SexprBase
                 return new Quote($body);
                 break;
             default:
+                var_dump($op);
                 if (isset($this->env[$op])) {
                     $fn = $this->env[$op];
-                    $body = $this->replaceArg($fn->args, $sexpr->shift(), clone $fn->body);
-                    var_dump($fn->body);
+                    $this->replaceArg($fn->args, $sexpr->shift(), $fn->body);
                     return $this->eval($fn->body);
                 } else {
-                    var_dump($op);
                     throw new RuntimeException('Unsupported operation: ' . $op);
                 }
                 break;
@@ -131,18 +129,13 @@ class Sexpr extends SexprBase
 
     public function replaceArg($args, $replaceWith, $body)
     {
-        var_dump($body);
         foreach ($args as $arg) {
             foreach ($body as $key => $node) {
-                var_dump($key);
-                var_dump($node);
-                var_dump($arg);
                 if ($node === $arg) {
-                    $body->offsetSet($key, $replaceWith);
+                    $body->offsetSet(count($body) - $key - 1, $replaceWith);
                 }
             }
         }
-        var_dump($body);
     }
 }
 
