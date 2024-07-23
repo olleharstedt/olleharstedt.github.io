@@ -11,8 +11,9 @@
  */
 
 $sc = <<<SCHEME
-(defun p (a b) (+ b a))
-(p 2)
+(defun times (a b) (* a b))
+(defun f (a b) (times b (+ 1 a)))
+(f 2 3)
 ; (php printf p)
 ; (map (quote +) (quote (1 2 3)))
 SCHEME;
@@ -97,6 +98,10 @@ class Sexpr extends SexprBase
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
                 return $this->eval($arg1) + $this->eval($arg2);
+            case "*":
+                $arg1 = $sexpr->shift();
+                $arg2 = $sexpr->shift();
+                return $this->eval($arg1) * $this->eval($arg2);
             case "defun":
                 $fnName = $sexpr->shift();
                 $args = $sexpr->shift();
@@ -115,10 +120,11 @@ class Sexpr extends SexprBase
                 return new Quote($body);
                 break;
             default:
-                var_dump($op);
                 if (isset($this->env[$op])) {
                     $fn = $this->env[$op];
-                    $this->replaceArg($fn->args, $sexpr->shift(), $fn->body);
+                    foreach ($fn->args as $arg) {
+                        $this->replaceArg($arg, $sexpr->shift(), $fn->body);
+                    }
                     return $this->eval($fn->body);
                 } else {
                     throw new RuntimeException('Unsupported operation: ' . $op);
@@ -127,13 +133,19 @@ class Sexpr extends SexprBase
         }
     }
 
-    public function replaceArg($args, $replaceWith, $body)
+    /**
+     * Recursively replace $arg inside $body with $replaceWith
+     *
+     * @return void
+     */
+    public function replaceArg($arg, $replaceWith, SplStack $body)
     {
-        foreach ($args as $arg) {
-            foreach ($body as $key => $node) {
-                if ($node === $arg) {
-                    $body->offsetSet(count($body) - $key - 1, $replaceWith);
-                }
+        foreach ($body as $key => $node) {
+            if ($node === $arg) {
+                $body->offsetSet(count($body) - $key - 1, $replaceWith);
+            }
+            if ($node instanceof SplStack) {
+                $this->replaceArg($arg, $replaceWith, $node);
             }
         }
     }
