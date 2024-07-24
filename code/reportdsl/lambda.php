@@ -8,19 +8,16 @@
  * ELISP:
  * (symbol-function 'foo)
  * cl-loop
+ *
+ * https://www.gnu.org/software/emacs/manual/html_node/elisp/Expansion.html
  */
 
 $sc = <<<SCHEME
-(defun times (a b) (* a b))
-(defun f (a b) (times b (+ 1 a)))
-(setq x 10)
-(if 
-    (= (+ 1 1) 2)
-    (f 1 x)
-    "nooo nop nop"
+(defmacro inc (var)
+    (list (quote setq) var (list (quote (+ 1 var))))
 )
-; (php printf p)
-; (map (quote +) (quote (1 2 3)))
+(setq x 1)
+(inc x)
 SCHEME;
 
 abstract class SexprBase
@@ -147,11 +144,23 @@ class Sexpr extends SexprBase
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
                 return $this->eval($arg1) * $this->eval($arg2);
+            case "list":
+                $l = new SplStack();
+                while (count($sexpr) > 0 && $el = $sexpr->shift()) {
+                    $l->push($el);
+                }
+                return $l;
             case "defun":
-                $fnName = $sexpr->shift();
+                $name = $sexpr->shift();
                 $args = $sexpr->shift();
                 $body = $sexpr->shift();
-                $this->env[$fnName] = new Fun($fnName, $args, $body);
+                $this->env[$name] = new Fun($name, $args, $body);
+                break;
+            case "defmacro":
+                $name = $sexpr->shift();
+                $args = $sexpr->shift();
+                $body = $sexpr->shift();
+                $this->env[$name] = new Macro($name, $args, $body);
                 break;
             case "setq":
                 $value = $sexpr->pop();
@@ -171,11 +180,20 @@ class Sexpr extends SexprBase
                 break;
             default:
                 if (isset($this->env[$op])) {
-                    $fn = $this->env[$op];
-                    foreach ($fn->args as $arg) {
-                        $this->replaceArg($arg, $sexpr->shift(), $fn->body);
+                    $thing = $this->env[$op];
+                    if ($thing instanceof Fun) {
+                        foreach ($thing->args as $arg) {
+                            $this->replaceArg($arg, $sexpr->shift(), $thing->body);
+                        }
+                        return $this->eval($thing->body);
+                    } elseif ($thing instanceof Macro) {
+                        foreach ($thing->args as $arg) {
+                            $this->replaceArg($arg, $sexpr->shift(), $thing->body);
+                        }
+                        $newBody = $thing->macroExpand($thing->body);
+                    } else {
+                        throw new RuntimeException('Unknown entity in env: ' . $op);
                     }
-                    return $this->eval($fn->body);
                 } else {
                     throw new RuntimeException('Unsupported operation: ' . $op);
                 }
@@ -221,14 +239,23 @@ class Fun
         $this->args = $args;
         $this->body = $b;
     }
-    public function run()
-    {
-    }
 }
 
 class Macro
 {
     public $name;
+    public $args;
+    public $body;
+    public function __construct($n, $args, $b)
+    {
+        $this->name = $n;
+        $this->args = $args;
+        $this->body = $b;
+    }
+    public function macroExpand($body)
+    {
+        die('here');
+    }
 }
 
 class Quote
@@ -244,7 +271,6 @@ $s = new Sexpr();
 $sexp = $s->parse($sc);
 while ($sex = $sexp->shift()) {
     $result = $s->eval($sex);
-    var_dump($result);
     if (count($sexp) === 0) {
         break;
     }
