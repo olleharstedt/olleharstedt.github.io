@@ -13,9 +13,10 @@
 $sc = <<<SCHEME
 (defun times (a b) (* a b))
 (defun f (a b) (times b (+ 1 a)))
+(setq x 10)
 (if 
     (= (+ 1 1) 2)
-    (f 1 2)
+    (f 1 x)
     "nooo nop nop"
 )
 ; (php printf p)
@@ -84,7 +85,11 @@ class Sexpr extends SexprBase
             if (isset($this->env[$sexpr])) {
                 $thing = $this->env[$sexpr];
                 if ($thing instanceof Fun) {
+                    // Function
                     return $this->eval($thing->body);
+                } else {
+                    // Variable
+                    return $thing;
                 }
             }
         }
@@ -147,6 +152,11 @@ class Sexpr extends SexprBase
                 $args = $sexpr->shift();
                 $body = $sexpr->shift();
                 $this->env[$fnName] = new Fun($fnName, $args, $body);
+                break;
+            case "setq":
+                $value = $sexpr->pop();
+                $name  = $sexpr->pop();
+                $this->env[$name] = $this->eval($value);
                 break;
             case "map":
                 $fn   = $this->eval($sexpr->shift());
