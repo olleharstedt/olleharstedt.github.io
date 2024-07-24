@@ -97,6 +97,9 @@ class Sexpr extends SexprBase
             throw new Exception($sexpr);
         }
         $result = 0;
+        if (count($sexpr) === 0) {
+            return null;
+        }
         $op = $sexpr->shift();
         if ($op instanceof SplStack) {
             return $this->eval($op);
@@ -190,7 +193,9 @@ class Sexpr extends SexprBase
                         foreach ($thing->args as $arg) {
                             $this->replaceArg($arg, $sexpr->shift(), $thing->body);
                         }
-                        $newBody = $thing->macroExpand($thing->body);
+                        $newBody = $thing->macroExpand($this->clone($thing->body));
+                        var_dump($newBody);
+                        return $this->eval($newBody);
                     } else {
                         throw new RuntimeException('Unknown entity in env: ' . $op);
                     }
@@ -215,6 +220,22 @@ class Sexpr extends SexprBase
             if ($node instanceof SplStack) {
                 $this->replaceArg($arg, $replaceWith, $node);
             }
+        }
+    }
+
+    public function clone($s)
+    {
+        if ($s instanceof SplStack) {
+            $new = new SplStack();
+            for ($i = 0; $i < count($s); $i++) {
+                $n = $s->offsetGet(count($s) - $i - 1);
+                $new->push($this->clone($n));
+            }
+            return $new;
+        } elseif (is_object($s)) {
+            return clone $s;
+        } else {
+            return $s;
         }
     }
 }
@@ -252,9 +273,37 @@ class Macro
         $this->args = $args;
         $this->body = $b;
     }
+
+    /**
+     * Example body: (list (quote setq) var (list (quote (+ 1 var))))
+     */
     public function macroExpand($body)
     {
-        die('here');
+        if (is_string($body)) {
+            return $body;
+        } elseif ($body instanceof SplStack) {
+            $op = $body->bottom();
+            switch ($op) {
+                case 'list':
+                    $b = new SplStack();
+                    $body->shift();    // Discard bottom op
+                    while (count($body) > 0 && $n = $body->shift()) {
+                        $b->push($this->macroExpand($n));
+                    }
+                    return $b;
+                    break;
+                case 'quote':
+                    return $body->pop();
+                    break;
+                default:
+                    var_dump($op);
+                    throw new Exception(json_encode($op));
+                    break;
+            }
+        } elseif ($body === 'quote') {
+            throw new Exception($body);
+        }
+        return null;
     }
 }
 
@@ -271,6 +320,7 @@ $s = new Sexpr();
 $sexp = $s->parse($sc);
 while ($sex = $sexp->shift()) {
     $result = $s->eval($sex);
+    var_dump($result);
     if (count($sexp) === 0) {
         break;
     }
