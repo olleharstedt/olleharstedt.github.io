@@ -42,7 +42,7 @@ abstract class SexprBase
         $prev = null;
         $history = new SplStack();
         $buffer = '';
-        $inside_quote = 0;
+        $inside_string = 0;
         for ($i = 0; $i < strlen($sc); $i++) {
             $char = $sc[$i];
             if ($char === '(') {
@@ -57,12 +57,12 @@ abstract class SexprBase
                 }
                 $current = $history->pop();
             } elseif ($char === '"') {
-                $inside_quote = 1 - $inside_quote;
-                if (!$inside_quote) {
+                $inside_string = 1 - $inside_string;
+                if (!$inside_string) {
                     $current->push(new Str($buffer));
                     $buffer = '';
                 }
-            } elseif ($char === ' ' && !$inside_quote) {
+            } elseif ($char === ' ' && !$inside_string) {
                 if ($buffer !== '') {
                     $current->push($buffer);
                     $buffer = '';
