@@ -18,6 +18,10 @@ $sc = <<<SCHEME
 )
 (setq x 1)
 (inc x)
+(inc x)
+(inc x)
+(inc x)
+(php printf x)
 SCHEME;
 
 abstract class SexprBase
@@ -139,6 +143,11 @@ class Sexpr extends SexprBase
                 } else {
                     return $this->eval($branch2);
                 }
+            case "concat":
+                $arg1 = $sexpr->shift();
+                $arg2 = $sexpr->shift();
+                return $this->eval($arg1) . $this->eval($arg2);
+                break;
             case "+":
                 $arg1 = $sexpr->shift();
                 $arg2 = $sexpr->shift();
