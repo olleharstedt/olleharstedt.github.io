@@ -8,22 +8,23 @@
  * ELISP:
  * (symbol-function 'foo)
  * cl-loop
+ * (defmacro when (condition body) `(if ,condition ,body))
+ *
+ * 14:47 < olle> Why are quote etc needed for macro programming if macro is "just" a search-and-replace in the syntax tree?
+ * 14:59 < uhuh> As far as I understand the expected output of a macro is some code in list form to be evaluated, but you can do all sorts of things within the 
+ macro to generate this output. So doing a search-and-replace is only one of many possibilities.
+ *               15:00 < uhuh> You could (possibly?) call an LLM to generate code and return that from the macro for example
+ *               15:01 < uhuh> So since you can do computation within the macro body (which gets executed at compile-time) you don't want everything to be quoted
+ *
  *
  * https://www.gnu.org/software/emacs/manual/html_node/elisp/Expansion.html
  */
 
 $sc = <<<SCHEME
-(defmacro inc (var)
-    (list (quote setq) var (list (quote (+ 1 var))))
+(defmacro when (condition action)
+    (if condition action nil)
 )
-(defmacro inc2 (var1 var2)
-    (list (quote progn) (list (quote inc) var1) (list (quote inc) var2))
-)
-(setq x 1)
-(setq y 1)
-(inc2 x y)
-(php printf x)
-(php printf y)
+(when true (php printf "a"))
 SCHEME;
 
 abstract class SexprBase
@@ -43,6 +44,7 @@ abstract class SexprBase
         $history = new SplStack();
         $buffer = '';
         $inside_string = 0;
+        // Build tree structure
         for ($i = 0; $i < strlen($sc); $i++) {
             $char = $sc[$i];
             if ($char === '(') {
@@ -114,6 +116,8 @@ class Sexpr extends SexprBase
             case "php":
                 $fn = $sexpr->shift();
                 $arg = $this->eval($sexpr->shift());
+                //print_r($fn);
+                //print_r($arg);
                 call_user_func($fn, $arg);
                 break;
             case "=":
@@ -136,10 +140,12 @@ class Sexpr extends SexprBase
                 return 1;
             case "false":
                 return 0;
+            case "nil":
+                return null;
             case "if":
-                $branch2 = $sexpr->pop();
-                $branch1 = $sexpr->pop();
-                $cond = $sexpr->pop();
+                $cond = $sexpr->shift();
+                $branch1 = $sexpr->shift();
+                $branch2 = $sexpr->shift();
                 if ($this->eval($cond)) {
                     return $this->eval($branch1);
                 } else {
@@ -187,11 +193,6 @@ class Sexpr extends SexprBase
                 foreach ($list->body as $elem) {
                 }
                 break;
-            case "quote":
-            case "'":
-                $body = $sexpr->shift();
-                return new Quote($body);
-                break;
             case "progn":
                 $result = null;
                 foreach ($sexpr as $s) {
@@ -209,11 +210,13 @@ class Sexpr extends SexprBase
                         return $this->eval($thing->body);
                     } elseif ($thing instanceof Macro) {
                         $newBody = $this->clone($thing->body);
-                        foreach ($thing->args as $arg) {
+                        for ($i = count($thing->args) - 1; $i >= 0; $i--) {
+                            $arg = $thing->args->offsetGet($i);
                             $repl = $sexpr->shift();
                             $this->replaceArg($arg, $repl, $newBody);
                         }
                         $newBody = $thing->macroExpand($newBody);
+                        print_r($newBody);
                         return $this->eval($newBody);
                     } else {
                         throw new RuntimeException('Unknown entity in env: ' . $op);
@@ -232,6 +235,8 @@ class Sexpr extends SexprBase
      */
     public function replaceArg($arg, $replaceWith, SplStack $body)
     {
+        print_r($arg);
+        print_r($replaceWith);
         foreach ($body as $key => $node) {
             if ($node === $arg) {
                 $body->offsetSet(count($body) - $key - 1, $replaceWith);
@@ -318,8 +323,7 @@ class Macro
                     return $body->pop();
                     break;
                 default:
-                    throw new Exception($op);
-                    break;
+                    return unserialize(serialize($body));
             }
         } elseif ($body === 'quote') {
             throw new Exception($body);
@@ -328,19 +332,11 @@ class Macro
     }
 }
 
-class Quote
-{
-    public $body;
-    public function __construct($b)
-    {
-        $this->body = $b;
-    }
-}
-
 $s = new Sexpr();
 $sexp = $s->parse($sc);
 while ($sex = $sexp->shift()) {
     $result = $s->eval($sex);
+    //print_r($result);
     if (count($sexp) === 0) {
         break;
     }
