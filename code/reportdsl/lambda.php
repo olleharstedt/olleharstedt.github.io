@@ -242,8 +242,10 @@ class Sexpr extends SexprBase
         }
     }
 
-    public function clone($s)
+    public function clone($obj)
     {
+        return unserialize(serialize($obj));
+        /*
         if ($s instanceof SplStack) {
             $new = new SplStack();
             for ($i = 0; $i < count($s); $i++) {
@@ -256,6 +258,7 @@ class Sexpr extends SexprBase
         } else {
             return $s;
         }
+         */
     }
 }
 
