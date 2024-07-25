@@ -16,12 +16,13 @@ $sc = <<<SCHEME
 (defmacro inc (var)
     (list (quote setq) var (list (quote (+ 1 var))))
 )
+(defmacro inc2 (var1 var2)
+    (list (quote progn) (list (quote inc) var1) (list (quote inc) var2))
+)
 (setq x 1)
-(inc x)
-(inc x)
-(inc x)
-(inc x)
-(php printf x)
+(setq y 1)
+(inc2 x y)
+(php printf y)
 SCHEME;
 
 abstract class SexprBase
@@ -190,6 +191,13 @@ class Sexpr extends SexprBase
                 $body = $sexpr->shift();
                 return new Quote($body);
                 break;
+            case "progn":
+                $result = null;
+                foreach ($sexpr as $s) {
+                    $result = $this->eval($s);
+                }
+                return $result;
+                break;
             default:
                 if (isset($this->env[$op])) {
                     $thing = $this->env[$op];
@@ -203,7 +211,7 @@ class Sexpr extends SexprBase
                             $this->replaceArg($arg, $sexpr->shift(), $thing->body);
                         }
                         $newBody = $thing->macroExpand($this->clone($thing->body));
-                        var_dump($newBody);
+                        print_r($newBody);
                         return $this->eval($newBody);
                     } else {
                         throw new RuntimeException('Unknown entity in env: ' . $op);
@@ -329,7 +337,6 @@ $s = new Sexpr();
 $sexp = $s->parse($sc);
 while ($sex = $sexp->shift()) {
     $result = $s->eval($sex);
-    var_dump($result);
     if (count($sexp) === 0) {
         break;
     }
