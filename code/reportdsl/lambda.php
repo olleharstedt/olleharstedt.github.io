@@ -22,6 +22,7 @@ $sc = <<<SCHEME
 (setq x 1)
 (setq y 1)
 (inc2 x y)
+(php printf x)
 (php printf y)
 SCHEME;
 
@@ -207,11 +208,12 @@ class Sexpr extends SexprBase
                         }
                         return $this->eval($thing->body);
                     } elseif ($thing instanceof Macro) {
+                        $newBody = $this->clone($thing->body);
                         foreach ($thing->args as $arg) {
-                            $this->replaceArg($arg, $sexpr->shift(), $thing->body);
+                            $repl = $sexpr->shift();
+                            $this->replaceArg($arg, $repl, $newBody);
                         }
-                        $newBody = $thing->macroExpand($this->clone($thing->body));
-                        print_r($newBody);
+                        $newBody = $thing->macroExpand($newBody);
                         return $this->eval($newBody);
                     } else {
                         throw new RuntimeException('Unknown entity in env: ' . $op);
@@ -313,8 +315,7 @@ class Macro
                     return $body->pop();
                     break;
                 default:
-                    var_dump($op);
-                    throw new Exception(json_encode($op));
+                    throw new Exception($op);
                     break;
             }
         } elseif ($body === 'quote') {
