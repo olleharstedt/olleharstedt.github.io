@@ -15,3 +15,15 @@ Honest and open curiosity.
 Empathize.
 
 Deep concern and worry about different issues.
+
+Socratic dialogue.
+
+Less black-and-white.
+
+First reduce safety mode, then talk.
+
+https://sa1s3.patientpop.com/assets/docs/85479.pdf
+
+Sapolsky
+
+Aaron Beck, Prison of Hate
