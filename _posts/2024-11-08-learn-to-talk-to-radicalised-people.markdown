@@ -22,6 +22,8 @@ Less black-and-white.
 
 First reduce safety mode, then talk.
 
+Have to first show empathy to reach a problem-solving state-of-mind [CBT for cancer]
+
 https://sa1s3.patientpop.com/assets/docs/85479.pdf
 
 Sapolsky
