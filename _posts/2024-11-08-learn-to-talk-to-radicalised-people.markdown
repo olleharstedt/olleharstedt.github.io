@@ -13,12 +13,17 @@ There's a lot of talk of social media algorithms reducing trust and increasing r
 
 Cult?
 Anti-rationalism? Anti-science, anti-argumentation.
+How does commitment to rationality look like?
+City culture vs conservative culture.
 Blind trust - only one speaks the truth, everyone else lies.
+Idealization of a leader.
 Black-and-white thinking.
-Low social trust.
+Low social trust, in institutions. Motivated? Not uncritical, rather hyper-critical in a unbalanced way, while trusting others without question.
 Same as extremism? Where the goal motivates any means.
 No regard to human rights?
-Violence against outgroup member.
+
+> pressure towards uniformity, rejection of opinion deviates, in-group favoritism, out-group derogation, endorsement of autocratic leadership [8]
+> Violence against outgroup member.
 
 Deradicalisation as a decentralized process.
 
