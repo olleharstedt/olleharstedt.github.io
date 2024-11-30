@@ -11,7 +11,6 @@ We need to learn how to talk to radicalized people. Not because they deserve it,
 
 There's a lot of talk of social media algorithms reducing trust and increasing radicalization. What's the definition of being radicalized?
 
-
 Cult?
 Anti-rationalism? Anti-science, anti-argumentation.
 Blind trust - only one speaks the truth, everyone else lies.
@@ -19,6 +18,7 @@ Black-and-white thinking.
 Low social trust.
 Same as extremism? Where the goal motivates any means.
 No regard to human rights?
+Violence against outgroup member.
 
 Deradicalisation as a decentralized process.
 
@@ -39,10 +39,14 @@ Less black-and-white.
 
 First reduce or deactivate safety mode [7], then talk.
 
+> Ther person feels profoundly unsafe. The world is threatening, people have bad intentions, harm seems imminent. [...] worsened by a deep-seated doubt about being able to stop the bad thing from happening. [7, p 124]
+
 Have to first show empathy to reach a problem-solving state-of-mind [6].
 
 > The need for closure is deﬁned as the desire for a quick and ﬁrm answer to a question and the aversion toward ambiguity or uncertainty[8]
 > a heightened need for closure gives rise to a syndrome of “group centrism"
+
+Brainwashed - how to know? They call you brainwahsed, and you call them brainwahsed. Are we both brainwashed, because of a never-ending social feedback loop to confirm are biases? Who's willing to investigate those biases, though, and who isn't?
 
 ## Sources
 
