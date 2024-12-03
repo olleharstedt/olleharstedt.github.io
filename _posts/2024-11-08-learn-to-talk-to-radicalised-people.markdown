@@ -9,6 +9,8 @@ DRAFT
 
 We need to learn how to talk to radicalized people. Not because they deserve it, but because it's beneficial for _us_, long-term.
 
+How do you know if someone has been radicalized?
+
 There's a lot of talk of social media algorithms reducing trust and increasing radicalization. What's the definition of being radicalized?
 
 Cult?
