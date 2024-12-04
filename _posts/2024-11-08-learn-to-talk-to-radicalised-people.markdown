@@ -9,7 +9,7 @@ DRAFT
 
 We need to learn how to talk to radicalized people. Not because they deserve it, but because it's beneficial for _us_, long-term.
 
-How do you know if someone has been radicalized?
+How do you know if someone close to you has been radicalized?
 
 There's a lot of talk of social media algorithms reducing trust and increasing radicalization. What's the definition of being radicalized?
 
@@ -30,6 +30,12 @@ No regard to human rights?
 Deradicalisation as a decentralized process.
 
 Bad-faith, good-faith.
+
+Why is radicalization bad? A functional and healthy democracy requires people respecting the rules, and a shared reality.
+
+Who is vulnerable for disinformation, and why?
+
+Breakdown of the social contract, what's expected and what's delivered.
 
 LEAP
 
