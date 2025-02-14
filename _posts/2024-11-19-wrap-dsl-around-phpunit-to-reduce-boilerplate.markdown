@@ -21,9 +21,35 @@ Load new keywords this way using a `(load lib.php)` statement.
 
 Primitive keywords needed:
 
+* `progn` to execute a list of expressions or statements
 * `load` for loading keywords defined as PHP classes
 * `setq` to set variables
 * 'concat' to concatenate strings
+
+Example with custom keywords:
+
+```php
+return new CustomOp(
+    'echo',
+    function($that, $sexpr) {
+        $next = $sexpr->shift();
+        if ($next instanceof Str) {
+            echo $next->s;
+        } else {
+            $s = $this->eval($next);
+            echo $s->s;
+        }
+    }
+);
+```
+
+Use with `load`:
+
+```lisp
+(load "echo")   ; This will load and inject the new keyword
+(defun say-hello (a b) (echo (concat a b)))
+(say-hello "hello" "world!")
+```
 
 Example:
 
