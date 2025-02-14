@@ -11,17 +11,19 @@ Use strategy pattern to inject new keywords into the DSL parser class. Each keyw
 
 Load new keywords this way using a `(load lib.php)` statement.
 
-Basic syntax and semantics:
+**Basic syntax and semantics:**
 
 * First item in list is function, rest is arguments
-* Application `(+ 1 2)`, or `(f x y)`
+* Application is using space, as in `(+ 1 2)`, or `(f x y)`
 * Strings use quotation `"`
 * Numbers are integers and float
 * Line-comments use `;`
 
 Primitive keywords needed:
 
-* `load` for loading keywords
+* `load` for loading keywords defined as PHP classes
+* `setq` to set variables
+* 'concat' to concatenate strings
 
 Example:
 
