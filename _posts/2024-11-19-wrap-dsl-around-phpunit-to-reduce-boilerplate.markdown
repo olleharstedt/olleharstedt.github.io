@@ -13,6 +13,8 @@ Load new keywords this way using a `(load lib.php)` statement.
 
 **Basic syntax and semantics:**
 
+Losely inspired by Emacs Lisp.
+
 * First item in list is function, rest is arguments
 * Application is using space, as in `(+ 1 2)`, or `(f x y)`
 * Strings use quotation `"`
