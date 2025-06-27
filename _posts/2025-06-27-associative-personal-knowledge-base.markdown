@@ -5,6 +5,8 @@ date:   2025-06-27
 categories: personal knowledge base cli pkb
 ---
 
+DRAFT
+
 A concept so simple I wondered why I haven't thought of it before. And why it isn't already built-in in bash.
 
 This is a command-line interface to a knowledge base, using association and ownership.
@@ -41,3 +43,9 @@ and it will list all details for that entity:
 [32] olle "Olle"
     has jonas (friend)
 ```
+
+todo crawl
+
+todo stack, forth, objects
+
+todo get
