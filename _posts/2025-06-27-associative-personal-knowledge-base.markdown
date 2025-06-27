@@ -26,6 +26,7 @@ put friend  # Add new entity jonas
 jonas is-a friend  # Add new is-a relation
 olle has-a jonas   # Add new has-a relation
 list olle friend   # List all entities that belong to olle and are a friend
+> 14      jonas
 ```
 
 You can also do
