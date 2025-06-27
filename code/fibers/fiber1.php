@@ -35,7 +35,9 @@ class DoAThingCommand
     public function __invoke(array $data): void
     {
         if ($data['foo'] == 'bar') {
-            $sql = ... // omitted
+            $sql = <<<SQL
+                SELECT * FROM tmp_table WHERE 1=1
+            SQL;
             $result = Fiber::suspend(new QueryEffect($sql));
             echo 'Database query returned the value: ' . $result, PHP_EOL;
         }
@@ -49,10 +51,14 @@ $data = [
 $value = $fiber->start($data);
 while (!$fiber->isTerminated()) {
     $data = null;
-    switch (get_class($value)) {
-        case 'QueryEffect':
+    if ($value instanceof Effect) {
+        if ($value instanceof QueryEffect) {
             $data = 'Db value';
-            break;
+        } else {
+            throw new RuntimeException('Unsupported effect class');
+        }
+    } else {
+        // Other Fiber usage?
     }
     if ($data) {
         $value = $fiber->resume($data);

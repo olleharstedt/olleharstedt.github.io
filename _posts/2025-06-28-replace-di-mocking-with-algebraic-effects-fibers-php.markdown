@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Replace DI and mocking with algebraic effects
-date:   2024-11-19
+date:   2025-06-28
 categories: programming php fibers di mocking effects
 ---
 
@@ -58,13 +58,14 @@ $data = [
 $value = $fiber->start($data);
 while (!$fiber->isTerminated()) {
     $data = null;
-    switch (get_class($value)) {
-        case 'QueryEffect':
-            // Call database handler here instead of inside the class.
-            $data = $db->query($value->query);
-            break;
-        default:
+    if ($value instanceof Effect) {
+        if ($value instanceof QueryEffect) {
+            $data = 'Db value';
+        } else {
             throw new RuntimeException('Unsupported effect class');
+        }
+    } else {
+        // Other Fiber usage?
     }
     if ($data) {
         $value = $fiber->resume($data);
