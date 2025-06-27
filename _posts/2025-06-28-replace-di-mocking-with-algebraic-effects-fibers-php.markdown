@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Replace DI and mocking with PHP fibers and algebraic effects
+title:  Replace DI and mocking with algebraic effects
 date:   2024-11-19
 categories: programming php fibers di mocking effects
 ---
