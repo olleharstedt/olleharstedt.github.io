@@ -76,6 +76,9 @@ The same method can be used for:
 
 * StdoutEffect and StderrEffect to output data to streams
 * RandEffect to get a random number
+* CacheEffect to cache
+
+And of course you can do exceptions in this manner, too.
 
 TODO
 
