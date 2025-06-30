@@ -23,3 +23,7 @@ Tools that helps:
 Process development
 
 Does not solve extreme scalability issues.
+
+More advanced design patterns:
+
+* Internal or external DSL
