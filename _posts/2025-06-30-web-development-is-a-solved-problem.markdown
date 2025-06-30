@@ -21,3 +21,5 @@ Tools that helps:
 * Integrity test
 
 Process development
+
+Does not solve extreme scalability issues.
