@@ -5,6 +5,10 @@ date:   2025-06-30
 categories: programming web development design pattern
 ---
 
+DRAFT
+
+Maybe I've stagnated. Maybe I'm not being challenged.
+
 Stagnated on a handful of design patterns than can solve 99% of problems thrown at it.
 
 * Pipeline
@@ -26,4 +30,4 @@ Does not solve extreme scalability issues.
 
 More advanced design patterns:
 
-* Internal or external DSL
+* Internal or external DSL, e.g. fluid interface like a query builder.
