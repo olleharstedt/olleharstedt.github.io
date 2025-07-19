@@ -9,7 +9,7 @@ class EffectTest extends TestCase
         require_once("fiber2.php");
     }
 
-    public function testCommand(): void
+    public function testCommandEffects(): void
     {
         $fiber = new Fiber(new DoAThingCommand());
         $data = [
@@ -25,6 +25,14 @@ class EffectTest extends TestCase
             }
         }
         $ret = $fiber->getReturn();
-        print_r($ret);
+        $this->assertEquals($ret, 6);
+    }
+
+    public function testCommandMock(): void
+    {
+        $db = $this
+            ->getMockBuilder(Db::class)
+            ->getMock();
+        $command = new DoAThingCommandInj($db);
     }
 }
