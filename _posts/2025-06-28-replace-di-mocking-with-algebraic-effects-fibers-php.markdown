@@ -11,6 +11,10 @@ The main idea is, instead of injecting what you need, you ask for it using an **
 
 If you don't know what an **algeabraic effect** is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [Wikipedia](https://en.wikipedia.org/wiki/Effect_system).
 
+To quote the Stackoverflow answer:
+
+> In short, algebraic effects are an exception mechanism which lets the throwing function continue its operation.
+
 Since PHP does not support effects, I'm using [fibers](https://www.php.net/manual/en/language.fibers.php) to simulate it.
 
 I'm using object with the suffix `Effect` to denote effects.
@@ -128,4 +132,8 @@ TODO
 
 ## Links
 
-Some advanced use-cases for effect handlers can be found here: https://github.com/ocaml-multicore/effects-examples?tab=readme-ov-file
+For more info on effect handlers, you can read [this section](https://ocaml.org/manual/5.3/effects.html) of the OCaml manual.
+
+Some advanced use-cases for effect handlers can be found [here](https://github.com/ocaml-multicore/effects-examples?tab=readme-ov-file).
+
+[Koka](https://koka-lang.github.io/koka/doc/book.html#why-effects) is a language that supports typed effects.
