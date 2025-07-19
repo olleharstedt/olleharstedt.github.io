@@ -120,9 +120,8 @@ The same method can be used for:
 * StdoutEffect and StderrEffect to output data to streams
 * Setting headers
 * RandEffect to get a random number
-* CacheEffect to cache
-
-And of course you can do exceptions in this manner, too.
+* CacheEffect to do caching
+* TraceEffect or similar for logging
 
 TODO
 
