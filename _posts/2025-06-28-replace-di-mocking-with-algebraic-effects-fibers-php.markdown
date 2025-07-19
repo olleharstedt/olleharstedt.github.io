@@ -88,7 +88,7 @@ class DoAThingCommand
 
 This method might be suboptimal when you're dealing with multiple database connections at once.
 
-The code needs a so called **effect handler**, which is the fiber code.
+The code needs a so called **effect handler** at the top scope, which is the fiber code.
 
 ```php
 $fiber = new Fiber(new DoAThingCommand());
