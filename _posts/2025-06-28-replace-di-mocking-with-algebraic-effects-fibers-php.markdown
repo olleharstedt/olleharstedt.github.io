@@ -1,13 +1,33 @@
 ---
 layout: post
-title:  Replace DI and mocking with algebraic effects
+title:  Replace dependency injection and mocking with algebraic effects
 date:   2025-06-28
-categories: programming php fibers di mocking effects
+categories: programming php fibers dependency injection mocking effects
 ---
 
 DRAFT
 
-Instead of injecting what you need, ask for it using an effect.
+The main idea is, instead of injecting what you need, you ask for it using an effect.
+
+If you don't know what an algeabraic effect is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [WikiPedia](https://en.wikipedia.org/wiki/Effect_system).
+
+Since PHP does not support effects, I'm using [fibers](https://www.php.net/manual/en/language.fibers.php) to simulate it.
+
+Before we knew about injection, we usually asked about the database connection in local scope, as such:
+
+```php
+class DoAThingCommand
+{
+    public function run(array $data): void
+    {
+        if ($data['foo'] == 'bar') {
+            $sql = ... // omitted
+            $db = OpenDatabase();
+            $result = $db->select($sql);
+        }
+    }
+}
+```
 
 Classic code injecting a database handle.
 
@@ -31,7 +51,7 @@ class DoAThingCommand
 }
 ```
 
-Same code using an effect class and fibers.
+This is how the code would look like using an effect instead:
 
 ```php
 class DoAThingCommand
@@ -76,6 +96,7 @@ while (!$fiber->isTerminated()) {
 The same method can be used for:
 
 * StdoutEffect and StderrEffect to output data to streams
+* Setting headers
 * RandEffect to get a random number
 * CacheEffect to cache
 
