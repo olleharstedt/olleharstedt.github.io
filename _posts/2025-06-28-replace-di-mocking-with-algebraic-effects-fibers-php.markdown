@@ -5,8 +5,6 @@ date:   2025-06-28
 categories: programming php fibers dependency injection mocking effects
 ---
 
-DRAFT
-
 The main idea is, instead of injecting what you need, you ask for it using an **effect**.
 
 If you don't know what an **algeabraic effect** is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [Wikipedia](https://en.wikipedia.org/wiki/Effect_system).
@@ -97,12 +95,13 @@ $fiber = new Fiber(new DoAThingCommand());
 $data = [
     'foo' => 'bar'
 ];
-$value = $fiber->start($data);
+$effect = $fiber->start($data);
+$db = OpenDatabase();
 while (!$fiber->isTerminated()) {
     $data = null;
-    if ($value instanceof Effect) {
-        if ($value instanceof SqlQueryEffect) {
-            $data = 'Db value';
+    if ($effect instanceof Effect) {
+        if ($effect instanceof SqlQueryEffect) {
+            $data = $db->select($effect->sql);
         } else {
             throw new RuntimeException('Unsupported effect class');
         }
@@ -110,9 +109,10 @@ while (!$fiber->isTerminated()) {
         // Other Fiber usage?
     }
     if ($data) {
-        $value = $fiber->resume($data);
+        $effect = $fiber->resume($data);
     }
 }
+$ret = $fiber->getReturn();
 ```
 
 The same method can be used for:
