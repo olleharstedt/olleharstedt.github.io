@@ -78,7 +78,7 @@ class DoAThingCommand
     {
         if ($data['foo'] == 'bar') {
             $sql = ... // omitted
-            $result = Fiber::suspend(new QueryEffect($sql));
+            $result = Fiber::suspend(new SqlQueryEffect($sql));
             echo 'Database query returned the value: ' . $result, PHP_EOL;
         }
     }
