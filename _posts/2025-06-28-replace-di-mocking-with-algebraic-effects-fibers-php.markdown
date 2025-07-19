@@ -9,9 +9,11 @@ DRAFT
 
 The main idea is, instead of injecting what you need, you ask for it using an effect.
 
-If you don't know what an algeabraic effect is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [WikiPedia](https://en.wikipedia.org/wiki/Effect_system).
+If you don't know what an algeabraic effect is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [Wikipedia](https://en.wikipedia.org/wiki/Effect_system).
 
 Since PHP does not support effects, I'm using [fibers](https://www.php.net/manual/en/language.fibers.php) to simulate it.
+
+I'm using object with the suffix `Effect` to denote effects.
 
 Before we knew about injection, we usually asked about the database connection in local scope, as such:
 
@@ -29,7 +31,7 @@ class DoAThingCommand
 }
 ```
 
-Classic code injecting a database handle.
+If you instead inject the database connection, so that it can be mocked during unit-test, it looks like this:
 
 ```php
 class DoAThingCommand
@@ -51,7 +53,23 @@ class DoAThingCommand
 }
 ```
 
-This is how the code would look like using an effect instead:
+But you can avoid the hazzle of injection entirely if you instead use an effect system to "ask" about the connection:
+
+```php
+class DoAThingCommand
+{
+    public function run(array $data): void
+    {
+        if ($data['foo'] == 'bar') {
+            $sql = ... // omitted
+            $db = Fiber::suspend(new OpenDatabaseEffect());
+            $result = $db->select($sql);
+        }
+    }
+}
+```
+
+In fact, you might not need a connection at all - just send the query to the effect handler instead:
 
 ```php
 class DoAThingCommand
@@ -65,8 +83,9 @@ class DoAThingCommand
         }
     }
 }
-
 ```
+
+This method might be suboptimal when you're dealing with multiple database connections at once.
 
 The code need a top "effect handler", which is the fiber code.
 
