@@ -166,6 +166,8 @@ public function testCommandEffects(): void
 
 It can probably be shortened with an mock effect handler class.
 
+TODO Workload of test code scales different for multiple mocked classes vs amount of effects?
+
 Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
 
 ## TODO
