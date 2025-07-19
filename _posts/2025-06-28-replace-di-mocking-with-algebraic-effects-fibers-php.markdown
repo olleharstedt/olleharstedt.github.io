@@ -62,7 +62,7 @@ But you can avoid the hazzle of injection entirely if you instead use an effect 
 ```php
 class DoAThingCommand
 {
-    public function run(array $data): void
+    public function __invoke(array $data): void
     {
         if ($data['foo'] == 'bar') {
             $sql = ... // omitted
