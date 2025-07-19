@@ -136,12 +136,14 @@ public function testCommandMock(): void
         ->getMockBuilder(Db::class)
         ->getMock();
     $db->method('select')->willReturn([1, 2, 3]);
-    $command = new DoAThingCommandInj($db);
+    $command = new DoAThingCommand($db);
     $data = ['foo' => 'bar'];
     $ret = $command($data);
     $this->assertEquals($ret, 6);
 }
 ```
+
+Same test using effects:
 
 ```php
 public function testCommandEffects(): void
@@ -162,13 +164,16 @@ public function testCommandEffects(): void
 }
 ```
 
+It can probably be shortened with an mock effect handler class.
+
+Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
+
 ## TODO
 
 * Can't combine with other fibers, e.g. Amphp?
 * Example of test code
 * Many different effects - same mess as many different mocked calls?
 * Counter argument: If you need to mock the order of function calls, you're coding wrong in the first place
-* Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
 
 ## Links
 
