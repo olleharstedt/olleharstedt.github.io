@@ -56,7 +56,8 @@ class DoAThingCommandInj
 class MockEffectHandler
 {
     /** @array */
-    public $effects = [];
+    public $effects = [
+    ];
 
     public function run($command): mixed
     {
@@ -65,7 +66,6 @@ class MockEffectHandler
         $effect = $fiber->start($data);
         $i = 0;
         while (!$fiber->isTerminated()) {
-            [$type, $res] = $this->effects[$i];
             $effect = $fiber->resume();
         }
         return $fiber->getReturn();

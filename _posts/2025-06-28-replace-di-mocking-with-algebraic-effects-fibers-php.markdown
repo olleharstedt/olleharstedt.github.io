@@ -123,7 +123,46 @@ The same method can be used for:
 * CacheEffect to do caching
 * TraceEffect or similar for logging
 
-TODO
+## Testing
+
+To compare how unit-test might look like for the different cases.
+
+Using PHPUnit with mocking:
+
+```php
+public function testCommandMock(): void
+{
+    $db = $this
+        ->getMockBuilder(Db::class)
+        ->getMock();
+    $db->method('select')->willReturn([1, 2, 3]);
+    $command = new DoAThingCommandInj($db);
+    $data = ['foo' => 'bar'];
+    $ret = $command($data);
+    $this->assertEquals($ret, 6);
+}
+```
+
+```php
+public function testCommandEffects(): void
+{
+    $fiber = new Fiber(new DoAThingCommand());
+    $data = ['foo' => 'bar'];
+    $value = $fiber->start($data);
+    while (!$fiber->isTerminated()) {
+        if ($value instanceof SqlQueryEffect) {
+            $queryResult = [1, 2, 3];
+            $value = $fiber->resume($queryResult);
+        } else {
+            $value = $fiber->resume();
+        }
+    }
+    $ret = $fiber->getReturn();
+    $this->assertEquals($ret, 6);
+}
+```
+
+## TODO
 
 * Can't combine with other fibers, e.g. Amphp?
 * Example of test code
