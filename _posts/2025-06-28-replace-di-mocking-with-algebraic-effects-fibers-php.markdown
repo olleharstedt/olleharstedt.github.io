@@ -7,9 +7,9 @@ categories: programming php fibers dependency injection mocking effects
 
 DRAFT
 
-The main idea is, instead of injecting what you need, you ask for it using an effect.
+The main idea is, instead of injecting what you need, you ask for it using an **effect**.
 
-If you don't know what an algeabraic effect is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [Wikipedia](https://en.wikipedia.org/wiki/Effect_system).
+If you don't know what an **algeabraic effect** is, you can read about it on [StackOverflow](https://stackoverflow.com/a/57280373) or [Wikipedia](https://en.wikipedia.org/wiki/Effect_system).
 
 Since PHP does not support effects, I'm using [fibers](https://www.php.net/manual/en/language.fibers.php) to simulate it.
 
@@ -79,7 +79,6 @@ class DoAThingCommand
         if ($data['foo'] == 'bar') {
             $sql = ... // omitted
             $result = Fiber::suspend(new SqlQueryEffect($sql));
-            echo 'Database query returned the value: ' . $result, PHP_EOL;
         }
     }
 }
@@ -87,7 +86,7 @@ class DoAThingCommand
 
 This method might be suboptimal when you're dealing with multiple database connections at once.
 
-The code need a top "effect handler", which is the fiber code.
+The code needs a so called **effect handler**, which is the fiber code.
 
 ```php
 $fiber = new Fiber(new DoAThingCommand());
@@ -98,7 +97,7 @@ $value = $fiber->start($data);
 while (!$fiber->isTerminated()) {
     $data = null;
     if ($value instanceof Effect) {
-        if ($value instanceof QueryEffect) {
+        if ($value instanceof SqlQueryEffect) {
             $data = 'Db value';
         } else {
             throw new RuntimeException('Unsupported effect class');
