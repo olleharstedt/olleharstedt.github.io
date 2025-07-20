@@ -212,7 +212,17 @@ while (!$fiber->isTerminated()) {
 }
 ```
 
-Here we might start to see a gain in reduces complexity in test logic, especially if we apply some helper functions to just give the test an array of expected effects instead of this if-statement spagetti.
+Here we might start to see a gain in reduced complexity in test logic, especially if we apply some helper functions to just give the test an array of expected effects instead of this if-statement spagetti.
+
+```php
+$effectHelper = new MockEffectHelper([
+    SqlQueryEffect::class => [1, 2, 3],
+    RedisEffect::class => true,  // success
+    FileAccessEffect::class => $dummyFileContent,
+    LogEffect => true,
+    CurlEffect => $dummyCurlReturnValue,
+]);
+```
 
 You might argue that a command object with so much effectful logic shouldn't be unit tested at all, but rather integrity tested. How is that better, though? We might refrain from writing unit tests sometimes, because we lack proper tools to deal with effectfulness.
 
