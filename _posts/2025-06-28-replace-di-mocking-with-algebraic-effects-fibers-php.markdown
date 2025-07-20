@@ -169,21 +169,21 @@ It can probably be shortened with a mock effect handler class.
 The question is how this technique scales with the introduction of more and more injected classes. Imagine a command object which needs access to a SQL database, Redis, file system, uses curl and logging. Mocking would involve at least five mocks:
 
 ```php
-    $db = $this
-        ->getMockBuilder(Db::class)
-        ->getMock();
-    $redis = $this
-        ->getMockBuilder(Redis::class)
-        ->getMock();
-    $file = $this
-        ->getMockBuilder(File::class)
-        ->getMock();
-    $curl = $this
-        ->getMockBuilder(Curl::class)
-        ->getMock();
-    $logger = $this
-        ->getMockBuilder(Logger::class)
-        ->getMock();
+$db = $this
+    ->getMockBuilder(Db::class)
+    ->getMock();
+$redis = $this
+    ->getMockBuilder(Redis::class)
+    ->getMock();
+$file = $this
+    ->getMockBuilder(File::class)
+    ->getMock();
+$curl = $this
+    ->getMockBuilder(Curl::class)
+    ->getMock();
+$logger = $this
+    ->getMockBuilder(Logger::class)
+    ->getMock();
 ```
 
 Plus logic for mocking the methods.
@@ -191,22 +191,23 @@ Plus logic for mocking the methods.
 Depending on how much each class is used, the effect tests would be something like:
 
 ```php
-    while (!$fiber->isTerminated()) {
-        if ($value instanceof SqlQueryEffect) {
-            $queryResult = [1, 2, 3];
-            $value = $fiber->resume($queryResult);
-        } else if ($value instanceof RedisEffect) {
-            // Logic omitted
-        } else if ($value instanceof FileAccessEffect) {
-            // Logic omitted
-        } else if ($value instanceof LogEffect) {
-            // Logic omitted
-        } else if ($value instanceof CurlEffect) {
-            // Logic omitted
-        } else {
-            $value = $fiber->resume();
-        }
+$effect = $fiber->start($data);
+while (!$fiber->isTerminated()) {
+    if ($effect instanceof SqlQueryEffect) {
+        $queryResult = [1, 2, 3];
+        $effect = $fiber->resume($queryResult);
+    } else if ($effect instanceof RedisEffect) {
+        // Logic omitted
+    } else if ($effect instanceof FileAccessEffect) {
+        // Logic omitted
+    } else if ($effect instanceof LogEffect) {
+        // Logic omitted
+    } else if ($effect instanceof CurlEffect) {
+        // Logic omitted
+    } else {
+        $effect = $fiber->resume();
     }
+}
 ```
 
 TODO Workload of test code scales different for multiple mocked classes vs amount of effects?
