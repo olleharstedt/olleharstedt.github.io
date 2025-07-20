@@ -125,7 +125,7 @@ The same method can be used for:
 
 ## Testing
 
-To compare how unit-test might look like for the different cases.
+To compare how unit-test might look like for the different cases. Here assuming the command class iterates and sum the database result.
 
 Using PHPUnit with mocking:
 
@@ -164,11 +164,11 @@ public function testCommandEffects(): void
 }
 ```
 
-It can probably be shortened with an mock effect handler class.
+It can probably be shortened with a mock effect handler class.
+
+The question is how this technique scales with the introduction of more and more injected classes. Imagine a command object which needs access to a SQL database, Redis, file system, uses curl and logging.
 
 TODO Workload of test code scales different for multiple mocked classes vs amount of effects?
-
-TODO More realistic test case with multiple injected objects, db, redis, logger, curl, file.
 
 Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
 
