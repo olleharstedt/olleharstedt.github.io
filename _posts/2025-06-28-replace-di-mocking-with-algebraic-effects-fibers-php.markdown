@@ -229,8 +229,6 @@ You might argue that a command object with so much effectful logic shouldn't be 
 ## TODO
 
 * Can't combine with other fibers, e.g. Amphp?
-* Example of test code
-* Many different effects - same mess as many different mocked calls?
 * Counter argument: If you need to mock the order of function calls, you're coding wrong in the first place
 
 ## Links
