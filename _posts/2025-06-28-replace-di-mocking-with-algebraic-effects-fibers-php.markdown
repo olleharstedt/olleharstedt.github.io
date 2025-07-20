@@ -166,6 +166,8 @@ public function testCommandEffects(): void
 
 It can probably be shortened with a mock effect handler class.
 
+NB: Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
+
 The question is how this technique scales with the introduction of more and more injected classes. Imagine a command object which needs access to a SQL database, Redis, file system, uses curl and logging. Mocking would involve at least five mocks:
 
 ```php
@@ -210,9 +212,9 @@ while (!$fiber->isTerminated()) {
 }
 ```
 
-TODO Workload of test code scales different for multiple mocked classes vs amount of effects?
+Here we might start to see a gain in reduces complexity in test logic, especially if we apply some helper functions to just give the test an array of expected effects instead of this if-statement spagetti.
 
-Both mocking and effect handler are white-box testing, assuming internal knowledge of a function.
+You might argue that a command object with so much effectful logic shouldn't be unit tested at all, but rather integrity tested. How is that better, though? We might refrain from writing unit tests sometimes, because we lack proper tools to deal with effectfulness.
 
 ## TODO
 
