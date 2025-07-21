@@ -123,6 +123,8 @@ The same method can be used for:
 * CacheEffect to do caching
 * TraceEffect or similar for logging
 
+If you want the business layer to be even more oblivious about the storage layer, you can be more specific in your effect usage, e.g. `FetchUserByIdEffect`. It's then up to your effect handler to decide if it should look for a user in the database, a cache, an API, or what have you.
+
 ## Testing
 
 To compare how unit-test might look like for the different cases. Here assuming the command class iterates and sum the database result.
