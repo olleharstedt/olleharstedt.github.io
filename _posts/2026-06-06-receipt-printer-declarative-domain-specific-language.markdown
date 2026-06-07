@@ -5,6 +5,7 @@ date:   2026-06-06
 categories: programming DSL
 ---
 
+## Why?
 
 This is a pretty fun exercise:
 
@@ -22,19 +23,18 @@ There are certain pros and cons with a declarative DSL vs a fluid interface.
 
 How fluid can it really be when PHP is the host language?
 
----
+Should/must support partials?
 
-Printer payload
+## Printer payload
 
 * Receipt data
 * Language
 * Currency
 * Active campaigns
 * Settings, like print logo
+* Open drawer
 
----
-
-Receipt parts
+## Receipt parts
 
 * Store info
 * Corrected by, correcting
@@ -47,8 +47,9 @@ Receipt parts
 * On hold
 * Refund sign
 
-Elements:
+## Elements and functions
 
+* Line
 * Header
 * Center
 * Bold
@@ -61,3 +62,23 @@ Elements:
 * Utf8ToEpsonSE
 * Round item unit (st, kg)
 * Translate item unit (st, kg)
+* Reset printer
+
+## Base functions
+
+* if
+* switch?
+* loop
+* list or `'`
+
+## Notes
+
+```lisp
+; Store info
+(if settings.receipt_print_company_name
+    '(
+        (header store.store_name)
+        linefeed
+    ))
+(center-line store.store_address)
+```
