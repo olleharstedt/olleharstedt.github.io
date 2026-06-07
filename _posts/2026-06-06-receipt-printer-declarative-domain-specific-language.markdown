@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Declarative DSL for receipt printer
+title:  Declarative domain-specific language for receipt printer
 date:   2026-06-06
 categories: programming DSL
 ---
@@ -9,7 +9,7 @@ categories: programming DSL
 
 This is a pretty fun exercise:
 
-Write a DSL that works as a template engine for a receipt printer
+Write a domain-specific langugae (DSL) that works as a template engine for a receipt printer
 
 Evaluators should be able to output JSON, raw text, XML, or whatever (one evaluator class per output format, that is)
 
@@ -24,6 +24,8 @@ There are certain pros and cons with a declarative DSL vs a fluid interface.
 How fluid can it really be when PHP is the host language?
 
 Should/must support partials?
+
+Event to add functions to the DSL.
 
 ## Printer payload
 
@@ -73,6 +75,8 @@ Should/must support partials?
 
 ## Notes
 
+S-expr
+
 ```lisp
 ; Store info
 (if settings.receipt_print_company_name
@@ -82,3 +86,11 @@ Should/must support partials?
     ))
 (center-line store.store_address)
 ```
+
+TODO Forth-like
+
+TODO I-expression
+
+https://srfi.schemers.org/srfi-49/srfi-49.html
+
+https://sourceforge.net/p/readable/wiki/Rationale-sweet/
