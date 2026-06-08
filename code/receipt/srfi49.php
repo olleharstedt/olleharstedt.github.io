@@ -5,10 +5,30 @@ class ParseException extends Exception {}
 class SRFI49
 {
 
-	function parse($code)
-	{
+	function parse($code) {
+		// 1. NEW: Pre-processor to collapse multiline parentheses
+		$rawLines = explode("\n", $code);
+		$collapsedLines = [];
+		$currentLine = "";
+		$openParens = 0;
+
+		foreach ($rawLines as $l) {
+			$clean = explode(';', $l)[0]; // Ignore comments
+			$openParens += substr_count($clean, '(') - substr_count($clean, ')');
+
+			$currentLine = ($currentLine === "") ? $l : $currentLine . " " . trim($l);
+
+			if ($openParens <= 0) {
+				$collapsedLines[] = $currentLine;
+				$currentLine = "";
+				$openParens = 0; // Reset stray negatives
+			}
+		}
+		if ($currentLine !== "") $collapsedLines[] = $currentLine; // Catch remaining text
+
+		// 2. The original parsing engine (now reading from $collapsedLines)
 		$lines = [];
-		foreach (explode("\n", $code) as $l)
+		foreach ($collapsedLines as $l)
 			if (preg_match('/^(\s*)([^;\s].*)/', explode(';', $l)[0], $m))
 				if (preg_match_all('/[()]|[^\s()]+/', $m[2], $t) && $t[0])
 					$lines[] = [strlen($m[1]), $t[0]];
@@ -23,12 +43,9 @@ class SRFI49
 				$s = function() use (&$toks, &$p, &$s) {
 					if (($t = $toks[$p++] ?? '') === '(') {
 						for ($r = []; $p < count($toks) && $toks[$p] !== ')';) $r[] = $s();
-
-						// THROW ERROR: If the loop exited but we aren't pointing at a ')'
 						if (($toks[$p] ?? '') !== ')') {
 							throw new ParseException("Syntax Error: Mismatched parentheses in: '" . implode(' ', $toks) . "'");
 						}
-
 						$p++; return $r;
 					}
 					return is_numeric($t) ? $t+0 : $t;
@@ -94,7 +111,10 @@ define (fac x)
 ";
 
 $code2 = <<<LISP
-(if 1 (begin (define a 10) (+ a 1)))
+(if 1 
+    (begin 
+        (define a 10) 
+        (* a 2.5)))
 LISP;
 
 // Multiline parenthesis does NOT work, only one-liner
