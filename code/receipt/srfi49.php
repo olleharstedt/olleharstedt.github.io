@@ -1,8 +1,12 @@
 <?php
 
+class ParseException extends Exception {}
+
 class SRFI49
 {
-	function parse($code) {
+
+	function parse($code)
+	{
 		$lines = [];
 		foreach (explode("\n", $code) as $l)
 			if (preg_match('/^(\s*)([^;\s].*)/', explode(';', $l)[0], $m))
@@ -18,8 +22,13 @@ class SRFI49
 				$i++; $p = 0;
 				$s = function() use (&$toks, &$p, &$s) {
 					if (($t = $toks[$p++] ?? '') === '(') {
-						// FIX: Added '$p < count($toks)' boundary check to prevent infinite loops
 						for ($r = []; $p < count($toks) && $toks[$p] !== ')';) $r[] = $s();
+
+						// THROW ERROR: If the loop exited but we aren't pointing at a ')'
+						if (($toks[$p] ?? '') !== ')') {
+							throw new ParseException("Syntax Error: Mismatched parentheses in: '" . implode(' ', $toks) . "'");
+						}
+
 						$p++; return $r;
 					}
 					return is_numeric($t) ? $t+0 : $t;
@@ -32,7 +41,7 @@ class SRFI49
 			return $res;
 		};
 		return $b(null);
-}
+	}
 
 	function eval($e, &$env = []) {
 		if (!is_array($e)) return is_numeric($e) ? $e+0 : ($env[$e] ?? $e);
