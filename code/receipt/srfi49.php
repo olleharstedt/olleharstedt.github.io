@@ -73,7 +73,40 @@ class SRFI49
 			return $env[$e[1]] = $this->eval($e[2], $env);
 		}
 		// 1. Updated 'if' to make the else branch optional
-		if ($op === 'if') return $this->eval($this->eval($e[1], $env) ? $e[2] : ($e[3] ?? null), $env);
+		if ($op === 'if') {
+			$cond = $this->eval($e[1], $env);
+
+			$thenBranch = [];
+			$elseBranch = [];
+			$foundElse = false;
+
+			// Everything before 'else' goes to thenBranch, everything after goes to elseBranch
+			foreach (array_slice($e, 2) as $stmt) {
+				if ($stmt === 'else') {
+					$foundElse = true;
+					continue;
+				}
+				if (is_array($stmt) && ($stmt[0] ?? '') === 'else') {
+					$foundElse = true;
+					$elseBranch = array_merge($elseBranch, array_slice($stmt, 1));
+					continue;
+				}
+
+				if (!$foundElse) {
+					$thenBranch[] = $stmt;
+				} else {
+					$elseBranch[] = $stmt;
+				}
+			}
+
+			// Execute the matching branch sequentially
+			$body = $cond ? $thenBranch : $elseBranch;
+			$res = null;
+			foreach ($body as $stmt) {
+				$res = $this->eval($stmt, $env);
+			}
+			return $res;
+		}
 
 		// 2. Added 'begin' block handler to execute multiple statements sequentially
 		if ($op === 'begin') {
@@ -115,6 +148,12 @@ $code2 = <<<LISP
     (begin 
         (define a 10) 
         (* a 2.5)))
+
+if 0 
+  define a 10
+  * a 2.5
+  else
+    111
 LISP;
 
 // Multiline parenthesis does NOT work, only one-liner
