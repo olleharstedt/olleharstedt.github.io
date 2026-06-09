@@ -146,7 +146,7 @@ define (fac x)
 $code2 = <<<LISP
 (if 1 
     (begin 
-        (define a 10) 
+        (define a 20)
         (* a 2.5)))
 
 if 0 
