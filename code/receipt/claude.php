@@ -107,23 +107,83 @@ class ReceiptTemplate
         return $this->renderer->finalize(array_filter($results, function($v) { return $v !== null; }));
     }
 
-    // ── Lexer ─────────────────────────────────────────────────────────────────
-    private function lex(string $src): array {
-        $out = [];
-        foreach (explode("\n", $src) as $raw) {
-            preg_match('/^([ \t]*)(.*)$/', $raw, $m);
-            $body = trim($m[2]);
-            if ($body === '' || $body[0] === ';') continue;
-            $out[] = ['i' => $m[1], 't' => $this->scan($body)];
-        }
-        return $out;
-    }
+	// ── Lexer ─────────────────────────────────────────────────────────────────
+	private function lex(string $src): array {
+		$out = [];
+		foreach (explode("\n", $src) as $raw) {
+			preg_match('/^([ \t]*)(.*)$/', $raw, $m);
+			$body = trim($m[2]);
+			if ($body === '' || $body[0] === ';') continue;
+			$out[] = ['i' => $m[1], 't' => $this->scan($body)];
+		}
+		return $out;
+	}
 
-    private function scan(string $s): array {
-        // Match: quoted strings | balanced parens (up to 2 levels) | bare tokens
-        preg_match_all('/"(?:[^"\\\\]|\\\\.)*"|\((?:[^()]|\((?:[^()])*\))*\)|[^\s"()]+/', $s, $m);
-        return $m[0];
-    }
+	/** Robust character scanner that handles parentheses nesting to infinite depth */
+	private function scan(string $s): array {
+		$tokens = [];
+		$i = 0;
+		$n = strlen($s);
+		while ($i < $n) {
+			$ch = $s[$i];
+			if ($ch === " " || $ch === "\t" || $ch === "\r" || $ch === "\n") {
+				$i++;
+				continue;
+			}
+
+			// Handle Quoted Strings
+			if ($ch === '"') {
+				$start = $i;
+				$i++;
+				while ($i < $n && $s[$i] !== '"') {
+					if ($s[$i] === '\\' && $i + 1 < $n) {
+						$i += 2;
+					} else {
+						$i++;
+					}
+				}
+				if ($i < $n) $i++;
+				$tokens[] = substr($s, $start, $i - $start);
+			} 
+			// Handle Parenthesized Blocks (unlimited depth tracking)
+			elseif ($ch === '(') {
+				$start = $i;
+				$depth = 1;
+				$i++;
+				while ($i < $n && $depth > 0) {
+					if ($s[$i] === '"') {
+						$i++;
+						while ($i < $n && $s[$i] !== '"') {
+							if ($s[$i] === '\\' && $i + 1 < $n) {
+								$i += 2;
+							} else {
+								$i++;
+							}
+						}
+						if ($i < $n) $i++;
+					} elseif ($s[$i] === '(') {
+						$depth++;
+						$i++;
+					} elseif ($s[$i] === ')') {
+						$depth--;
+						$i++;
+					} else {
+						$i++;
+					}
+				}
+				$tokens[] = substr($s, $start, $i - $start);
+			} 
+			// Handle Bare Symbols/Tokens
+			else {
+				$start = $i;
+				while ($i < $n && $s[$i] !== " " && $s[$i] !== "\t" && $s[$i] !== "\r" && $s[$i] !== "\n" && $s[$i] !== '"' && $s[$i] !== '(' && $s[$i] !== ')') {
+					$i++;
+				}
+				$tokens[] = substr($s, $start, $i - $start);
+			}
+		}
+		return $tokens;
+	}
 
     // ── Parser ────────────────────────────────────────────────────────────────
     /** Returns [ast_node, next_pos]. Never evaluates — just builds the tree. */
@@ -174,67 +234,98 @@ class ReceiptTemplate
     }
 
     // ── Evaluator ─────────────────────────────────────────────────────────────
-    private function eval(array $expr, array $data) {
-        // `each` must intercept before symbol resolution so children stay as raw AST.
-        if ($expr[0] === 'each') {
-            $listVar  = $expr[1];               // symbol naming the list in $data
-            $itemVar  = $expr[2];               // symbol to bind each item to
-            $items    = isset($data[$listVar]) ? $data[$listVar] : [];
-            $children = array_slice($expr, 3);  // raw unevaluated child ASTs
-            $out = [];
-            foreach ((array)$items as $item) {
-                $itemData = is_array($item)
-                    ? array_merge($data, $item, [$itemVar => $item])
-                    : array_merge($data, [$itemVar => $item]);
-                foreach ($children as $child) {
-                    $out[] = $this->eval((array)$child, $itemData);
-                }
-            }
-            return implode('', $out);
-        }
+	private function eval(array $expr, array $data) {
+		if (empty($expr)) return null;
 
-        // Resolve symbols and recursively evaluate sub-expressions.
-        $expr = array_map(function($x) use ($data) {
-            if (is_array($x))  return $this->eval($x, $data);
-            if (is_string($x)) return isset($data[$x]) ? $data[$x] : $x;
-            return $x;
-        }, $expr);
+		// 1. `each` must intercept immediately to control iteration context
+		if ($expr[0] === 'each') {
+			$listVar  = $expr[1];
+			$itemVar  = $expr[2];
+			$items    = isset($data[$listVar]) ? $data[$listVar] : [];
+			$children = array_slice($expr, 3);
+			$out = [];
+			foreach ((array)$items as $item) {
+				$itemData = is_array($item)
+					? array_merge($data, $item, [$itemVar => $item])
+					: array_merge($data, [$itemVar => $item]);
+				foreach ($children as $child) {
+					$out[] = $this->eval((array)$child, $itemData);
+				}
+			}
+			return implode('', $out);
+		}
 
-        $op   = $expr[0];
-        $args = array_slice($expr, 1);
+		$op = $expr[0];
+		if (is_array($op)) {
+			$op = $this->eval($op, $data);
+		}
 
-        if ($op === 'if') {
-            return isset($args[(bool)$args[0] ? 1 : 2]) ? $args[(bool)$args[0] ? 1 : 2] : null;
-        }
+		// 2. Identify Built-in functional macros vs Rendering tags
+		$builtins = ['if', '+', '-', '*', '/', '=', '<', '>', '<=', '>=', 'not', 'and', 'or', 'str', 'pad', 'rpad', 'fmt-money', 'fmt-num', 'upper', 'lower', 'repeat', 'get'];
 
-        // Built-ins; unknown ops fall through to the renderer (line, hr, col2, section, …)
-        if ($op==='+')         return array_sum($args);
-        if ($op==='-')         return count($args)===1 ? -$args[0] : $args[0] - array_sum(array_slice($args,1));
-        if ($op==='*')         return array_product($args);
-        if ($op==='/')         return array_reduce(array_slice($args,1), function($c,$x){ return $c/$x; }, $args[0]);
-        if ($op==='=')         return $args[0] == $args[1];
-        if ($op==='<')         return $args[0] <  $args[1];
-        if ($op==='>')         return $args[0] >  $args[1];
-        if ($op==='<=')        return $args[0] <= $args[1];
-        if ($op==='>=')        return $args[0] >= $args[1];
-        if ($op==='not')       return !$args[0];
-        if ($op==='and')       return (bool)array_product(array_map('boolval', $args));
-        if ($op==='or')        return (bool)array_sum(array_map('boolval', $args));
-        if ($op==='str')       return implode('', $args);
-        if ($op==='pad')       return str_pad((string)$args[0], (int)$args[1], isset($args[2]) ? $args[2] : '0', STR_PAD_LEFT);
-        if ($op==='rpad')      return str_pad((string)$args[0], (int)$args[1], isset($args[2]) ? $args[2] : '0', STR_PAD_RIGHT);
-        if ($op==='fmt-money') return number_format((float)$args[0], 2);
-        if ($op==='fmt-num')   return number_format((float)$args[0], (int)(isset($args[1]) ? $args[1] : 2));
-        if ($op==='upper')     return strtoupper((string)$args[0]);
-        if ($op==='lower')     return strtolower((string)$args[0]);
-        if ($op==='repeat')    return str_repeat((string)$args[0], (int)$args[1]);
-        if ($op==='get')       return $this->dotGet($data, (string)$args[0]);
-        return $this->renderer->node(
-            (string)$op,
-            $this->attrsFrom($args),
-            array_values(array_filter($args, 'is_array'))
-        );
-    }
+		if (in_array($op, $builtins, true)) {
+			$args = array_slice($expr, 1);
+			$evaluatedArgs = array_map(function($x) use ($data) {
+				if (is_array($x))  return $this->eval($x, $data);
+				if (is_string($x)) return array_key_exists($x, $data) ? $data[$x] : $x;
+				return $x;
+			}, $args);
+
+			if ($op === 'if')        return (bool)$evaluatedArgs[0] ? ($evaluatedArgs[1] ?? null) : ($evaluatedArgs[2] ?? null);
+			if ($op === '+')         return array_sum($evaluatedArgs);
+			if ($op === '-')         return count($evaluatedArgs) === 1 ? -$evaluatedArgs[0] : $evaluatedArgs[0] - array_sum(array_slice($evaluatedArgs, 1));
+			if ($op === '*')         return array_product($evaluatedArgs);
+			if ($op === '/')         return array_reduce(array_slice($evaluatedArgs, 1), function($c, $x) { return $c / $x; }, $evaluatedArgs[0]);
+			if ($op === '=')         return $evaluatedArgs[0] == $evaluatedArgs[1];
+			if ($op === '<')         return $evaluatedArgs[0] <  $evaluatedArgs[1];
+			if ($op === '>')         return $evaluatedArgs[0] >  $evaluatedArgs[1];
+			if ($op === '<=')        return $evaluatedArgs[0] <= $evaluatedArgs[1];
+			if ($op === '>=')        return $evaluatedArgs[0] >= $evaluatedArgs[1];
+			if ($op === 'not')       return !$evaluatedArgs[0];
+			if ($op === 'and')       return (bool)array_product(array_map('boolval', $evaluatedArgs));
+			if ($op === 'or')        return (bool)array_sum(array_map('boolval', $evaluatedArgs));
+			if ($op === 'str')       return implode('', $evaluatedArgs);
+			if ($op === 'pad')       return str_pad((string)$evaluatedArgs[0], (int)$evaluatedArgs[1], $evaluatedArgs[2] ?? ' ', STR_PAD_LEFT);
+			if ($op === 'rpad')      return str_pad((string)$evaluatedArgs[0], (int)$evaluatedArgs[1], $evaluatedArgs[2] ?? ' ', STR_PAD_RIGHT);
+			if ($op === 'fmt-money') return number_format((float)$evaluatedArgs[0], 2);
+			if ($op === 'fmt-num')   return number_format((float)$evaluatedArgs[0], (int)($evaluatedArgs[1] ?? 2));
+			if ($op === 'upper')     return strtoupper((string)$evaluatedArgs[0]);
+			if ($op === 'lower')     return strtolower((string)$evaluatedArgs[0]);
+			if ($op === 'repeat')    return str_repeat((string)$evaluatedArgs[0], (int)$evaluatedArgs[1]);
+			if ($op === 'get')       return $this->dotGet($data, (string)$evaluatedArgs[0]);
+		}
+
+		// 3. Otherwise treat as a Layout Node component (line, hr, col2, section, etc.)
+		$attrs = [];
+		$children = [];
+		$args = array_slice($expr, 1);
+		$i = 0;
+		$count = count($args);
+
+		while ($i < $count) {
+			// Safely capture named scalar attributes ahead of structure execution
+			if (is_string($args[$i]) && $i + 1 < $count && !is_array($args[$i])) {
+				$key = $args[$i];
+				$val = $args[$i + 1];
+				if (is_array($val)) {
+					$attrs[$key] = $this->eval($val, $data);
+				} else {
+					$attrs[$key] = array_key_exists($val, $data) ? $data[$val] : $val;
+				}
+				$i += 2;
+			} else {
+				$child = $args[$i];
+				if (is_array($child)) {
+					$children[] = $this->eval($child, $data);
+				} else {
+					$children[] = array_key_exists($child, $data) ? $data[$child] : $child;
+				}
+				$i++;
+			}
+		}
+
+		return $this->renderer->node((string)$op, $attrs, $children);
+	}
 
     /** Dotted path lookup: get order.total  →  $data['order']['total'] */
     private function dotGet(array $data, string $path) {
