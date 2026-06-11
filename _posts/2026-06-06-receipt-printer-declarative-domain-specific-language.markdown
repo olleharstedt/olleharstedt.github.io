@@ -36,6 +36,13 @@ Event to add functions to the DSL.
 * Settings, like print logo
 * Open drawer
 
+## DSL Features
+
+* Optional arguments with default values
+* SRFI-49 I-expressions
+* Dot-notation for property access
+* if-else
+
 ## Receipt parts
 
 * Store info
@@ -51,7 +58,7 @@ Event to add functions to the DSL.
 
 ## Elements and functions
 
-* Line
+* Linefeed
 * Header
 * Center
 * Bold
