@@ -5,11 +5,62 @@ date:   2026-06-06
 categories: programming DSL
 ---
 
-**What?**
+### What?
 
-Write a declerative domain-specific langugae (DSL) that works as a template engine for a receipt printer. The lexer/parser must be small, around 200 LoC. The evaluation of keywords must be pluggable using the [strategy design pattern](https://en.wikipedia.org/wiki/Strategy_pattern), to be able to output HTML, JSON, raw text, or whatever the physical printer expects.
+Write a declerative domain-specific langugae (DSL) that works as a template engine for a receipt printer. 
 
-Declarative means it should not be able to hold state or change state of injected variables.
+### Why?
+
+An old printer class is decaying beyond any recognition. What used to be pure layout code is now littered with conditionals to decide padding and formatting, even when the injected printer driver class is used to distinguish between different printers.
+
+> Just clean up the printer class?
+
+I want it be be easier to switch layouts, edit layouts, and also really enforce the separation of template structure from fetching of data, processing of data, and support for different printers.
+
+> Why not a fluid interface?
+
+As soon as you need a little bit of logic in your template, the interface breaks down.
+
+TODO Example
+
+> Why not an existing template language, like XML, JSON? Or PHP?
+
+It needs to be sandboxed to be safe, so any general programming language is out.
+
+If you use HTML or HTML-like as a template language, you actually force yourself to use _two_ languages - one for document structure, and another for logic, like if-statements that almost occur in templates.
+
+The logical primitives should not be a separate language from the structural primitives.
+
+JSON does not support logic naturally.
+
+### How?
+
+[Previously](https://olleharstedt.github.io/programming/php/dsl/2024/05/25/report-generating-domain-specific-language-php.html) I've considered a [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language))-like and [S-expressions](https://en.wikipedia.org/wiki/S-expression) as DSL, because they are (somewhat) established, and the lexer/parser can be tiny.
+
+I recently stumbled upon a ["Scheme Request For Implementation"](https://srfi.schemers.org/srfi-49/srfi-49.html) about white-space in the Scheme language, which would make it possible to use S-expressions without spamming parentheses everywhere.
+
+Instead of
+
+```lisp
+(if (= x 1)
+  '(
+    (print store.adress)
+    (print newline)
+    ))
+```
+
+you would have
+
+```lisp
+if (= x 1)
+  begin
+    print store.adress
+    print newline
+```
+
+The [lexer/parser](https://en.wikipedia.org/wiki/Parsing) must be small, around 200 LoC. The evaluation of keywords must be pluggable using the [strategy design pattern](https://en.wikipedia.org/wiki/Strategy_pattern), to be able to output HTML, JSON, raw text, or whatever the physical printer expects.
+
+Declarative means it should not be able to hold state or change state of injected variables; it should focus on the "what", not the "how". The "how" is encapsulated in the injected evaluator.
 
 It needs to support:
 
@@ -22,35 +73,13 @@ Could-haves:
 * Partials, to be able to reuse templates between different layouts
 * Changeable by non-programmers (like HTML or CSS)
 
-**Why?**
-
-An old printer class is decaying beyond its original intent. What used to be pure layout code is no littered with conditionals, even when the injected printer driver class is used to distinguish between different printers.
-
-> Why not a fluid interface?
-
-As soon as you need a little bit of logic in your template, the interface breaks down.
-
-TODO Example
-
-> Why not an existing template language, like HTML? Or PHP?
-
-It needs to be sandboxed to be safe.
-
-If you use HTML or HTML-like as a template language, you actually force yourself to use _two_ languages - one for document structure, and another for logic, like if-statements that almost occur in templates.
-
-**How?**
-
-
-
----
+### How?
 
 Evaluators should be able to output JSON, raw text, XML, or whatever (one evaluator class per output format, that is)
 
 The input to the eval() is the DSL template and a receipt data object
 
 There should be a plugin event before eval() so plugins can process the data object
-
-Maybe (a subset of) HTML could be that DSL actually. Or not, it would have to support loops, for the receipt items. 
 
 There are certain pros and cons with a declarative DSL vs a fluid interface.
 
@@ -143,6 +172,10 @@ TODO Forth-like
 TODO I-expression
 
 Using LLM to write the core part of the lexer/parser left me with zero sense of accomplishment.
+
+TODO Who and when will the DSL be used and changed
+
+TODO Maintenence and debugging will be hell. The tiny size of the lexer/parser will make it easier. On-boarding of new devs will become harder. But not more difficult than to an elaborate fluid interface? Lexer/parser systems should not be unknown to experienced developers.
 
 **Questions**
 
