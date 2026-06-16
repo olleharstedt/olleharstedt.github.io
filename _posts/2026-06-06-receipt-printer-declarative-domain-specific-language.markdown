@@ -5,11 +5,44 @@ date:   2026-06-06
 categories: programming DSL
 ---
 
-## Why?
+**What?**
 
-This is a pretty fun exercise:
+Write a declerative domain-specific langugae (DSL) that works as a template engine for a receipt printer. The lexer/parser must be small, around 200 LoC. The evaluation of keywords must be pluggable using the [strategy design pattern](https://en.wikipedia.org/wiki/Strategy_pattern), to be able to output HTML, JSON, raw text, or whatever the physical printer expects.
 
-Write a domain-specific langugae (DSL) that works as a template engine for a receipt printer
+Declarative means it should not be able to hold state or change state of injected variables.
+
+It needs to support:
+
+* If-else-statements
+* Loops
+* Dot-notation for property access of template data, like `store.street_adress`
+
+Could-haves:
+
+* Partials, to be able to reuse templates between different layouts
+* Changeable by non-programmers (like HTML or CSS)
+
+**Why?**
+
+An old printer class is decaying beyond its original intent. What used to be pure layout code is no littered with conditionals, even when the injected printer driver class is used to distinguish between different printers.
+
+> Why not a fluid interface?
+
+As soon as you need a little bit of logic in your template, the interface breaks down.
+
+TODO Example
+
+> Why not an existing template language, like HTML? Or PHP?
+
+It needs to be sandboxed to be safe.
+
+If you use HTML or HTML-like as a template language, you actually force yourself to use _two_ languages - one for document structure, and another for logic, like if-statements that almost occur in templates.
+
+**How?**
+
+
+
+---
 
 Evaluators should be able to output JSON, raw text, XML, or whatever (one evaluator class per output format, that is)
 
@@ -27,7 +60,7 @@ Should/must support partials?
 
 Event to add functions to the DSL.
 
-## Printer payload
+**Printer payload**
 
 * Receipt data
 * Language
@@ -36,14 +69,14 @@ Event to add functions to the DSL.
 * Settings, like print logo
 * Open drawer
 
-## DSL Features
+**DSL Features**
 
 * Optional arguments with default values
 * SRFI-49 I-expressions
 * Dot-notation for property access
 * if-else
 
-## Receipt parts
+**Receipt parts**
 
 * Store info
 * Corrected by, correcting
@@ -56,7 +89,7 @@ Event to add functions to the DSL.
 * On hold
 * Refund sign
 
-## Elements and functions
+**Elements and functions**
 
 * Linefeed
 * Header
@@ -64,6 +97,7 @@ Event to add functions to the DSL.
 * Bold
 * Divider
 * Cut
+** TODO Not all printers have cut - if you print 2 receipts, you instead need a confirm popup before printing the second one, to give the clerk time to rip off the first receipt
 * Finals?
 * Message
 * Barcode
@@ -73,31 +107,53 @@ Event to add functions to the DSL.
 * Translate item unit (st, kg)
 * Reset printer
 
-## Base functions
+**Base functions**
 
 * if
 * switch?
 * loop
 * list or `'`
 
-## Notes
+**Notes**
 
-S-expr
+S-expression:
 
 ```lisp
 ; Store info
 (if settings.receipt_print_company_name
-    '(
-        (header store.store_name)
-        linefeed
-    ))
-(center-line store.store_address)
+  '(
+    (header store.store_name)
+    linefeed
+  ))
+(center store.store_address)
+```
+
+I-expression:
+
+```lisp
+; Store info
+if settings.receipt_print_company_name
+  header store.store_name
+  linefeed
+center store.store_address
 ```
 
 TODO Forth-like
 
 TODO I-expression
 
+Using LLM to write the core part of the lexer/parser left me with zero sense of accomplishment.
+
+**Questions**
+
+> Isn't it easier to reuse layout data if you use inheritance, and a layout class instead of template?
+
+Perhaps, but the code decay would be inevitable over time.
+
+**Links**
+
 https://srfi.schemers.org/srfi-49/srfi-49.html
 
 https://sourceforge.net/p/readable/wiki/Rationale-sweet/
+
+Design Guidelines for Domain Specific Languages https://arxiv.org/abs/1409.2378
