@@ -36,6 +36,7 @@ abstract class SexprBase
         $previousIndent = -1;
 
         foreach ($lines as $line) {
+            var_dump($line);
             $inside_quote = 0;
             $currentIndent = 0;
             for ($i = 0; $i < strlen($line); $i++) {
@@ -46,7 +47,7 @@ abstract class SexprBase
                     break;
                 }
             }
-            var_dump($currentIndent);
+            $line = trim($line);
 
             for ($i = 0; $i < strlen($line); $i++) {
                 $char = $line[$i];
@@ -60,22 +61,32 @@ abstract class SexprBase
                 } else {
                     $buffer .= $char;
                 }
-                if ($buffer) {
-                    $current->push($buffer);
-                    $buffer = '';
-                }
+                /*
+                 */
             } 
+            if ($buffer) {
+                $current->push($buffer);
+                $buffer = '';
+            }
+
             if ($currentIndent > $previousIndent) {
+                echo 'push' . PHP_EOL;
                 $prev = $current;
                 $history->push($current);
                 $current = new SplStack();
                 $prev->push($current);
-            } elseif ($currentIndent <= $previousIndent) {
-                if ($buffer) {
-                    $current->push($buffer);
-                    $buffer = '';
+            } else {
+                var_dump($currentIndent);
+                var_dump($previousIndent);
+                for ($i = 0; $i < ($currentIndent - $previousIndent); $i += 2) {
+                    /*
+                    if ($buffer) {
+                        $current->push($buffer);
+                        $buffer = '';
+                    }
+                     */
+                    //$current = $history->pop();
                 }
-                $current = $history->pop();
             }
             $previousIndent = $currentIndent;
         }
