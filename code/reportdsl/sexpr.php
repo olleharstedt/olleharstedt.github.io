@@ -46,6 +46,10 @@ $sc = <<<SCHEME
 )
 SCHEME;
 
+$sc2 = <<<SCHEME
+(+ 1 1)
+SCHEME;
+
 abstract class SexprBase
 {
     /**
@@ -381,6 +385,11 @@ HTML;
     }
 }
 
+$m = new MathSexpr();
+$sexp = $m->parse($sc2);
+print_r($sexp);
+
+/*
 $report = new ReportSexpr();
 $sexp = $report->parse($sc);
 echo $report->getQuery($sexp);
@@ -409,3 +418,4 @@ $data = [
 echo "\n";
 echo $report->getHtml($sexp, $data);
 echo "\n";
+*/
